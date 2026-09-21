@@ -1,0 +1,140 @@
+﻿{
+    "ConfigDengShenChangJie": [
+        {
+            "Id": "EnableTitleSuffix",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableTitleSuffixCallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier8",
+            "Type": "SWITCH",
+            "BoolVal": false,
+            "Callback": "DengShenConfig:AutoFavoriteTier8CallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier9",
+            "Type": "SWITCH",
+            "BoolVal": false,
+            "Callback": "DengShenConfig:AutoFavoriteTier9CallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier10",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:AutoFavoriteTier10CallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier11",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:AutoFavoriteTier11CallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier12",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:AutoFavoriteTier12CallBack"
+        },
+        {
+            "Id": "AutoFavoriteTier13",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:AutoFavoriteTier13CallBack"
+        },
+        {
+            "Id": "EnableAutoCultivation",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableAutoCultivationCallBack"
+        },
+        {
+            "Id": "EnableAutoAwakening",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableAutoAwakeningCallBack"
+        },
+        {
+            "Id": "EnableAutoBreakthrough",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableAutoBreakthroughCallBack"
+        },
+        {
+            "Id": "EnableAnimalAwakening",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableAnimalAwakeningCallBack"
+        },
+        {
+            "Id": "EnableDisasterSystem",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableDisasterSystemCallBack"
+        },
+        {
+            "Id": "EnableVoidRifts",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableVoidRiftsCallBack"
+        },
+        {
+            "Id": "EnableRealmEvents",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableRealmEventsCallBack"
+        },
+        {
+            "Id": "EnableGlobalHealthSuppression",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableGlobalHealthSuppressionCallBack"
+        },
+        {
+            "Id": "EnableGlobalNotifications",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableGlobalNotificationsCallBack"
+        },
+        {
+            "Id": "EnableMonolithEffect",
+            "Type": "SWITCH",
+            "BoolVal": true,
+            "Callback": "DengShenConfig:EnableMonolithEffectCallBack"
+        },
+
+        {
+            "Id": "CultivationRateMultiplier",
+            "Type": "SLIDER",
+            "FloatVal": 3.0,
+            "MinVal": 0.5,
+            "MaxVal": 10.0,
+            "Step": 0.5,
+            "Callback": "DengShenConfig:CultivationRateMultiplierCallBack"
+        },
+        {
+            "Id": "MortalAwakenChance",
+            "Type": "SLIDER",
+            "FloatVal": 0.01,
+            "MinVal": 0.001,
+            "MaxVal": 0.1,
+            "Step": 0.005,
+            "Callback": "DengShenConfig:MortalAwakenChanceCallBack"
+        },
+        {
+            "Id": "TurbulenceDecayRate",
+            "Type": "SLIDER",
+            "FloatVal": 5.0,
+            "MinVal": 0.0,
+            "MaxVal": 50.0,
+            "Step": 1.0,
+            "Callback": "DengShenConfig:TurbulenceDecayRateCallBack"
+        },
+        {
+            "Id": "EnableVerboseLog",
+            "Type": "SWITCH",
+            "BoolVal": false,
+            "Callback": "DengShenConfig:EnableVerboseLogCallBack"
+        }
+    ]
+}

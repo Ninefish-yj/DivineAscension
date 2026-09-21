@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>11</LangVersion>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <OutputType>Library</OutputType>
+        <RootNamespace>Code</RootNamespace>
+        <AssemblyName>DivineAscension</AssemblyName>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 排除反编译研究产物，避免被当作源码编译 -->
+        <Compile Remove="_decompile/**/*.cs"/>
+        <Compile Remove="_backup_before_rollback/**/*.cs"/>
+        <Compile Remove="基因修炼体系/**/*.cs"/>
+        <Content Include=".github\ISSUE_TEMPLATE\bug-report-en.yaml"/>
+        <Content Include=".github\ISSUE_TEMPLATE\bug-report-zh.yaml"/>
+        <Content Include="default_config.json"/>
+        <Content Include="icon.png"/>
+        <Content Include="Locales\en.json"/>
+        <Content Include="Locales\zh.json"/>
+        <Content Include="mod.json"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\mods\NML\Assembly-CSharp-Publicized.dll')">..\..\worldbox_Data\StreamingAssets\mods\NML\Assembly-CSharp-Publicized.dll</HintPath>
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\Mods\NML\Assembly-CSharp-Publicized.dll')">..\..\worldbox_Data\StreamingAssets\Mods\NML\Assembly-CSharp-Publicized.dll</HintPath>
+        </Reference>
+        <Reference Include="NeoModLoader">
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\mods\NeoModLoader_memload.dll')">..\..\worldbox_Data\StreamingAssets\mods\NeoModLoader_memload.dll</HintPath>
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\mods\NeoModLoader.dll')">..\..\worldbox_Data\StreamingAssets\mods\NeoModLoader.dll</HintPath>
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\Mods\NeoModLoader_memload.dll')">..\..\worldbox_Data\StreamingAssets\Mods\NeoModLoader_memload.dll</HintPath>
+            <HintPath Condition="Exists('..\..\worldbox_Data\StreamingAssets\Mods\NeoModLoader.dll')">..\..\worldbox_Data\StreamingAssets\Mods\NeoModLoader.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.JSONSerializeModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>..\..\worldbox_Data\StreamingAssets\Mods\NML\Assemblies\0Harmony.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UIModule">
+            <HintPath>..\..\worldbox_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>..\..\worldbox_Data\Managed\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>
+
