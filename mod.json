@@ -1,0 +1,21 @@
+{
+    "name": "登神长阶",
+    "author": "阿鱼要吃书",
+    "version": "v0.10.4",
+    "GUID": "DivineAscension",
+    "description": "WorldBox 0.51 现代异能修炼模组——13阶境界 + 56基因序列 + 组织传承 + 灾变与超神纪元，异能能量/失控指数/基因图谱驱动沙盒自主演化，至高者可跨存档互通。",
+    "homepage": "https://github.com/Ninefish-yj/DivineAscension",
+    "repository": "https://github.com/Ninefish-yj/DivineAscension.git",
+    "tags": [
+        "修炼",
+        "异能",
+        "基因",
+        "境界",
+        "登神"
+    ],
+    "dependencies": [],
+    "optionalDependencies": [],
+    "requirements": {
+        "gameVersion": "0.51"
+    }
+}
