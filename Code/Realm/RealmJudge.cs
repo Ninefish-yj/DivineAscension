@@ -39,7 +39,7 @@ namespace Code.Realm
                     if (actor != null && actor.getID() == id) return actor;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] FindActorById 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] FindActorById 异常: " + dsEx.Message); }
             return null;
         }
         // ============================================================
@@ -182,7 +182,7 @@ namespace Code.Realm
 
                     // 播放突破音乐（如果安装了God's Gramophone模组）
 
-                    DSDebug.Verbose($"[DivineAscension] {actorName} 跳阶首位突破：{fromTier}阶 -> {tier}阶{tierName}");
+                    DSDebug.Verbose($"[GeneCultivation] {actorName} 跳阶首位突破：{fromTier}阶 -> {tier}阶{tierName}");
                 }
                 else
                 {
@@ -213,7 +213,7 @@ namespace Code.Realm
                         actor.getName(),
                         ActorDataAccessor.GetData(actor).id, tier, actor, true);
 
-                    DSDebug.Verbose($"[DivineAscension] {actorName} 跳阶突破：{fromTier}阶 -> {tier}阶{tierName}");
+                    DSDebug.Verbose($"[GeneCultivation] {actorName} 跳阶突破：{fromTier}阶 -> {tier}阶{tierName}");
                 }
             }
             catch (Exception e)
@@ -364,7 +364,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 修剪溢出高阶单位失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 修剪溢出高阶单位失败: {e.Message}");
             }
         }
 
@@ -390,7 +390,7 @@ namespace Code.Realm
             // 杀掉最弱小的，直到降到软上限
             int toKill = actorsAtTier.Count - softCap;
             string tierName = UILocalization.GetTierName(tier);
-            DSDebug.Warning($"[DivineAscension] {tierName}数量溢出（{actorsAtTier.Count}人），修剪最弱的{toKill}人，降到{softCap}人");
+            DSDebug.Warning($"[GeneCultivation] {tierName}数量溢出（{actorsAtTier.Count}人），修剪最弱的{toKill}人，降到{softCap}人");
 
             for (int i = 0; i < toKill; i++)
             {
@@ -538,7 +538,7 @@ namespace Code.Realm
             }
             if (_yearlyChallengeCount >= MaxChallengesPerYear)
             {
-                DSDebug.Verbose($"[DivineAscension] {UILocalization.GetTierName(tier)}阶年度挑战次数已用完（{MaxChallengesPerYear}次），{excludeActor?.getName()} 今年无法挑战");
+                DSDebug.Verbose($"[GeneCultivation] {UILocalization.GetTierName(tier)}阶年度挑战次数已用完（{MaxChallengesPerYear}次），{excludeActor?.getName()} 今年无法挑战");
                 return false;
             }
             _yearlyChallengeCount++;
@@ -561,7 +561,7 @@ namespace Code.Realm
 
             if (candidates.Count == 0)
             {
-                DSDebug.Verbose($"[DivineAscension] {tier}阶名额已满（{cap}人），但找不到可挑战的同阶单位，{excludeActor?.getName()} 无法突破");
+                DSDebug.Verbose($"[GeneCultivation] {tier}阶名额已满（{cap}人），但找不到可挑战的同阶单位，{excludeActor?.getName()} 无法突破");
                 return false;
             }
 
@@ -594,12 +594,12 @@ namespace Code.Realm
                 }
                 else
                 {
-                    DSDebug.Warning("[DivineAscension] 找不到AnnualTickDriver，挑战战斗无法启动");
+                    DSDebug.Warning("[GeneCultivation] 找不到AnnualTickDriver，挑战战斗无法启动");
                 }
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 启动战斗协程失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 启动战斗协程失败: {e.Message}");
             }
         }
 
@@ -634,7 +634,7 @@ namespace Code.Realm
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 挑战击杀 {victim?.getName()} 失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 挑战击杀 {victim?.getName()} 失败: {e.Message}");
             }
         }
 
@@ -655,7 +655,7 @@ namespace Code.Realm
         {
             // 简单版：等10秒，然后检查谁死了
             // 后面改成真正监听战斗结束事件
-            DSDebug.Verbose($"[DivineAscension] 战斗开始，等待10秒后判定胜负...");
+            DSDebug.Verbose($"[GeneCultivation] 战斗开始，等待10秒后判定胜负...");
 
             // 用AnnualTickManager的每年更新来检查（游戏内的时间）
             // 现在先简单版：直接判定
@@ -667,12 +667,12 @@ namespace Code.Realm
                     {
                         // 旧主宰死了，挑战者赢
                         SetDominator(challenger, challengerEnergy, challengerElements);
-                        DSDebug.Verbose($"[DivineAscension] {challenger.getName()} 击杀主宰，成为新主宰！");
+                        DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 击杀主宰，成为新主宰！");
                     }
                     else if (!challenger.isAlive())
                     {
                         // 挑战者死了
-                        DSDebug.Verbose($"[DivineAscension] {challenger.getName()} 战斗中死亡，挑战失败");
+                        DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 战斗中死亡，挑战失败");
                     }
                     else
                     {
@@ -685,29 +685,29 @@ namespace Code.Realm
                         if (challengerFled)
                         {
                             // 挑战者跑了 → 终身不能突破，阶位回退
-                            DSDebug.Verbose($"[DivineAscension] 挑战者 {challenger.getName()} 逃跑了！终身不能突破，阶位回退");
+                            DSDebug.Verbose($"[GeneCultivation] 挑战者 {challenger.getName()} 逃跑了！终身不能突破，阶位回退");
                             try { DemoteActor(challenger, CultivationData.GetRealmTier(challenger) - 1); } catch { }
                         }
                         else if (dominatorFled)
                         {
                             // 主宰跑了 → 主宰输，阶位回退，挑战者上位
-                            DSDebug.Verbose($"[DivineAscension] 主宰 {dominator.getName()} 逃跑了！阶位回退");
+                            DSDebug.Verbose($"[GeneCultivation] 主宰 {dominator.getName()} 逃跑了！阶位回退");
                             try { DemoteActor(dominator, CultivationData.GetRealmTier(dominator) - 1); } catch { }
                             SetDominator(challenger, challengerEnergy, challengerElements);
-                            DSDebug.Verbose($"[DivineAscension] {challenger.getName()} 击败逃跑的主宰，成为新主宰！");
+                            DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 击败逃跑的主宰，成为新主宰！");
                         }
                         else
                         {
                             // 都没死也没跑，先结束战斗，按数值判定
                             challenger.clearAttackTarget();
                             dominator.clearAttackTarget();
-                            DSDebug.Verbose($"[DivineAscension] 战斗结束，双方都活着，按数值判定");
+                            DSDebug.Verbose($"[GeneCultivation] 战斗结束，双方都活着，按数值判定");
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    DSDebug.Verbose($"[DivineAscension] 异步判定失败: {e.Message}");
+                    DSDebug.Verbose($"[GeneCultivation] 异步判定失败: {e.Message}");
                 }
             });
         }
@@ -721,9 +721,9 @@ namespace Code.Realm
                 try
                 {
                     DSReflectionHelper.SafeAddStatusEffect(actor, "ds_era_weakened", 1200f, true);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 挑战主宰失败，进入虚弱期（20年）");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 挑战主宰失败，进入虚弱期（20年）");
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExileChallenger 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExileChallenger 异常: " + dsEx.Message); }
 
                 // 通知
                 try
@@ -731,7 +731,7 @@ namespace Code.Realm
                     Code.Core.DSNotificationManager.NotifyMajor(UILocalization.Get("judge_challenge_failed_title"),
                         string.Format(UILocalization.Get("judge_challenge_failed_desc"), actor.getName(), _currentDominator.Name));
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExileChallenger 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExileChallenger 异常: " + dsEx.Message); }
             }
             catch (Exception e)
             {
@@ -756,10 +756,10 @@ namespace Code.Realm
                         {
                             oldActor.removeTrait("ds_era_dominator_trait");
                         }
-                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetDominator 异常: " + dsEx.Message); }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetDominator 异常: " + dsEx.Message); }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetDominator 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetDominator 异常: " + dsEx.Message); }
             }
 
             // 获取主宰的主要基因染色体（从已解锁基因中选择出现最多的染色体）
@@ -777,7 +777,7 @@ namespace Code.Realm
                         if (groupCount[i] > maxCount) { maxCount = groupCount[i]; dominatorGroup = i; }
                     }
                 }
-            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetDominator 异常: " + dsEx.Message); }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetDominator 异常: " + dsEx.Message); }
 
             _currentDominator = new EraDominator
             {
@@ -799,7 +799,7 @@ namespace Code.Realm
             try
             {
                 actor.addTrait("ds_era_dominator_trait");
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 获得纪元主宰专属特质");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 获得纪元主宰专属特质");
             }
             catch (Exception e)
             {
@@ -847,14 +847,14 @@ namespace Code.Realm
                     Code.Core.DSStatusManager.RemoveEraDominatorBuff(deadActor);
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnDominatorDeath 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnDominatorDeath 异常: " + dsEx.Message); }
 
             if (_currentDominator == null || _currentDominator.ActorId != actorId) return;
 
             string deadName = _currentDominator.Name;
             _currentDominator = null;
             _currentEra++;
-            DSDebug.Verbose($"[DivineAscension] {deadName} 陨落，第{_currentEra - 1}纪元终结，第{_currentEra}纪元开启（混沌无主）");
+            DSDebug.Verbose($"[GeneCultivation] {deadName} 陨落，第{_currentEra - 1}纪元终结，第{_currentEra}纪元开启（混沌无主）");
         }
 
         /// <summary>获取某纪元的主宰历史列表</summary>
@@ -908,11 +908,11 @@ namespace Code.Realm
                     new WorldAgeAction(TrySpawnDivineParticles));
                 AssetManager.era_library.add(trueGodEra);
                 _trueGodEraRegistered = true;
-                DSDebug.Verbose("[DivineAscension] 超神纪元已注册到era_library（id=age_ds_transcendent，紫蓝冷色调，1.5倍速，神圣粒子特效）");
+                DSDebug.Verbose("[GeneCultivation] 超神纪元已注册到era_library（id=age_ds_transcendent，紫蓝冷色调，1.5倍速，神圣粒子特效）");
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 超神纪元注册失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 超神纪元注册失败: " + e.Message);
             }
         }
 
@@ -941,7 +941,7 @@ namespace Code.Realm
                         tile = getTileMethod.Invoke(World.world, new object[] { x, y });
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] TrySpawnDivineParticles 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] TrySpawnDivineParticles 异常: " + dsEx.Message); }
 
                 if (tile == null) return;
 
@@ -969,11 +969,11 @@ namespace Code.Realm
                         }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] TrySpawnDivineParticles 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] TrySpawnDivineParticles 异常: " + dsEx.Message); }
             }
             catch (Exception e)
             {
-                DSDebug.Verbose("[DivineAscension] 超神纪元粒子特效生成失败: " + e.Message);
+                DSDebug.Verbose("[GeneCultivation] 超神纪元粒子特效生成失败: " + e.Message);
             }
         }
 
@@ -982,7 +982,7 @@ namespace Code.Realm
         {            // 没有真神则锁住超神纪元，不能切换
             if (!RealmFeatures.HasTrueGodInWorld())
             {
-                DSDebug.Verbose("[DivineAscension] 世界上没有真神，超神纪元已锁定，无法切换");
+                DSDebug.Verbose("[GeneCultivation] 世界上没有真神，超神纪元已锁定，无法切换");
                 return;
             }
 
@@ -998,13 +998,13 @@ namespace Code.Realm
                     if (trueGodAge != null)
                     {
                         setAgeMethod.Invoke(eraManager, new object[] { trueGodAge, true });
-                        DSDebug.Verbose("[DivineAscension] 已切换到超神纪元");
+                        DSDebug.Verbose("[GeneCultivation] 已切换到超神纪元");
                     }
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Verbose("[DivineAscension] 切换超神纪元失败（不影响动态纪元显示）: " + e.Message);
+                DSDebug.Verbose("[GeneCultivation] 切换超神纪元失败（不影响动态纪元显示）: " + e.Message);
             }
         }
 
@@ -1038,36 +1038,36 @@ namespace Code.Realm
         {
             if (actor == null || !actor.isAlive())
             {
-                DSDebug.Warning("[DivineAscension] AwakenMortal: actor为null或已死亡");
+                DSDebug.Warning("[GeneCultivation] AwakenMortal: actor为null或已死亡");
                 return false;
             }
             if (!CanAwaken(actor))
             {
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: {actor.getName()}不是可修炼生物（船/树/石/建筑等），拒绝觉醒");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: {actor.getName()}不是可修炼生物（船/树/石/建筑等），拒绝觉醒");
                 return false;
             }
             if (CultivationData.IsAscended(actor))
             {
-                DSDebug.Warning($"[DivineAscension] AwakenMortal: {actor.getName()}已经是异能者");
+                DSDebug.Warning($"[GeneCultivation] AwakenMortal: {actor.getName()}已经是异能者");
                 return false;
             }
 
             try
             {
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 开始觉醒 {actor.getName()}");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 开始觉醒 {actor.getName()}");
 
                 CultivationData.SetRealmTier(actor, 1);
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 设置境界=1成功");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 设置境界=1成功");
 
                 CultivationData.SetEnergy(actor, _qiThresholds[1]);
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 设置异能能量={_qiThresholds[1]}成功");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 设置异能能量={_qiThresholds[1]}成功");
 
                 // 天赋异禀：极低概率（5%）额外随机获得一个基因（觉醒第二基因）
                 // 该基因所属染色体决定超神纪元效果（若此人日后成神）
 
                 // 同步Trait（境界特质，体系只存在元数据中，不授予特质）
                 TraitManager.SetRealmTrait(actor, 1);
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 设置境界特质成功");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 设置境界特质成功");
 
                 // 异能体系已由基因系统取代（无独立体系概念与特质）
 
@@ -1075,7 +1075,7 @@ namespace Code.Realm
                 //  替代原来的"掌握1阶全套印记"逻辑
                 //  掌控度通过使用境界技能和年度修炼提升，达到100才能突破
                 CultivationData.SetMastery(actor, 0f);
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 初始化能力掌控度成功");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 初始化能力掌控度成功");
                 //  设定：基因觉醒必须是修炼的起点，100%获得基因基因（elem_gene，生命染色体第1表达层级，一切异能的根源）
                 // 基因系统：觉醒时获得主控基因，后续通过修炼获得更多基因
                 CultivationData.UnlockElement(actor, "gene_cell_division");
@@ -1090,16 +1090,16 @@ namespace Code.Realm
                         int randomIndex = UnityEngine.Random.Range(0, bonusElements.Count);
                         var bonusElement = bonusElements[randomIndex];
                         CultivationData.UnlockElement(actor, bonusElement.Id);
-                        DSDebug.Verbose($"[DivineAscension] AwakenMortal: 天赋异禀！额外获得基因={bonusElement.NameZh}({bonusElement.Id})");
+                        DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 天赋异禀！额外获得基因={bonusElement.NameZh}({bonusElement.Id})");
                     }
                 }
 
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: 基因觉醒，基因觉醒成功");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 基因觉醒，基因觉醒成功");
 
                 // 检查基因连锁效果
                 GeneLinkageSystem.CheckAllLinkages(actor);
 
-                DSDebug.Verbose($"[DivineAscension] AwakenMortal: {actor.getName()}觉醒成功！");
+                DSDebug.Verbose($"[GeneCultivation] AwakenMortal: {actor.getName()}觉醒成功！");
 
                 //  统计钩子：记录觉醒年份 + 全局觉醒计数
                 try
@@ -1108,7 +1108,7 @@ namespace Code.Realm
                     CultivationData.SetAwakeningYear(actor, awakenYear);
                     DSGlobalStats.IncrementAwakeningCount();
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] AwakenMortal 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AwakenMortal 异常: " + dsEx.Message); }
 
                 //  先驱者记录：第一个觉醒者（1阶）也要记录
                 try
@@ -1126,7 +1126,7 @@ namespace Code.Realm
                             DSEventTexts.GetPioneerHistoryDesc(actorName, 1, tierName),
                             actor.getName(),
                             ActorDataAccessor.GetData(actor).id, 1, actor);
-                        DSDebug.Verbose("[DivineAscension] " + actorName + " 成为世界首位觉醒者！");
+                        DSDebug.Verbose("[GeneCultivation] " + actorName + " 成为世界首位觉醒者！");
                     }
                 }
                 catch (Exception e)
@@ -1138,7 +1138,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Error($"[DivineAscension] AwakenMortal异常: {actor.getName()}, {e.Message}\n{e.StackTrace}");
+                DSDebug.Error($"[GeneCultivation] AwakenMortal异常: {actor.getName()}, {e.Message}\n{e.StackTrace}");
                 return false;
             }
         }
@@ -1179,7 +1179,7 @@ namespace Code.Realm
             if (nextTier == 12 && !VanillaIntegration.HasEnoughFaithForGodhood(actor))
             {
                 failReason = BreakthroughResult.Fail_AscensionLocked;
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 信仰不足（需控制5个城市），无法突破真神级");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 信仰不足（需控制5个城市），无法突破真神级");
                 return false;
             }
 
@@ -1188,7 +1188,7 @@ namespace Code.Realm
             if (nextTier == 13 && !TraitManager.CanAscendToGod(actor))
             {
                 failReason = BreakthroughResult.Fail_AscensionLocked;
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 成神条件未满足（需≥12个基因、失控<50、深度觉醒经验≥500000），无法成神");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 成神条件未满足（需≥12个基因、失控<50、深度觉醒经验≥500000），无法成神");
                 return false;
             }
 
@@ -1197,7 +1197,7 @@ namespace Code.Realm
             if (nextTier >= 10 && !EnsureTierSlot(nextTier, actor))
             {
                 failReason = BreakthroughResult.Fail_AscensionLocked;
-                DSDebug.Verbose($"[DivineAscension] {UILocalization.GetTierName(nextTier)}名额已满且无法腾出位置，{actor.getName()} 无法突破");
+                DSDebug.Verbose($"[GeneCultivation] {UILocalization.GetTierName(nextTier)}名额已满且无法腾出位置，{actor.getName()} 无法突破");
                 return false;
             }
 
@@ -1377,7 +1377,7 @@ namespace Code.Realm
                         int fallenTier = nextTier - 2;
                         CultivationData.SetRealmTier(actor, fallenTier);
                         TraitManager.SetRealmTrait(actor, fallenTier);
-                        DSDebug.Verbose($"[DivineAscension] {actor.getName()} 突破失败导致境界跌落至{fallenTier}阶！");
+                        DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破失败导致境界跌落至{fallenTier}阶！");
                     }
                 }
                 else
@@ -1389,7 +1389,7 @@ namespace Code.Realm
                     CultivationData.SetEnlightenmentExp(actor, enlightExp * 0.5f);
                 }
 
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 突破到{nextTier}阶失败！惩罚按境界阶梯式加重");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破到{nextTier}阶失败！惩罚按境界阶梯式加重");
                 return BreakthroughResult.Fail_Risk;
             }
 
@@ -1400,13 +1400,13 @@ namespace Code.Realm
             RealmFeatures.ApplyAllRealmFeaturesUpTo(actor, nextTier);
 
             //  组织贡献：突破境界额外+100
-            try { if (CultivationData.GetSectRank(actor) > 0) CultivationData.AddSectContribution(actor, 100f); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoBreakthrough 组织贡献异常: " + dsEx.Message); }
+            try { if (CultivationData.GetSectRank(actor) > 0) CultivationData.AddSectContribution(actor, 100f); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoBreakthrough 组织贡献异常: " + dsEx.Message); }
 
             //  触发境界突破事件（天劫、异象、全局效果等）
             RealmEvents.OnBreakthrough(actor, nextTier);
 
             //  基因突变：突破境界时大概率发生基因突变（消耗能量）
-            try { Code.Core.GeneMutationSystem.MutateOnBreakthrough(actor, nextTier); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoBreakthrough 异常: " + dsEx.Message); }
+            try { Code.Core.GeneMutationSystem.MutateOnBreakthrough(actor, nextTier); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoBreakthrough 异常: " + dsEx.Message); }
 
             //  原版深度交互：突破成功后授予对应境界的原版特质（strong/fast/smart/blessed等）
             VanillaInteractionManager.GrantVanillaTraitsForRealm(actor, nextTier);
@@ -1491,7 +1491,7 @@ namespace Code.Realm
             //  种族升华（4阶方碑进化/11阶登神升华）统一在 CultivationData.SetTier 中处理，
             //   覆盖正常突破、调试设阶等所有境界变化路径，避免重复调用
 
-            DSDebug.Verbose($"[DivineAscension] {actor.getName()} 成功突破到{nextTier}阶 {UILocalization.GetTierName(nextTier)}！");
+            DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 成功突破到{nextTier}阶 {UILocalization.GetTierName(nextTier)}！");
             return BreakthroughResult.Success;
         }
 
@@ -1509,14 +1509,14 @@ namespace Code.Realm
                 if (currentTier < 11) return;
                 if (targetTier < 10) targetTier = 10;
 
-                Code.Core.DSDebug.Verbose($"[DivineAscension] {actor.getName()} 阶位回退：{currentTier}阶 -> {targetTier}阶");
+                Code.Core.DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 阶位回退：{currentTier}阶 -> {targetTier}阶");
 
                 // 设置境界 + 更新特质
                 CultivationData.SetRealmTier(actor, targetTier, allowBigJump: true);
                 TraitManager.SetRealmTrait(actor, targetTier);
 
                 // 移除高阶技能状态
-                try { DSStatusManager.RemoveTierAbilities(actor, currentTier); } catch (Exception e) { DSDebug.Warning($"[DivineAscension] DemoteActor 移除技能异常: {e.Message}"); }
+                try { DSStatusManager.RemoveTierAbilities(actor, currentTier); } catch (Exception e) { DSDebug.Warning($"[GeneCultivation] DemoteActor 移除技能异常: {e.Message}"); }
 
                 // 更新称号
                 try { TitleSuffixManager.UpdateTitleSuffix(actor); } catch { }
@@ -1533,11 +1533,11 @@ namespace Code.Realm
                         string.Format(UILocalization.Get("judge_demote_desc"), actorName, targetTier, tierName),
                         actor.getName(), ActorDataAccessor.GetData(actor).id, targetTier, actor, true);
                 }
-                catch (Exception e) { DSDebug.Warning($"[DivineAscension] DemoteActor 事件记录异常: {e.Message}"); }
+                catch (Exception e) { DSDebug.Warning($"[GeneCultivation] DemoteActor 事件记录异常: {e.Message}"); }
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] DemoteActor 异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] DemoteActor 异常: {e.Message}");
             }
         }
 
@@ -1561,12 +1561,12 @@ namespace Code.Realm
                 if (tier >= 3 && !actor.hasTrait("civilized"))
                 {
                     actor.addTrait("civilized", false);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到{tier}阶，异能开启高级脑功能区，获得文明化特质！");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到{tier}阶，异能开启高级脑功能区，获得文明化特质！");
                 }
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 动物开启智慧失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 动物开启智慧失败: {e.Message}");
             }
         }
 
@@ -1621,35 +1621,35 @@ namespace Code.Realm
                 if (tier >= 2 && !actor.hasTrait(TraitManager.STATUS_ENERGY_SHIELD))
                 {
                     actor.addTrait(TraitManager.STATUS_ENERGY_SHIELD, false);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到2阶，获得永久特质：能量护盾");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到2阶，获得永久特质：能量护盾");
                 }
 
                 // 3阶强化者：身体强化（攻击速度大增）
                 if (tier >= 3 && !actor.hasTrait(TraitManager.STATUS_BODY_BOOST))
                 {
                     actor.addTrait(TraitManager.STATUS_BODY_BOOST, false);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到3阶，获得永久特质：身体强化");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到3阶，获得永久特质：身体强化");
                 }
 
                 // 7阶具象者：能量武器（攻击射程大增）
                 if (tier >= 7 && !actor.hasTrait(TraitManager.STATUS_ENERGY_WEAPON))
                 {
                     actor.addTrait(TraitManager.STATUS_ENERGY_WEAPON, false);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到7阶，获得永久特质：能量武器");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到7阶，获得永久特质：能量武器");
                 }
 
                 // 11阶登神级：登神化身标记存储在元数据中（境界特质已有属性加成）
                 if (tier >= 11)
                 {
                     ActorDataAccessor.GetData(actor).custom_data_string["ds_sanctuary_avatar"] = "true";
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到{tier}阶，登神化身标记");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到{tier}阶，登神化身标记");
                 }
 
                 // 12阶真神级：维度投影标记存储在元数据中（境界特质已有属性加成）
                 if (tier >= 12)
                 {
                     ActorDataAccessor.GetData(actor).custom_data_string["ds_divine_projection"] = "true";
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到{tier}阶，维度投影标记");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到{tier}阶，维度投影标记");
                 }
 
                 // 13阶超神级：神眷状态特质（特殊，真神可以孕育神眷，这里只标记能力）
@@ -1657,12 +1657,12 @@ namespace Code.Realm
                 {
                     // 注意：神眷是真神孕育的从属者，不是真神自己的状态
                     // 这里不授予真神神眷特质，只记录日志
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到真神，可孕育神眷从属者");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到真神，可孕育神眷从属者");
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 授予境界挂钩状态特质失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 授予境界挂钩状态特质失败: {e.Message}");
             }
         }
 
@@ -1704,7 +1704,7 @@ namespace Code.Realm
             //  成神可能性判定：深度觉醒突破到13阶也需要满足基因成神条件
             if (nextTier == 13 && !TraitManager.CanAscendToGod(actor))
             {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 成神条件未满足（需≥12个基因、失控<50、深度觉醒经验≥500000），无法成神");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 成神条件未满足（需≥12个基因、失控<50、深度觉醒经验≥500000），无法成神");
                 return BreakthroughResult.Fail_AscensionLocked;
             }
 
@@ -1716,7 +1716,7 @@ namespace Code.Realm
             // 深度觉醒突破也必须遵守名额限制，否则会导致高阶单位泛滥
             if (nextTier >= 10 && !EnsureTierSlot(nextTier, actor))
             {
-                DSDebug.Verbose($"[DivineAscension] {UILocalization.GetTierName(nextTier)}名额已满且无法腾出位置，{actor.getName()} 无法通过深度觉醒突破");
+                DSDebug.Verbose($"[GeneCultivation] {UILocalization.GetTierName(nextTier)}名额已满且无法腾出位置，{actor.getName()} 无法通过深度觉醒突破");
                 return BreakthroughResult.Fail_AscensionLocked;
             }
 
@@ -1735,7 +1735,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                 float geBreakthroughBonus = Code.Core.GeneEnergyCalculator.GetBreakthroughBonus(actor);
                 successRate += geBreakthroughBonus;
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
             
             // 专精加成：只掌握2个基因（初始基因+觉醒第二基因）时，突破成功率+5%
             try
@@ -1743,7 +1743,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                 int elemCount = CultivationData.GetUnlockedElements(actor)?.Count ?? 0;
                 if (elemCount <= 2) successRate += 0.05f;
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
             
             // 失控指数越低，突破成功率越高（失控指数<30时+5%）
             try
@@ -1751,7 +1751,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                 float turbulence = CultivationData.GetTurbulence(actor);
                 if (turbulence < 30f) successRate += 0.05f;
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
             
             // 拥挤惩罚：同境界存活者越多，突破成功率越低（8阶+生效，与正规突破机制一致）
             // 突破到X阶时看当前存活X阶单位数，每多一个成功率-2%（抑制高阶泛滥）
@@ -1763,7 +1763,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                     float crowdingPenalty = sameTierCount * 0.02f;
                     successRate -= crowdingPenalty;
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 拥挤惩罚异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 拥挤惩罚异常: " + dsEx.Message); }
             }
             
             // 限制成功率范围（最低1%，最高90%）
@@ -1780,7 +1780,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                 // 深度觉醒状态：修炼速度+100%，持续3年
                 CultivationData.SetEnlightenmentDuration(actor, 10f);
                 // 组织贡献：突破境界额外+100
-                try { if (CultivationData.GetSectRank(actor) > 0) CultivationData.AddSectContribution(actor, 100f); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 组织贡献异常: " + dsEx.Message); }
+                try { if (CultivationData.GetSectRank(actor) > 0) CultivationData.AddSectContribution(actor, 100f); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 组织贡献异常: " + dsEx.Message); }
 
                 //  修复：深度觉醒突破成功后触发历史记录和全局通知（之前遗漏了）
                 try
@@ -1875,11 +1875,11 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                                     lifespanField.SetValue(actorData, Mathf.Max(1f, currentLifespan - lifespanLoss));
                                 }
                             }
-                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                         }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                 
                 // 5. 基因损伤状态（修炼速度-50%，进阶成功率-50%，持续10年）
                 // 高境界突破失败时添加基因损伤状态
@@ -1895,7 +1895,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                     float energyLossRate = Mathf.Min(0.5f, 0.1f + nextTier * 0.03f); // 1阶损失13%，12阶损失46%
                     CultivationData.SetEnergy(actor, currentEnergy * (1f - energyLossRate));
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                 
                 // 7. 基因亲和降低（临时降低基因亲和，影响修炼速度）
                 try
@@ -1903,7 +1903,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                     // 基因亲和降低通过基因损伤状态间接实现
                     // 这里可以添加额外的基因亲和降低逻辑
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                 
                 // 8. 基因崩溃率（接入GE公式，基因能量越高，崩溃率越高，崩溃即死亡）
                 try
@@ -1912,7 +1912,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                     if (UnityEngine.Random.value <= geneCollapseRate)
                     {
                         // 基因崩溃：基因序列彻底崩溃，单位无法存活，直接死亡
-                        DSDebug.Verbose($"[DivineAscension] {actor.getName()} 突破失败时发生基因崩溃，死亡！境界：{nextTier}，崩溃率：{geneCollapseRate:P1}");
+                        DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破失败时发生基因崩溃，死亡！境界：{nextTier}，崩溃率：{geneCollapseRate:P1}");
 
                         //  11阶及以上突破失败陨落是重大事件：全局通知 + 历史记录（灾变分类，写历史+中央通知）
                         if (nextTier >= 11)
@@ -1928,7 +1928,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                                     Code.Data.ActorDataAccessor.GetData(actor) != null ? Code.Data.ActorDataAccessor.GetData(actor).id : 0L,
                                     nextTier, actor);
                             }
-                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] 基因崩溃记录异常: " + dsEx.Message); }
+                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 基因崩溃记录异常: " + dsEx.Message); }
                         }
                         
                         // 直接导致单位死亡
@@ -1953,7 +1953,7 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                                             healthField.SetValue(actorData, 0f);
                                         }
                                     }
-                                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                                 }
                             }
                             // 调用死亡方法（如果存在）
@@ -1965,15 +1965,15 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                                     dieMethod.Invoke(actor, null);
                                 }
                             }
-                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                         }
-                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                         
                         // 基因崩溃后直接返回，不再执行其他惩罚
                         return BreakthroughResult.Fail_GeneCollapse;
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                 
                 return BreakthroughResult.Fail_Enlightenment;
             }
@@ -2018,11 +2018,11 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                 }
                 
                 _tierCacheDirty = false;
-                DSDebug.Verbose($"[DivineAscension] 境界计数缓存已重建：11阶={GetTierCount(11)}, 12阶={GetTierCount(12)}, 13阶={GetTierCount(13)}");
+                DSDebug.Verbose($"[GeneCultivation] 境界计数缓存已重建：11阶={GetTierCount(11)}, 12阶={GetTierCount(12)}, 13阶={GetTierCount(13)}");
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 重建境界计数缓存失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 重建境界计数缓存失败: " + e.Message);
             }
         }
 

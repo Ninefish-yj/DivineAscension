@@ -105,7 +105,7 @@ namespace Code.Core
                 if (shouldFavorite && !ActorDataAccessor.GetData(actor).favorite)
                 {
                     ActorDataAccessor.GetData(actor).favorite = true;
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 已自动收藏（{reason}）");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 已自动收藏（{reason}）");
                 }
             }
             catch (System.Exception e)

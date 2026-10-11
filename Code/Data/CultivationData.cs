@@ -267,19 +267,19 @@ namespace Code.Data
                     {
                         // 名额已满且无法腾出位置，回退到旧境界
                         data.custom_data_int[K_TIER] = old;
-                        DSDebug.Warning($"[DivineAscension] {actor.getName()} 突破到{clamped}阶失败：名额已满且无法腾出位置");
+                        DSDebug.Warning($"[GeneCultivation] {actor.getName()} 突破到{clamped}阶失败：名额已满且无法腾出位置");
                         return;
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 名额检查异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 名额检查异常: " + dsEx.Message); }
             }
             
             // 境界提升时记录突破统计和历史最高境界（仅提升时，跌落不计）
             if (clamped > old)
             {
-                try { AddBreakthrough(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
-                try { UpdateHighestTierReached(actor, clamped); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
-                try { DSGlobalStats.IncrementBreakthroughCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
+                try { AddBreakthrough(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
+                try { UpdateHighestTierReached(actor, clamped); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
+                try { DSGlobalStats.IncrementBreakthroughCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
                 // 跳阶检测：如果一次提升超过1阶，记录跳阶信息
                 if (clamped - old > 1)
                 {
@@ -293,36 +293,36 @@ namespace Code.Data
                         {
                             data.custom_data_string[K_SKIP_TIER_RECORD] = existing;
                         }
-                        DSDebug.Verbose($"[DivineAscension] 单位{actor.getName()}跳阶：{old}阶 -> {clamped}阶");
+                        DSDebug.Verbose($"[GeneCultivation] 单位{actor.getName()}跳阶：{old}阶 -> {clamped}阶");
                         // 跳阶首位突破通知：使用特殊的越级突破文案
-                        try { Code.Realm.RealmJudge.OnSkipTierPioneer(actor, clamped, old); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
-                    } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
+                        try { Code.Realm.RealmJudge.OnSkipTierPioneer(actor, clamped, old); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
+                    } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
                 }
             }
             // 境界变化自动刷新称号（觉醒/突破/调试设阶均触发）
-            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
+            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
             
             // 标记境界计数缓存为脏（突破/跌落时更新缓存）
-            try { Code.Realm.RealmJudge.MarkTierCacheDirty(); } catch (System.Exception ex) { DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+            try { Code.Realm.RealmJudge.MarkTierCacheDirty(); } catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
             // 境界变化：自动收藏（高阶/突破/组织高层）+ 组织自动归属（5阶起）
-            try { Code.Core.AutoFavoriteManager.CheckAndAutoFavorite(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
-            try { Code.Sect.SectManager.EnsureSectMembership(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); }
+            try { Code.Core.AutoFavoriteManager.CheckAndAutoFavorite(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
+            try { Code.Sect.SectManager.EnsureSectMembership(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); }
             //  种族升华（正常突破/调试设阶/直接设境界统一生效）：
             //   4阶（突变者）黑色方碑影响+基因优化；11阶（登神级）脱离种族+完美生命
             if (clamped >= 4) {
-                Code.Core.DSDebug.Verbose("[DivineAscension] 检查4阶方碑: tier=" + clamped + " monolithDone=" + GetMonolithDone(actor));
+                Code.Core.DSDebug.Verbose("[GeneCultivation] 检查4阶方碑: tier=" + clamped + " monolithDone=" + GetMonolithDone(actor));
                 if (!GetMonolithDone(actor)) {
                     try { Code.Realm.TranscendentSpeciesSystem.ApplyMonolithEvolution(actor); }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 方碑异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 方碑异常: " + dsEx.Message); }
                 }
             }
-            if (clamped >= 10) { try { Code.Realm.TranscendentSpeciesSystem.ApplyTranscendence(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 异常: " + dsEx.Message); } }
+            if (clamped >= 10) { try { Code.Realm.TranscendentSpeciesSystem.ApplyTranscendence(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 异常: " + dsEx.Message); } }
             
             // 调用阶位特性（所有阶位的属性加成/被动/技能等）
             if (clamped > old)
             {
                 try { Code.Realm.RealmFeatures.ApplyRealmFeaturesForTier(actor, clamped); } 
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SetRealmTier 阶位特性异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SetRealmTier 阶位特性异常: " + dsEx.Message); }
             }
         }
         public static float GetAnchorMind(Actor actor)
@@ -423,7 +423,7 @@ namespace Code.Data
         {
             SetCustomInt(actor, K_GENE_ABILITY_USES, GetGeneAbilityUses(actor) + 1);
             //  全局统计钩子：异能使用计数+1
-            try { DSGlobalStats.IncrementAbilityUseCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] AddGeneAbilityUse 异常: " + dsEx.Message); }
+            try { DSGlobalStats.IncrementAbilityUseCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AddGeneAbilityUse 异常: " + dsEx.Message); }
         }
         public static int GetGeneContinuousYears(Actor actor) { return GetCustomInt(actor, K_GENE_CONTINUOUS_YEARS); }
         public static void AddGeneContinuousYear(Actor actor) { SetCustomInt(actor, K_GENE_CONTINUOUS_YEARS, GetGeneContinuousYears(actor) + 1); }
@@ -589,7 +589,7 @@ namespace Code.Data
             data.custom_data_string[K_ELEMENTS_UNLOCKED] = string.Join(",", unlocked);
 
             // 获得新基因后刷新称号（首次觉醒时生成基因称号）
-            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] UnlockElement 异常: " + dsEx.Message); }
+            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] UnlockElement 异常: " + dsEx.Message); }
             return true;
         }
         /// <summary>获取已尝试获得的基因列表（任务只能完成一次，失败后不再尝试）</summary>

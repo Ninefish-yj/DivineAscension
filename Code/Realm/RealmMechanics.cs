@@ -49,7 +49,7 @@ namespace Code.Realm
             int tier = CultivationData.GetRealmTier(owner);
             if (tier < 11)
             {
-                DSDebug.Warning($"[DivineAscension] 基因化身召唤失败：{owner.getName()} 境界不足（需要11阶）");
+                DSDebug.Warning($"[GeneCultivation] 基因化身召唤失败：{owner.getName()} 境界不足（需要11阶）");
                 return false;
             }
 
@@ -63,7 +63,7 @@ namespace Code.Realm
                 }
                 if (ownerAvatarCount >= MAX_AVATARS_PER_OWNER)
                 {
-                    DSDebug.Verbose($"[DivineAscension] {owner.getName()} 已存在基因化身，无法重复召唤");
+                    DSDebug.Verbose($"[GeneCultivation] {owner.getName()} 已存在基因化身，无法重复召唤");
                     return false;
                 }
 
@@ -72,7 +72,7 @@ namespace Code.Realm
                 float currentEnergy = CultivationData.GetEnergy(owner);
                 if (currentEnergy < energyCost)
                 {
-                    DSDebug.Verbose($"[DivineAscension] {owner.getName()} 能量不足，无法召唤基因化身（需要{energyCost}）");
+                    DSDebug.Verbose($"[GeneCultivation] {owner.getName()} 能量不足，无法召唤基因化身（需要{energyCost}）");
                     return false;
                 }
                 CultivationData.SetEnergy(owner, currentEnergy - energyCost);
@@ -84,7 +84,7 @@ namespace Code.Realm
                 Actor avatar = SpawnAvatarUnit(owner, elementName);
                 if (avatar == null)
                 {
-                    DSDebug.Verbose($"[DivineAscension] 基因化身生成失败：{owner.getName()}");
+                    DSDebug.Verbose($"[GeneCultivation] 基因化身生成失败：{owner.getName()}");
                     return false;
                 }
 
@@ -103,12 +103,12 @@ namespace Code.Realm
 
                 // 通知
                 DSNotificationManager.NotifyInfo(string.Format(UILocalization.Get("realm_element_manifest"), owner.getName(), elementName));
-                DSDebug.Verbose($"[DivineAscension] {owner.getName()} 召唤基因化身【{elementName}】成功，化身ID={avatar.getID()}");
+                DSDebug.Verbose($"[GeneCultivation] {owner.getName()} 召唤基因化身【{elementName}】成功，化身ID={avatar.getID()}");
                 return true;
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 基因化身召唤异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 基因化身召唤异常: {e.Message}");
                 return false;
             }
         }
@@ -133,12 +133,12 @@ namespace Code.Realm
                 Actor result = World.world.units.createNewUnit(raceId, tile);
                 if (result != null) return result;
 
-                DSDebug.Warning("[DivineAscension] 基因化身生成：createNewUnit返回null");
+                DSDebug.Warning("[GeneCultivation] 基因化身生成：createNewUnit返回null");
                 return null;
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 基因化身生成异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 基因化身生成异常: {e.Message}");
                 return null;
             }
         }
@@ -157,7 +157,7 @@ namespace Code.Realm
                 // 高境界化身额外特质
                 if (ownerTier >= 12)
                 {
-                    if (!avatar.hasTrait("genius")) try { avatar.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplyAvatarTraits 异常: " + dsEx.Message); }
+                    if (!avatar.hasTrait("genius")) try { avatar.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplyAvatarTraits 异常: " + dsEx.Message); }
                 }
 
                 // 标记化身为临时单位（用于识别和回收）
@@ -165,7 +165,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 化身特质添加失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 化身特质添加失败: {e.Message}");
             }
         }
 
@@ -183,7 +183,7 @@ namespace Code.Realm
                     if (elemDef != null) return elemDef.NameZh;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetOwnerPrimaryElement 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetOwnerPrimaryElement 异常: " + dsEx.Message); }
             return UILocalization.Get("graph_attr_energy");
         }
 
@@ -215,7 +215,7 @@ namespace Code.Realm
                                 // 移除化身（使用反射调用removeUnit或直接kill）
                                 RemoveAvatarUnit(avatar);
                             }
-                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] CleanupExpiredAvatars 异常: " + dsEx.Message); }
+                            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] CleanupExpiredAvatars 异常: " + dsEx.Message); }
                         }
                         toRemove.Add(record);
                     }
@@ -229,12 +229,12 @@ namespace Code.Realm
 
                 if (toRemove.Count > 0)
                 {
-                    DSDebug.Verbose($"[DivineAscension] 基因化身回收：{toRemove.Count}个化身已到期回收");
+                    DSDebug.Verbose($"[GeneCultivation] 基因化身回收：{toRemove.Count}个化身已到期回收");
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 基因化身回收异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 基因化身回收异常: {e.Message}");
             }
         }
 
@@ -258,7 +258,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 化身单位移除失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 化身单位移除失败: {e.Message}");
             }
         }
 
@@ -293,7 +293,7 @@ namespace Code.Realm
             int godTier = CultivationData.GetRealmTier(god);
             if (godTier < 13)
             {
-                DSDebug.Warning($"[DivineAscension] 神眷赐予失败：{god.getName()} 不是真神（需要13阶）");
+                DSDebug.Warning($"[GeneCultivation] 神眷赐予失败：{god.getName()} 不是真神（需要13阶）");
                 return false;
             }
 
@@ -302,7 +302,7 @@ namespace Code.Realm
                 // 检查目标是否已是神眷者
                 if (IsDivineBlessed(target))
                 {
-                    DSDebug.Verbose($"[DivineAscension] {target.getName()} 已经是神眷者");
+                    DSDebug.Verbose($"[GeneCultivation] {target.getName()} 已经是神眷者");
                     return false;
                 }
 
@@ -316,7 +316,7 @@ namespace Code.Realm
                 // 赐予神眷特质（全属性+30%的近似体现）
                 if (!target.hasTrait("strong")) target.addTrait("strong", false);
                 if (!target.hasTrait("fast")) target.addTrait("fast", false);
-                if (!target.hasTrait("genius")) try { target.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] GrantDivineBlessing 异常: " + dsEx.Message); }
+                if (!target.hasTrait("genius")) try { target.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GrantDivineBlessing 异常: " + dsEx.Message); }
                 if (!target.hasTrait("blessed")) target.addTrait("blessed", false);
                 if (!target.hasTrait("immortal")) target.addTrait("immortal", false);
 
@@ -341,12 +341,12 @@ namespace Code.Realm
                     target.getName(),
                     target.getID(), 0, target);
 
-                DSDebug.Verbose($"[DivineAscension] {god.getName()} 赐予 {target.getName()} 神眷！");
+                DSDebug.Verbose($"[GeneCultivation] {god.getName()} 赐予 {target.getName()} 神眷！");
                 return true;
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 神眷赐予异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 神眷赐予异常: {e.Message}");
                 return false;
             }
         }
@@ -375,7 +375,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 神眷清理异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 神眷清理异常: {e.Message}");
             }
         }
 
@@ -404,7 +404,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 年度机制清理异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 年度机制清理异常: {e.Message}");
             }
         }
         // ============================================================
@@ -469,7 +469,7 @@ namespace Code.Realm
                 string divineName = GrantDivineName(god);
                 if (string.IsNullOrEmpty(divineName))
                 {
-                    DSDebug.Warning("[DivineAscension] 真神神名获取失败，跳过氏族/神眷/宗教创建");
+                    DSDebug.Warning("[GeneCultivation] 真神神名获取失败，跳过氏族/神眷/宗教创建");
                     return;
                 }
 
@@ -477,7 +477,7 @@ namespace Code.Realm
                 ClanData clan = CreateDivineClan(god, divineName);
                 if (clan == null)
                 {
-                    DSDebug.Warning("[DivineAscension] 真神氏族创建失败");
+                    DSDebug.Warning("[GeneCultivation] 真神氏族创建失败");
                 }
 
                 // 3. 自动选择神眷者（2-4个11阶以下异能者）
@@ -502,11 +502,11 @@ namespace Code.Realm
                     god.getID(),
                     13
                 );
-                DSDebug.Verbose($"[DivineAscension] 真神 {god.getName()} 立教：神名={divineName}，神眷者={blessedCount}");
+                DSDebug.Verbose($"[GeneCultivation] 真神 {god.getName()} 立教：神名={divineName}，神眷者={blessedCount}");
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 真神立教异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 真神立教异常: {e.Message}");
             }
         }
 
@@ -559,14 +559,14 @@ private static string GrantDivineName(Actor god)
                 {
                     CultivationData.EnsureCustomDataInitialized(god);
                     ActorDataAccessor.GetData(god).custom_data_string["divine_name"] = name;
-                } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] GrantDivineName 异常: " + dsEx.Message); }
+                } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GrantDivineName 异常: " + dsEx.Message); }
                 CultivationData.SetCooldown(god, "divine_name", 1);
 
                 return name;
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 神名获取异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 神名获取异常: {e.Message}");
                 return null;
             }
         }
@@ -585,13 +585,13 @@ private static string GrantDivineName(Actor god)
                 clanData.name = divineName + UILocalization.Get("sect_god_cult");
                 clanData.created_time = Code.Core.DSReflectionHelper.GetWorldTime();
                 World.world.clans.loadObject(clanData);
-                try { ActorDataAccessor.GetData(god).clan = clanData.id; } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] CreateDivineClan 异常: " + dsEx.Message); }
-                DSDebug.Verbose($"[DivineAscension] 真神 {god.getName()} 创建氏族：{divineName}神教");
+                try { ActorDataAccessor.GetData(god).clan = clanData.id; } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] CreateDivineClan 异常: " + dsEx.Message); }
+                DSDebug.Verbose($"[GeneCultivation] 真神 {god.getName()} 创建氏族：{divineName}神教");
                 return clanData;
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 氏族创建异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 氏族创建异常: {e.Message}");
                 return null;
             }
         }
@@ -618,7 +618,7 @@ private static string GrantDivineName(Actor god)
 
                 if (candidates.Count == 0)
                 {
-                    DSDebug.Verbose("[DivineAscension] 没有可点化的神眷者候选");
+                    DSDebug.Verbose("[GeneCultivation] 没有可点化的神眷者候选");
                     return 0;
                 }
 
@@ -638,17 +638,17 @@ private static string GrantDivineName(Actor god)
                     {
                         if (clan != null)
                         {
-                            try { ActorDataAccessor.GetData(follower).clan = clan.id; } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SelectAndBlessFollowers 异常: " + dsEx.Message); }
+                            try { ActorDataAccessor.GetData(follower).clan = clan.id; } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SelectAndBlessFollowers 异常: " + dsEx.Message); }
                         }
                         blessedCount++;
                     }
                 }
 
-                DSDebug.Verbose($"[DivineAscension] 真神 {god.getName()} 点化 {blessedCount} 名神眷者");
+                DSDebug.Verbose($"[GeneCultivation] 真神 {god.getName()} 点化 {blessedCount} 名神眷者");
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 神眷选择异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 神眷选择异常: {e.Message}");
             }
             return blessedCount;
         }

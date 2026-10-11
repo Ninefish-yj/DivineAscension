@@ -121,11 +121,11 @@ namespace Code.UI
                     nameof(PlayerControl_canInspectWithRightClick_Prefix), isPostfix: false);
 
                 _patched = true;
-                DSDebug.Verbose("[DivineAscension] InputBlocker 已激活（click拦截 + MoveCamera滚轮缩放拦截）");
+                DSDebug.Verbose("[GeneCultivation] InputBlocker 已激活（click拦截 + MoveCamera滚轮缩放拦截）");
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] InputBlocker Patch失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] InputBlocker Patch失败: {e.Message}");
             }
         }
 
@@ -141,14 +141,14 @@ namespace Code.UI
                 var original = AccessTools.Method(targetType, originalMethodName);
                 if (original == null)
                 {
-                    DSDebug.Warning($"[DivineAscension] InputBlocker: 找不到原始方法 {targetType.Name}.{originalMethodName}");
+                    DSDebug.Warning($"[GeneCultivation] InputBlocker: 找不到原始方法 {targetType.Name}.{originalMethodName}");
                     return;
                 }
                 var patchMethod = typeof(InputBlocker).GetMethod(patchMethodName,
                     System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
                 if (patchMethod == null)
                 {
-                    DSDebug.Warning($"[DivineAscension] InputBlocker: 找不到补丁方法 {patchMethodName}");
+                    DSDebug.Warning($"[GeneCultivation] InputBlocker: 找不到补丁方法 {patchMethodName}");
                     return;
                 }
                 if (isPostfix)
@@ -158,7 +158,7 @@ namespace Code.UI
             }
             catch (System.Exception ex)
             {
-                DSDebug.Warning($"[DivineAscension] InputBlocker: {targetType.Name}.{originalMethodName} 注册失败 ({ex.GetType().Name}: {ex.Message})，跳过");
+                DSDebug.Warning($"[GeneCultivation] InputBlocker: {targetType.Name}.{originalMethodName} 注册失败 ({ex.GetType().Name}: {ex.Message})，跳过");
             }
         }
 

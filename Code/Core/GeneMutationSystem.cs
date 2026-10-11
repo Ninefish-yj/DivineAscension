@@ -91,7 +91,7 @@ namespace Code.Core
 			{
 				DSDebug.Verbose($"[基因突变] {actor.getName()} 突破到{newTier}阶时发生基因突变，影响{mutatedGenes.Count}个基因，消耗能量{energyCost:F0}");
 				// 检查基因连锁效果
-				try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] MutateOnBreakthrough 异常: " + dsEx.Message); }
+				try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] MutateOnBreakthrough 异常: " + dsEx.Message); }
 			}
 		}
 
@@ -146,7 +146,7 @@ namespace Code.Core
 					}
 				}
 			}
-			catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] AnnualMutationCheck 异常: " + dsEx.Message); }
+			catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AnnualMutationCheck 异常: " + dsEx.Message); }
 
 			// 发生基因突变
 			// 50%概率激活新基因，50%概率提升已有基因表达层级
@@ -160,7 +160,7 @@ namespace Code.Core
 						GeneExpressionSystem.SetExpressionLevel(actor, geneId, GeneExpressionSystem.ExpressionLevel.Low);
 						var gene = ElementDef.GetById(geneId);
 						DSDebug.Verbose($"[基因突变] {actor.getName()} 年度突变激活新基因: {gene?.NameZh}({geneId})，消耗寿命{lifespanCost:F1}年");
-						try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] AnnualMutationCheck 异常: " + dsEx.Message); }
+						try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AnnualMutationCheck 异常: " + dsEx.Message); }
 					}
 				}
 			}
@@ -173,7 +173,7 @@ namespace Code.Core
 					{
 						var gene = ElementDef.GetById(geneId);
 						DSDebug.Verbose($"[基因突变] {actor.getName()} 年度突变提升基因表达: {gene?.NameZh}({geneId})，消耗寿命{lifespanCost:F1}年");
-						try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] AnnualMutationCheck 异常: " + dsEx.Message); }
+						try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AnnualMutationCheck 异常: " + dsEx.Message); }
 					}
 				}
 			}
@@ -218,7 +218,7 @@ namespace Code.Core
 				{
 					var gene = ElementDef.GetById(geneId);
 					DSDebug.Verbose($"[基因突变] {actor.getName()} 战斗中突变提升基因表达: {gene?.NameZh}({geneId})");
-					try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] CombatMutationCheck 异常: " + dsEx.Message); }
+					try { GeneLinkageSystem.CheckAllLinkages(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] CombatMutationCheck 异常: " + dsEx.Message); }
 				}
 			}
 		}

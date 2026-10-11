@@ -85,7 +85,7 @@ namespace Code.Combat
 
                 if (AnnualTickManager.PerformanceDiagnosticsEnabled && reduction > 0.3f)
                 {
-                    DSDebug.Verbose(string.Format("[DivineAscension] 位格防护: {0}({1}阶) 受到 {2}({3}阶) 攻击，衰减{4:F0}%，回复{5:F0}血量",
+                    DSDebug.Verbose(string.Format("[GeneCultivation] 位格防护: {0}({1}阶) 受到 {2}({3}阶) 攻击，衰减{4:F0}%，回复{5:F0}血量",
                         actor.getName(), tier, attacker.getName(), attackerTier, reduction * 100, recovered));
                 }
             }

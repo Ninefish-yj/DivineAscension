@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Code.UI
 {
     /// <summary>
-    /// 登神长阶UI主题  柔和现代风格
+    /// 基因修炼UI主题  柔和现代风格
     /// 低饱和深蓝灰背景 + 暖白文字 + 低饱和强调色
     /// </summary>
     public static class DSUITheme

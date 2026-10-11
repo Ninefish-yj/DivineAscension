@@ -158,7 +158,7 @@ namespace Code.Core
                         gain *= (1f + eraEffect.CultivationBonus);
                     }
                 }
-            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleAnnualQi 异常: " + dsEx.Message); }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 异常: " + dsEx.Message); }
 
             //  神创基因修炼效率加成：独立百分比乘（每年异能能量获取额外加成）
             try
@@ -168,7 +168,7 @@ namespace Code.Core
                 //  神创基因能量恢复加成：独立百分比乘（与修炼效率叠加）
                 float divineEnRec = Code.Core.GeneEnergyCalculator.GetDivineEnRecBonus(actor);
                 if (divineEnRec > 0f) gain *= (1f + divineEnRec);
-            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleAnnualQi 异常: " + dsEx.Message); }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 异常: " + dsEx.Message); }
 
             // ---- 异能能量消耗 ----
             float cost = 0f;
@@ -206,7 +206,7 @@ namespace Code.Core
             CultivationData.SetEnergy(actor, newQi);
 
             //  统计钩子：累计获得能量（仅记录正收益部分）
-            try { CultivationData.AddTotalEnergyGained(actor, gain); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleAnnualQi 异常: " + dsEx.Message); }
+            try { CultivationData.AddTotalEnergyGained(actor, gain); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 异常: " + dsEx.Message); }
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Code.Core
                 if (actor.hasTrait(Code.Traits.TraitManager.SECT_GUARDIAN)) boost += 0.03f;
                 if (actor.hasTrait(Code.Traits.TraitManager.SECT_GUEST)) boost += 0.03f;
             }
-            catch (System.Exception ex) { DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+            catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
             return boost;
         }
 
@@ -278,7 +278,7 @@ namespace Code.Core
             {
                 float divineStab = Code.Core.GeneEnergyCalculator.GetDivineStabBonus(actor);
                 if (divineStab > 0f) gain *= Mathf.Max(0f, 1f - divineStab);
-            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleAnnualTurbulence 异常: " + dsEx.Message); }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualTurbulence 异常: " + dsEx.Message); }
 
             // ---- 衰减 ----
             float decay = CultivationConfig.TurbulenceDecayRate;
@@ -324,7 +324,7 @@ namespace Code.Core
                     {
                         actor.addStatusEffect("weakened", 365f, true);
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplyTurbulencePenalties 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplyTurbulencePenalties 异常: " + dsEx.Message); }
                 }
             }
 

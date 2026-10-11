@@ -7,7 +7,7 @@ using System.Linq;
 namespace Code.Core
 {
     /// <summary>
-    /// 登神长阶调试日志控制
+    /// 基因修炼调试日志控制
     /// 全局开关，控制是否输出详细调试信息
     /// </summary>
     public static class DSDebug
@@ -34,7 +34,7 @@ namespace Code.Core
             try
             {
                 // 获取模组目录
-                string modDir = Path.Combine(Application.persistentDataPath, "DivineAscension");
+                string modDir = Path.Combine(Application.persistentDataPath, "GeneCultivation");
                 if (!Directory.Exists(modDir))
                 {
                     Directory.CreateDirectory(modDir);
@@ -49,17 +49,17 @@ namespace Code.Core
 
                 // 写入日志头
                 File.WriteAllText(_logFilePath, 
-                    $"=== DivineAscension Debug Log ===\n" +
+                    $"=== GeneCultivation Debug Log ===\n" +
                     $"时间: {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
                     $"游戏版本: {Application.version}\n" +
                     $"==================================\n\n");
 
                 _fileLogInitialized = true;
-                Debug.Log($"[DivineAscension] 文件日志已初始化: {_logFilePath}");
+                Debug.Log($"[GeneCultivation] 文件日志已初始化: {_logFilePath}");
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[DivineAscension] 文件日志初始化失败: {e.Message}");
+                Debug.LogWarning($"[GeneCultivation] 文件日志初始化失败: {e.Message}");
                 _fileLogInitialized = true; // 标记为已初始化，避免重复尝试
             }
         }
@@ -126,7 +126,7 @@ namespace Code.Core
         {
             if (DengShenConfig.EnableVerboseLog)
             {
-                Debug.Log("[DivineAscension] " + message);
+                Debug.Log("[GeneCultivation] " + message);
                 // WriteToFile("VERBOSE", message);
             }
         }
@@ -136,14 +136,14 @@ namespace Code.Core
         /// <summary>输出警告日志（始终输出）</summary>
         public static void Warning(string message)
         {
-            Debug.LogWarning("[DivineAscension] " + message);
+            Debug.LogWarning("[GeneCultivation] " + message);
             // WriteToFile("WARNING", message);
         }
 
         /// <summary>输出错误日志（始终输出）</summary>
         public static void Error(string message)
         {
-            Debug.LogError("[DivineAscension] " + message);
+            Debug.LogError("[GeneCultivation] " + message);
             // WriteToFile("ERROR", message);
         }
 
@@ -156,14 +156,14 @@ namespace Code.Core
                 if (string.IsNullOrEmpty(_logFilePath) || !File.Exists(_logFilePath)) return;
 
                 File.WriteAllText(_logFilePath,
-                    $"=== DivineAscension Debug Log (已清空) ===\n" +
+                    $"=== GeneCultivation Debug Log (已清空) ===\n" +
                     $"时间: {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
                     $"==================================\n\n");
-                Debug.Log("[DivineAscension] 调试日志已清空: " + _logFilePath);
+                Debug.Log("[GeneCultivation] 调试日志已清空: " + _logFilePath);
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning("[DivineAscension] 清空日志失败: " + e.Message);
+                Debug.LogWarning("[GeneCultivation] 清空日志失败: " + e.Message);
             }
         }
     }

@@ -112,7 +112,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 保存基因按钮位置失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 保存基因按钮位置失败: " + e.Message);
             }
         }
 
@@ -136,7 +136,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 加载基因按钮位置失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 加载基因按钮位置失败: " + e.Message);
                 _rectTransform.anchoredPosition = DefaultPosition;
             }
         }

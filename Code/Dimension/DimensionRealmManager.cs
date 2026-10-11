@@ -106,12 +106,12 @@ namespace Code.Dimension
             {
                 // 防御：单位有境界特质但custom_data未同步（调试赐特质/旧存档）时，先同步再判断
                 // 否则GetRealmTier返回0，12阶单位也会被"无法进入"拒绝
-                try { CultivationData.SyncFromTraits(actor); } catch (System.Exception syncEx) { Code.Core.DSDebug.Warning("[DivineAscension] EnterDimension 同步境界失败: " + syncEx.Message); }
+                try { CultivationData.SyncFromTraits(actor); } catch (System.Exception syncEx) { Code.Core.DSDebug.Warning("[GeneCultivation] EnterDimension 同步境界失败: " + syncEx.Message); }
 
                 int tier = CultivationData.GetRealmTier(actor);
                 if (tier < 12)
                 {
-                    DSDebug.Warning(string.Format("[DivineAscension] 进入维度被拒: {0} 当前境界={1} (需要12阶以上)", actor.getName(), tier));
+                    DSDebug.Warning(string.Format("[GeneCultivation] 进入维度被拒: {0} 当前境界={1} (需要12阶以上)", actor.getName(), tier));
                     DSNotificationManager.NotifyInfo(UILocalization.Get("dim_cannot_enter"));
                     return false;
                 }
@@ -125,7 +125,7 @@ namespace Code.Dimension
                 CultivationData.SetInDimensionSpace(actor, true);
 
                 // 添加维度空间状态效果（半透明、无敌、不可选中、AI暂停）
-                try { DSReflectionHelper.SafeAddStatusEffect(actor, "ds_in_dimension", 999999f, true); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] EnterDimension 异常: " + dsEx.Message); }
+                try { DSReflectionHelper.SafeAddStatusEffect(actor, "ds_in_dimension", 999999f, true); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] EnterDimension 异常: " + dsEx.Message); }
 
                 // 初始化空间数据
                 if (CultivationData.GetDimensionSpaceLevel(actor) == 0)
@@ -151,14 +151,14 @@ namespace Code.Dimension
                 DSHistoryManager.LogEvent("system", UILocalization.Get("dim_enter"),
                     string.Format(UILocalization.Get("dim_enter_simple"), actor.getName()), actor.getName());
 
-                DSDebug.Warning(string.Format("[DivineAscension] {0} 已进入维度空间 (境界={1})", actor.getName(), tier));
+                DSDebug.Warning(string.Format("[GeneCultivation] {0} 已进入维度空间 (境界={1})", actor.getName(), tier));
                 return true;
             }
             catch (System.Exception e)
             {
                 // 异常时回滚标记，避免"标记已设但流程中断"的状态不一致
                 try { CultivationData.SetInDimensionSpace(actor, false); } catch { }
-                DSDebug.Warning("[DivineAscension] 进入维度空间失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 进入维度空间失败: " + e.Message);
                 return false;
             }
         }
@@ -172,7 +172,7 @@ namespace Code.Dimension
             CultivationData.SetInDimensionSpace(actor, false);
 
             // 移除维度空间状态效果
-            try { actor.finishStatusEffect("ds_in_dimension"); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExitDimension 异常: " + dsEx.Message); }
+            try { actor.finishStatusEffect("ds_in_dimension"); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExitDimension 异常: " + dsEx.Message); }
 
             _inhabitants.RemoveAll(i => i.ActorId == actor.getID());
 
@@ -445,7 +445,7 @@ namespace Code.Dimension
             {
                 DSReflectionHelper.SafeAddStatusEffect(actor, "ds_energy_lifeform", 60f, true);
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] CreateEnergyLifeform 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] CreateEnergyLifeform 异常: " + dsEx.Message); }
 
             DSNotificationManager.NotifyMajor(UILocalization.Get("dim_life_born"),
                 string.Format(UILocalization.Get("dim_life_born_macro"), actor.getName()));

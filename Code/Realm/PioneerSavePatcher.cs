@@ -27,7 +27,7 @@ namespace Code.Realm
 
             try
             {
-                _harmony = new Harmony("DivineAscension.PioneerSave");
+                _harmony = new Harmony("GeneCultivation.PioneerSave");
 
                 // 补丁SaveManager.loadWorld - 加载世界时读取先驱者数据
                 // 注意：loadWorld有重载（无参/string,bool），必须按完整签名匹配 loadWorld(string pPath, bool pLoadWorkshop=false)

@@ -273,7 +273,7 @@ namespace Code.Realm
                             affectedCount++;
                         }
                     }
-                    DSDebug.Verbose($"[DivineAscension]  超神级降临全局效果：{affectedCount}个异能者获得能量洗礼");
+                    DSDebug.Verbose($"[GeneCultivation]  超神级降临全局效果：{affectedCount}个异能者获得能量洗礼");
                     break;
 
                 case "ds_event_dengshen_tribulation":
@@ -288,7 +288,7 @@ namespace Code.Realm
                             affectedCount++;
                         }
                     }
-                    DSDebug.Verbose($"[DivineAscension]  维度风暴全局效果：{affectedCount}个异能者受到风暴余波");
+                    DSDebug.Verbose($"[GeneCultivation]  维度风暴全局效果：{affectedCount}个异能者受到风暴余波");
                     break;
 
                 case "ds_event_zhenshen":
@@ -305,7 +305,7 @@ namespace Code.Realm
                             affectedCount++;
                         }
                     }
-                    DSDebug.Verbose($"[DivineAscension]  真神降世全局效果：{affectedCount}个异能者获得能量恩赐！");
+                    DSDebug.Verbose($"[GeneCultivation]  真神降世全局效果：{affectedCount}个异能者获得能量恩赐！");
                     break;
             }
         }

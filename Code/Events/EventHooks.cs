@@ -85,13 +85,13 @@ namespace Code.Events
                         Code.Combat.VirtualWeaponSystem.Init();
             Code.Realm.DSSkillEffectManager.Init();
             //  重置年度Tick时间追踪（读档/新世界：时间基准归零，防止跨档时间错乱）
-            try { Code.ModClass.ResetAnnualTickTracker(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnWorldLoaded 异常: " + dsEx.Message); }
+            try { Code.ModClass.ResetAnnualTickTracker(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnWorldLoaded 异常: " + dsEx.Message); }
             //  重置年度结算防重标记 + 重建活跃异能者列表（读档后立刻重建，旧档单位不丢、首年不被防重误跳）
-            try { Code.Core.AnnualTickManager.ResetYearTracker(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnWorldLoaded 异常: " + dsEx.Message); }
+            try { Code.Core.AnnualTickManager.ResetYearTracker(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnWorldLoaded 异常: " + dsEx.Message); }
             //  重置全局统计累计计数器（纯随档，不跨存档）
-            try { Code.Core.DSGlobalStats.Reset(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnWorldLoaded 异常: " + dsEx.Message); }
+            try { Code.Core.DSGlobalStats.Reset(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnWorldLoaded 异常: " + dsEx.Message); }
             //  清空运行时缓存（防止跨存档串数据）
-            try { Code.Data.CultivationData.ClearRuntimeCaches(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnWorldLoaded 异常: " + dsEx.Message); }
+            try { Code.Data.CultivationData.ClearRuntimeCaches(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnWorldLoaded 异常: " + dsEx.Message); }
 
             int count = 0;
             foreach (var actor in World.world.units.units_only_alive)
@@ -99,7 +99,7 @@ namespace Code.Events
                 if (actor != null && HookActorDeath(actor))
                     count++;
             }
-            DSDebug.Verbose(string.Format("[DivineAscension] 世界加载完成，已为{0}个单位注册死亡回调", count));
+            DSDebug.Verbose(string.Format("[GeneCultivation] 世界加载完成，已为{0}个单位注册死亡回调", count));
         }
 
         /// <summary>
@@ -139,21 +139,21 @@ namespace Code.Events
             if (deadActor == null) return;
 
             // 标记境界计数缓存为脏（单位死亡时更新缓存）
-            try { Code.Realm.RealmJudge.MarkTierCacheDirty(); } catch (System.Exception ex) { DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+            try { Code.Realm.RealmJudge.MarkTierCacheDirty(); } catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
 
             // 注销死亡回调委托，防止对象池复用时重复触发
             deadActor.callbacks_on_death -= OnActorDeath;
 
             // 从已注册集合移除（getID可能因data失效抛空引用，绝不能传播进原版死亡流程）
-            try { _hookedActors.Remove(deadActor.getID()); } catch (System.Exception ex) { DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+            try { _hookedActors.Remove(deadActor.getID()); } catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
 
             // 组织首领陨落  换届继承（组织延续；纯随档不跨存档）
             // 凤凰重生(fenix_born)：单位会原地重生，不算真正陨落，不触发换届
             bool isPhoenixRebirth = false;
-            try { isPhoenixRebirth = deadActor.hasTrait("fenix_born"); } catch (System.Exception ex) { DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+            try { isPhoenixRebirth = deadActor.hasTrait("fenix_born"); } catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
             if (!isPhoenixRebirth)
             {
-                try { Code.Sect.SectManager.OnLeaderDied(deadActor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnActorDeath 异常: " + dsEx.Message); }
+                try { Code.Sect.SectManager.OnLeaderDied(deadActor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnActorDeath 异常: " + dsEx.Message); }
             }
 
             // 检测攻击者（attackedBy字段记录最后一个攻击者，需要用反射访问private字段）
@@ -194,14 +194,14 @@ namespace Code.Events
             // 基因图谱战斗进度：记录击杀（仅异能者）
             if (attackerTier > 0)
             {
-                try { CultivationData.AddGeneCombatKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnActorDeath 异常: " + dsEx.Message); }
+                try { CultivationData.AddGeneCombatKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnActorDeath 异常: " + dsEx.Message); }
             }
 
             //  单位详细统计钩子：总击杀数+1，异能者额外记录异能击杀
-            try { CultivationData.AddKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnActorDeath 异常: " + dsEx.Message); }
+            try { CultivationData.AddKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnActorDeath 异常: " + dsEx.Message); }
             if (attackerTier > 0)
             {
-                try { CultivationData.AddAbilityKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] OnActorDeath 异常: " + dsEx.Message); }
+                try { CultivationData.AddAbilityKill(attacker); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] OnActorDeath 异常: " + dsEx.Message); }
             }
 
             // 给攻击者增加失控指数（通过年度结算统一应用）
@@ -210,7 +210,7 @@ namespace Code.Events
             // 调试日志（可开关）
             if (AnnualTickManager.PerformanceDiagnosticsEnabled)
             {
-                DSDebug.Verbose(string.Format("[DivineAscension] {0} 击杀 {1}，增加失控指数 {2:F1}",
+                DSDebug.Verbose(string.Format("[GeneCultivation] {0} 击杀 {1}，增加失控指数 {2:F1}",
                     attacker.getName(), deadActor.getName(), turbGain));
             }
         }
@@ -252,7 +252,7 @@ namespace Code.Events
 
                 if (AnnualTickManager.PerformanceDiagnosticsEnabled)
                 {
-                    DSDebug.Verbose(string.Format("[DivineAscension] 战乱失控指数: 全局击杀{0}，所有异能者+{1:F1}失控指数", totalKills, warTurb));
+                    DSDebug.Verbose(string.Format("[GeneCultivation] 战乱失控指数: 全局击杀{0}，所有异能者+{1:F1}失控指数", totalKills, warTurb));
                 }
             }
 
@@ -309,7 +309,7 @@ namespace Code.Events
 
                 if (AnnualTickManager.PerformanceDiagnosticsEnabled)
                 {
-                    DSDebug.Verbose(string.Format("[DivineAscension] 地形破坏失控指数: {0}个灾难事件，所有异能者+{1:F1}失控指数", disasterCount, terrainTurb));
+                    DSDebug.Verbose(string.Format("[GeneCultivation] 地形破坏失控指数: {0}个灾难事件，所有异能者+{1:F1}失控指数", disasterCount, terrainTurb));
                 }
             }
         }
@@ -340,7 +340,7 @@ namespace Code.Events
 
             if (newCount > 0 && AnnualTickManager.PerformanceDiagnosticsEnabled)
             {
-                DSDebug.Verbose(string.Format("[DivineAscension] 补充注册{0}个新单位的死亡回调", newCount));
+                DSDebug.Verbose(string.Format("[GeneCultivation] 补充注册{0}个新单位的死亡回调", newCount));
             }
         }
 

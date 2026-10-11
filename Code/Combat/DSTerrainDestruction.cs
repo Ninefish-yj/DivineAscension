@@ -110,7 +110,7 @@ namespace Code.Combat
                 // 重置重绘计时器（让地形变化立即显示）
                 if (destroyedCount > 0)
                 {
-                    try { World.world.resetRedrawTimer(); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    try { World.world.resetRedrawTimer(); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
             }
             catch (Exception e)
@@ -209,7 +209,7 @@ namespace Code.Combat
                         return false;
                     }
                 }
-                catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
 
                 // 跳过液体地块（海洋等）
                 if (tile.Type != null && tile.Type.liquid)
@@ -217,7 +217,7 @@ namespace Code.Combat
                     // 维度打击可以移除液体
                     if (destructionType == TerrainDestructionType.DimensionalStrike)
                     {
-                        try { MapAction.removeLiquid(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                        try { MapAction.removeLiquid(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                     }
                     else
                     {
@@ -244,12 +244,12 @@ namespace Code.Combat
                 {
                     case TerrainDestructionType.DimensionalStrike:
                         // 维度打击：降低地块高度
-                        try { MapAction.decreaseTile(tile, true, "flash"); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                        try { MapAction.decreaseTile(tile, true, "flash"); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                         break;
 
                     case TerrainDestructionType.DivinePunishment:
                         // 神罚：额外加热
-                        try { World.world.heat.addTile(tile, 10); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                        try { World.world.heat.addTile(tile, 10); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                         break;
                 }
 
@@ -274,7 +274,7 @@ namespace Code.Combat
                 // 烧焦
                 if (options.add_burned && tile.Type != null && !tile.Type.liquid)
                 {
-                    try { tile.setBurned(-1); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    try { tile.setBurned(-1); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
 
                 // 点火（烧焦的地块在原版游戏中可能会自动着火，这里不强制点火）
@@ -283,13 +283,13 @@ namespace Code.Combat
                 // 加热
                 if (options.add_heat != 0)
                 {
-                    try { World.world.heat.addTile(tile, options.add_heat); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    try { World.world.heat.addTile(tile, options.add_heat); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
 
                 // 移除龙卷风（已恢复——Harmony patch修复了TornadoEffect的null key bug）
                 if (options.remove_tornado)
                 {
-                    try { MapAction.tryRemoveTornadoFromTile(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    try { MapAction.tryRemoveTornadoFromTile(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
 
                 // 屏幕震动（只在中心地块触发一次，避免重复）
@@ -307,7 +307,7 @@ namespace Code.Combat
                             tile, 1, options.force_power, true, 
                             options.damage, options.ignore_kingdoms, caster, options, false);
                     }
-                    catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
 
                 // 破坏建筑（如果有建筑且是敌方城市）
@@ -326,7 +326,7 @@ namespace Code.Combat
                             tile.building.startDestroyBuilding();
                         }
                     }
-                    catch (Exception ex) { Code.Core.DSDebug.Warning("[DivineAscension] 操作失败: " + ex.Message); }
+                    catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
             }
             catch (Exception e)

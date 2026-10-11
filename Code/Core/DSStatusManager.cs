@@ -58,7 +58,7 @@ namespace Code.Core
             {
                 SafeAddStatusEffect(actor, STATUS_DEEP_AWAKENING, DURATION_DEEP_AWAKENING, true);
                 CultivationData.SetEnlightenmentDuration(actor, DURATION_DEEP_AWAKENING / 60f); // 同步到元数据
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 获得深度觉醒状态（3年）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 获得深度觉醒状态（3年）");
             }
             catch (System.Exception e)
             {
@@ -73,7 +73,7 @@ namespace Code.Core
             try
             {
                 SafeAddStatusEffect(actor, STATUS_OUT_OF_CONTROL, DURATION_OUT_OF_CONTROL, true);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 获得能力失控状态（3年）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 获得能力失控状态（3年）");
             }
             catch (System.Exception e)
             {
@@ -88,7 +88,7 @@ namespace Code.Core
             try
             {
                 SafeAddStatusEffect(actor, STATUS_VOID_CORRUPTION, DURATION_VOID_CORRUPTION, true);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 获得虚空侵蚀状态（5年）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 获得虚空侵蚀状态（5年）");
             }
             catch (System.Exception e)
             {
@@ -103,7 +103,7 @@ namespace Code.Core
             try
             {
                 SafeAddStatusEffect(actor, STATUS_FOUNDATION_DAMAGED, DURATION_FOUNDATION_DAMAGED, true);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 获得能力根基受损状态（10年）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 获得能力根基受损状态（10年）");
             }
             catch (System.Exception e)
             {
@@ -122,7 +122,7 @@ namespace Code.Core
             // 只做日志记录，不授予常驻状态效果
             // 技能释放逻辑在 AbilityStatusPatch.TryAutoCastAbilityInCombat（战斗中自动释放）
             // 释放时调用 RealmAbilities.UseAbility -> AddAbilityStatusEffect（限时状态效果）
-            DSDebug.Verbose($"[DivineAscension] {actor.getName()} 达到{tier}阶，掌握境界技能（战斗中自动释放，限时效果）");
+            DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到{tier}阶，掌握境界技能（战斗中自动释放，限时效果）");
         }
 
         /// <summary>按境界移除技能标记（阶位回退时调用，防止重复掌握提示）
@@ -130,7 +130,7 @@ namespace Code.Core
         public static void RemoveTierAbilities(Actor actor, int tier)
         {
             if (actor == null || tier < 1 || tier > 13) return;
-            DSDebug.Verbose($"[DivineAscension] {actor.getName()} 回退至{tier}阶以下，不再掌握对应境界技能");
+            DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 回退至{tier}阶以下，不再掌握对应境界技能");
         }
 
         /// <summary>检查单位是否有指定状态</summary>
@@ -154,7 +154,7 @@ namespace Code.Core
             try
             {
                 actor.finishStatusEffect(statusId);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 移除状态 {statusId}");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 移除状态 {statusId}");
             }
             catch (System.Exception e)
             {
@@ -169,7 +169,7 @@ namespace Code.Core
             try
             {
                 SafeAddStatusEffect(actor, STATUS_ERA_DOMINATOR, 999999f, true);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 成为纪元主宰，获得主宰加成（攻击+20%，防御+20%，速度+10%）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 成为纪元主宰，获得主宰加成（攻击+20%，防御+20%，速度+10%）");
             }
             catch (System.Exception e)
             {
@@ -184,7 +184,7 @@ namespace Code.Core
             try
             {
                 actor.finishStatusEffect(STATUS_ERA_DOMINATOR);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 失去纪元主宰加成");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 失去纪元主宰加成");
             }
             catch (System.Exception e)
             {

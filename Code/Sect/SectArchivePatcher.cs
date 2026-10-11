@@ -34,7 +34,7 @@ namespace Code.Sect
 
             try
             {
-                _harmony = new Harmony("DivineAscension.SectArchive");
+                _harmony = new Harmony("GeneCultivation.SectArchive");
 
                 var loadMethod = AccessTools.Method(typeof(SaveManager), "loadWorld", new Type[] { typeof(string), typeof(bool) });
                 if (loadMethod != null)

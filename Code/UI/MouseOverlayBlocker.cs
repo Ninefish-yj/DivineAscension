@@ -63,11 +63,11 @@ namespace Code.UI
                 _rectTransform.offsetMax = Vector2.zero;
 
                 _initialized = true;
-                DSDebug.Verbose("[DivineAscension] MouseOverlayBlocker 初始化成功");
+                DSDebug.Verbose("[GeneCultivation] MouseOverlayBlocker 初始化成功");
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] MouseOverlayBlocker 初始化失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] MouseOverlayBlocker 初始化失败: {e.Message}");
             }
         }
 

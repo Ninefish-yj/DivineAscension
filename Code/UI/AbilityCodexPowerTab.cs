@@ -44,7 +44,7 @@ namespace Code.UI
 
                 if (_tab == null)
                 {
-                    DSDebug.Warning("[DivineAscension] TabManager.CreateTab返回null，神力栏tab注册失败。id=" + TAB_ID);
+                    DSDebug.Warning("[GeneCultivation] TabManager.CreateTab返回null，神力栏tab注册失败。id=" + TAB_ID);
                     return;
                 }
 
@@ -113,7 +113,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 神力栏tab注册异常: " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Warning("[GeneCultivation] 神力栏tab注册异常: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -133,7 +133,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 切换面板异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 切换面板异常: " + e.Message);
             }
         }
 
@@ -181,7 +181,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 切换调试面板异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 切换调试面板异常: " + e.Message);
             }
         }
 
@@ -200,7 +200,7 @@ namespace Code.UI
         //         if (field != null) selected = field.GetValue(World.world) as Actor;
         //         if (selected == null || !selected.isAlive())
         //         {
-        //             DSDebug.Warning("[DivineAscension] 请先选中一个单位");
+        //             DSDebug.Warning("[GeneCultivation] 请先选中一个单位");
         //             return;
         //         }
         //         BuildPlacementMode.Start(selected);
@@ -246,7 +246,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 切换维度空间异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 切换维度空间异常: " + e.Message);
             }
         }
 

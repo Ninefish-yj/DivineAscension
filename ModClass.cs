@@ -1,6 +1,6 @@
 ﻿// ============================================================
 // 文件: ModClass.cs
-// 模组: 登神长阶 (DengShenChangJie)
+// 模组: 基因修炼 (DengShenChangJie)
 // 职责: NeoModLoader入口，注册Trait、启动年度Tick驱动、加载配置
 // 禁令遵守:
 //   [禁令1] 不覆写原生底层  仅注册新资产、监听事件、附加独立组件
@@ -144,19 +144,19 @@ namespace Code
                     var handler = (System.Action)worldLoadedField.GetValue(null);
                     handler += OnWorldLoaded;
                     worldLoadedField.SetValue(null, handler);
-                    DSDebug.Verbose("[登神长阶] 世界加载事件监听已挂载");
+                    DSDebug.Verbose("[基因修炼] 世界加载事件监听已挂载");
                 }
                 else
                 {
-                    DSDebug.Verbose("[登神长阶] 未找到on_world_loaded字段，使用轮询实现");
+                    DSDebug.Verbose("[基因修炼] 未找到on_world_loaded字段，使用轮询实现");
                 }
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[登神长阶] 挂载世界加载事件失败: " + e.Message);
+                DSDebug.Warning("[基因修炼] 挂载世界加载事件失败: " + e.Message);
             }
 
-            LogInfo("[登神长阶] 模组加载完成");
+            LogInfo("[基因修炼] 模组加载完成");
         }
 
         private void OnWorldLoaded()
@@ -179,7 +179,7 @@ namespace Code
             
             // 修剪溢出的高阶单位（两者结合方案：超过软上限时杀掉最弱小的）
             Realm.RealmJudge.TrimTierOverflow();
-            DSDebug.Verbose("[登神长阶] 世界加载完成");
+            DSDebug.Verbose("[基因修炼] 世界加载完成");
         }
 
         /// <summary>从模组配置文件加载全局可调参数（文档19.2节）</summary>
@@ -219,7 +219,7 @@ namespace Code
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[登神长阶] 配置加载失败: " + e.Message);
+                DSDebug.Warning("[基因修炼] 配置加载失败: " + e.Message);
             }
         }
     }

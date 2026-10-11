@@ -7,7 +7,7 @@
         <Nullable>disable</Nullable>
         <OutputType>Library</OutputType>
         <RootNamespace>Code</RootNamespace>
-        <AssemblyName>DivineAscension</AssemblyName>
+        <AssemblyName>GeneCultivation</AssemblyName>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
     </PropertyGroup>
 

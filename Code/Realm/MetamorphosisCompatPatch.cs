@@ -90,7 +90,7 @@ namespace Code.Realm
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] MetamorphosisCompatPatch 异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] MetamorphosisCompatPatch 异常: " + e.Message);
             }
         }
     }

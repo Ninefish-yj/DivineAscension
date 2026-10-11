@@ -403,7 +403,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 if (UnityEngine.Random.value <= 0.10f)
                 {
                     CultivationData.SetCooldown(actor, "gene_resonance", 1);
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 触发基因共鸣！能量上限临时+20%（持续1年）");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 触发基因共鸣！能量上限临时+20%（持续1年）");
                 }
             }
             catch { /* 忽略基因共鸣失败 */ }
@@ -428,7 +428,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     {
                         CultivationData.SetEnergy(actor, currentQi + extra);
                     }
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 基因感知：附近{nearbyCount}个异能者，能量恢复+{bonus * 100:F0}%");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 基因感知：附近{nearbyCount}个异能者，能量恢复+{bonus * 100:F0}%");
                 }
             }
             catch { /* 忽略基因感知失败 */ }
@@ -480,7 +480,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 // 寿命延长：授予long_living特质（如果存在）
                 if (!actor.hasTrait("long_living"))
                 {
-                    try { actor.addTrait("long_living", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplyGeneStability 异常: " + dsEx.Message); }
+                    try { actor.addTrait("long_living", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplyGeneStability 异常: " + dsEx.Message); }
                 }
                 // 标记基因稳定状态（供突破判定读取）
                 CultivationData.SetCooldown(actor, "gene_stable", 1);
@@ -638,7 +638,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 // 维度跳跃：维持evasive特质（闪避）
                 if (!actor.hasTrait("evasive"))
                 {
-                    try { actor.addTrait("evasive", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplySpatialPerception 异常: " + dsEx.Message); }
+                    try { actor.addTrait("evasive", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplySpatialPerception 异常: " + dsEx.Message); }
                 }
                 // 标记空间感知（供UI/调试面板显示全图异能者位置）
                 CultivationData.SetCooldown(actor, "spatial_awareness", 1);
@@ -666,7 +666,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                             actor.finishStatusEffect(status);
                         }
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplySuperBodyPassive 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplySuperBodyPassive 异常: " + dsEx.Message); }
                 }
                 // 清除负面特质
                 string[] negativeTraits = { "weak", "slow", "coward", "stupid", "dumb", "ugly", "sickly", "lazy", "clumsy" };
@@ -679,12 +679,12 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                             actor.removeTrait(trait);
                         }
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplySuperBodyPassive 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplySuperBodyPassive 异常: " + dsEx.Message); }
                 }
                 // 维持强力特质（全属性+50%的近似体现）
                 if (!actor.hasTrait("strong")) actor.addTrait("strong", false);
                 if (!actor.hasTrait("fast")) actor.addTrait("fast", false);
-                if (!actor.hasTrait("genius")) try { actor.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplySuperBodyPassive 异常: " + dsEx.Message); }
+                if (!actor.hasTrait("genius")) try { actor.addTrait("genius", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplySuperBodyPassive 异常: " + dsEx.Message); }
                 if (!actor.hasTrait("blessed")) actor.addTrait("blessed", false);
             }
             catch { /* 忽略登神被动失败 */ }
@@ -723,7 +723,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                             // 减速：添加slow特质（如果没有）
                             if (!unit.hasTrait("slow"))
                             {
-                                try { unit.addTrait("slow", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplySingularityGravity 异常: " + dsEx.Message); }
+                                try { unit.addTrait("slow", false); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplySingularityGravity 异常: " + dsEx.Message); }
                             }
                             // 少量能量伤害（年度结算时一次性扣除，等效每秒微量伤害的年度累积）
                             float gravityDamage = 50f * (1f - dist / 15f);
@@ -788,7 +788,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] HasTrueGodInWorld 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] HasTrueGodInWorld 异常: " + dsEx.Message); }
             return false;
         }
 
@@ -809,7 +809,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] HasTranscendentInWorld 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] HasTranscendentInWorld 异常: " + dsEx.Message); }
             return false;
         }
 
@@ -830,7 +830,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     if (dist <= radius) count++;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] CountNearbyCultivators 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] CountNearbyCultivators 异常: " + dsEx.Message); }
             return count;
         }
 
@@ -855,7 +855,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] HasRuleSuppressorNearby 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] HasRuleSuppressorNearby 异常: " + dsEx.Message); }
             return false;
         }
 
@@ -953,7 +953,7 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetMaxHealth 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetMaxHealth 异常: " + dsEx.Message); }
             return 100f; // 默认值
         }
 
@@ -992,11 +992,11 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 {
                     actor.addTrait("ds_gene_double", false);
                 }
-                DSDebug.Verbose($"[DivineAscension] {actor.name} 所有基因效果翻倍");
+                DSDebug.Verbose($"[GeneCultivation] {actor.name} 所有基因效果翻倍");
             }
             catch (Exception e)
             {
-                DSDebug.Verbose($"[DivineAscension] 基因效果翻倍失败: {e.Message}");
+                DSDebug.Verbose($"[GeneCultivation] 基因效果翻倍失败: {e.Message}");
             }
         }
 
@@ -1009,11 +1009,11 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 {
                     actor.addTrait("ds_black_obelisk", false);
                 }
-                DSDebug.Verbose($"[DivineAscension] {actor.name} 激活黑色方碑效果");
+                DSDebug.Verbose($"[GeneCultivation] {actor.name} 激活黑色方碑效果");
             }
             catch (Exception e)
             {
-                DSDebug.Verbose($"[DivineAscension] 黑色方碑效果失败: {e.Message}");
+                DSDebug.Verbose($"[GeneCultivation] 黑色方碑效果失败: {e.Message}");
             }
         }
     }

@@ -50,11 +50,11 @@ namespace Code.Core
                 RegisterAllLogAssets();
 
                 _initialized = true;
-                DSDebug.Verbose("[DivineAscension] History system log");
+                DSDebug.Verbose("[GeneCultivation] History system log");
             }
             catch (Exception)
             {
-                DSDebug.Warning("[DivineAscension] History system warning");
+                DSDebug.Warning("[GeneCultivation] History system warning");
             }
         }
 
@@ -65,7 +65,7 @@ namespace Code.Core
             {
                 if (AssetManager.history_groups == null)
                 {
-                DSDebug.Verbose("[DivineAscension] History system verbose");
+                DSDebug.Verbose("[GeneCultivation] History system verbose");
                     return;
                 }
 
@@ -88,12 +88,12 @@ namespace Code.Core
                         icon_path = GROUP_ICON_PATH
                     };
                     AssetManager.history_groups.add(dsGroup);
-                DSDebug.Verbose("[DivineAscension] History system log");
+                DSDebug.Verbose("[GeneCultivation] History system log");
                 }
             }
             catch (Exception)
             {
-                DSDebug.Warning("[DivineAscension] History system warning");
+                DSDebug.Warning("[GeneCultivation] History system warning");
             }
         }
 
@@ -143,7 +143,7 @@ namespace Code.Core
             }
             catch (Exception)
             {
-                DSDebug.Warning("[DivineAscension] History system warning");
+                DSDebug.Warning("[GeneCultivation] History system warning");
                 return null;
             }
         }
@@ -159,7 +159,7 @@ namespace Code.Core
                 WorldLogAsset asset = CategoryToAsset(category);
                 if (asset == null)
                 {
-                DSDebug.Verbose("[DivineAscension] History system verbose");
+                DSDebug.Verbose("[GeneCultivation] History system verbose");
                     return;
                 }
 
@@ -184,11 +184,11 @@ namespace Code.Core
                 //  鍏抽敭锛氱洿鎺ヨ皟鐢╝dd()鏂规硶娣诲姞鍒板巻鍙茶褰曪紙涓嶉渶瑕佸弽灏勬煡鎵剧獥鍙ｏ級
                 message.add();
 
-                DSDebug.Verbose("[DivineAscension] History system verbose");
+                DSDebug.Verbose("[GeneCultivation] History system verbose");
             }
             catch (Exception)
             {
-                DSDebug.Warning("[DivineAscension] History system warning");
+                DSDebug.Warning("[GeneCultivation] History system warning");
             }
         }
 
@@ -231,7 +231,7 @@ namespace Code.Core
             }
             catch (Exception)
             {
-                DSDebug.Warning("[DivineAscension] History system warning");
+                DSDebug.Warning("[GeneCultivation] History system warning");
             }
         }
 
@@ -263,7 +263,7 @@ namespace Code.Core
                     return color;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] ParseColor 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] ParseColor 异常: " + dsEx.Message); }
             return Toolbox.color_log_neutral;
         }
     }

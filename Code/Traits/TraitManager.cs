@@ -164,7 +164,7 @@ namespace Code.Traits
             DSDebug.Verbose("25个异能Trait注册完成（13境界+11组织+1纪元主宰），已创建3个特质分组");
         }
 
-        /// <summary>创建登神长阶特质分组（境界组+异能体系组）</summary>
+        /// <summary>创建基因修炼特质分组（境界组+异能体系组）</summary>
         private static void RegisterTraitGroups()
         {
             try
@@ -196,7 +196,7 @@ namespace Code.Traits
             }
             catch (System.Exception e)
             {
-                DSDebug.Error("[DivineAscension] 特质分组创建失败: " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 特质分组创建失败: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -245,7 +245,7 @@ namespace Code.Traits
             }
             catch (System.Exception e)
             {
-                DSDebug.Error("[DivineAscension] 境界特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 境界特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -322,7 +322,7 @@ namespace Code.Traits
             }
             catch (System.Exception e)
             {
-                DSDebug.Error("[DivineAscension] 状态特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 状态特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -412,7 +412,7 @@ namespace Code.Traits
             }
             catch (System.Exception e)
             {
-                DSDebug.Error("[DivineAscension] 组织特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 组织特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
             }
         }
 

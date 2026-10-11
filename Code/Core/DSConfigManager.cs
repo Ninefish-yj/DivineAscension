@@ -305,7 +305,7 @@ namespace Code.Core
         public static void LoadConfig()
         {
             // NML原生配置系统自动加载和持久化，不需要手动操作
-            DSDebug.Verbose("[DivineAscension] 配置系统已初始化（NML原生配置）");
+            DSDebug.Verbose("[GeneCultivation] 配置系统已初始化（NML原生配置）");
         }
 
     }

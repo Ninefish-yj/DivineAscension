@@ -162,7 +162,7 @@ namespace Code.Core
                         int t = CultivationData.GetHighestTierReached(a);
                         if (t > highest) highest = t;
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetHighestTierReached 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetHighestTierReached 异常: " + dsEx.Message); }
                 }
             }
             catch (Exception e) { DSDebug.Warning("GetHighestTierReached异常: " + e.Message); }
@@ -235,7 +235,7 @@ namespace Code.Core
                                 }
                             }
                         }
-                        catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetStatsSnapshot 异常: " + dsEx.Message); }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetStatsSnapshot 异常: " + dsEx.Message); }
                     }
 
                     if (turbCount > 0)
@@ -261,7 +261,7 @@ namespace Code.Core
                 snap.ActiveRifts = Disaster.DisasterManager.GetRiftCount();
                 snap.BarrierIntegrity = Disaster.DisasterManager.GetBarrierIntegrity();
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetStatsSnapshot 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetStatsSnapshot 异常: " + dsEx.Message); }
 
             // 性能优化：更新缓存
             _cachedSnapshot = snap;

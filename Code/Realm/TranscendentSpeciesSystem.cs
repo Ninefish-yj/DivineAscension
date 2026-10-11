@@ -81,11 +81,11 @@ namespace Code.Realm
                     AssetManager.traits.pot_traits_mutation_box.Add(perfectLife);
                 }
 
-                DSDebug.Verbose("[DivineAscension] 登神种族特质注册完成（独立种族 + 完美生命）");
+                DSDebug.Verbose("[GeneCultivation] 登神种族特质注册完成（独立种族 + 完美生命）");
             }
             catch (Exception e)
             {
-                DSDebug.Error("[DivineAscension] 登神种族特质注册失败: " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 登神种族特质注册失败: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -115,7 +115,7 @@ namespace Code.Realm
                     if (textComp == null) return;
                     textComp.text = title;
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] RegisterTraits 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] RegisterTraits 异常: " + dsEx.Message); }
             }
         }
 
@@ -151,7 +151,7 @@ namespace Code.Realm
         {
             if (actor == null)
             {
-                DSDebug.Warning("[DivineAscension] ApplyMonolithEvolution: actor为null");
+                DSDebug.Warning("[GeneCultivation] ApplyMonolithEvolution: actor为null");
                 return;
             }
             // 开关检查：关了就不执行方碑效果
@@ -159,7 +159,7 @@ namespace Code.Realm
             
             if (actor.hasTrait(TraitManager.STATUS_GENE_MUTATION))
             {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 已有基因突变者特质（方碑标记），跳过");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 已有基因突变者特质（方碑标记），跳过");
                 return;
             }
             try
@@ -171,16 +171,16 @@ namespace Code.Realm
                 if (success)
                 {
                     actor.addTrait(TraitManager.STATUS_GENE_MUTATION, false);
-                    DSDebug.Verbose($"[DivineAscension]  {actor.getName()} 方碑进化成功，获得基因突变者特质");
+                    DSDebug.Verbose($"[GeneCultivation]  {actor.getName()} 方碑进化成功，获得基因突变者特质");
                 }
                 else
                 {
-                    DSDebug.Verbose($"[DivineAscension]  {actor.getName()} 方碑进化失败，不加基因突变者特质");
+                    DSDebug.Verbose($"[GeneCultivation]  {actor.getName()} 方碑进化失败，不加基因突变者特质");
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Error("[DivineAscension]  添加基因突变者特质失败: " + e.Message);
+                DSDebug.Error("[GeneCultivation]  添加基因突变者特质失败: " + e.Message);
             }
         }
 
@@ -214,11 +214,11 @@ namespace Code.Realm
                 //  基因序列协调效应（替代方案）：扫描单位基因带来的属性，翻倍后由完美生命特质提供
                 string geneticBoost = ScanAndApplyGeneticBoost(actor);
 
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 突破登神级！脱离原种族成为独立种族（亚种名：{subspeciesName}），授予【完美生命】基因特质（突变分类、不可去除）。基因序列协调效应：{geneticBoost}");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破登神级！脱离原种族成为独立种族（亚种名：{subspeciesName}），授予【完美生命】基因特质（突变分类、不可去除）。基因序列协调效应：{geneticBoost}");
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 登神升华失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 登神升华失败: " + e.Message);
             }
         }
 
@@ -236,7 +236,7 @@ namespace Code.Realm
                 Subspecies newSpecies = World.world.subspecies.newSpecies(actor.asset, actor.current_tile);
                 if (newSpecies == null)
                 {
-                    DSDebug.Warning($"[DivineAscension] {actor.getName()} 创建独立亚种失败（newSpecies 返回 null）");
+                    DSDebug.Warning($"[GeneCultivation] {actor.getName()} 创建独立亚种失败（newSpecies 返回 null）");
                     return;
                 }
 
@@ -285,11 +285,11 @@ namespace Code.Realm
                 }
 
                 actor.setSubspecies(newSpecies);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 亚种名已改为：{subspeciesName}");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 亚种名已改为：{subspeciesName}");
             }
             catch (Exception ex)
             {
-                DSDebug.Warning($"[DivineAscension] 创建独立亚种失败: {ex.Message}");
+                DSDebug.Warning($"[GeneCultivation] 创建独立亚种失败: {ex.Message}");
             }
         }
 
@@ -326,7 +326,7 @@ namespace Code.Realm
                             if (val != null) return System.Convert.ToSingle(val);
                         }
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
                     return 0f;
                 };
 
@@ -372,12 +372,12 @@ namespace Code.Realm
                                         addBaseStats(trait.base_stats);
                                     }
                                 }
-                                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
+                                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
                             }
                         }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
 
                 // 扫描基因属性（亚种 nucleus 中的基因）
                 try
@@ -401,7 +401,7 @@ namespace Code.Realm
                         }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
 
                 // 计算翻倍后的属性（基因序列协调效应 = 基因属性×2）
                 var boostStats = new System.Collections.Generic.Dictionary<string, float>();
@@ -434,7 +434,7 @@ namespace Code.Realm
                         ActorDataAccessor.GetData(actor).custom_data_string["ds_genetic_boost"] = sb.ToString();
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
 
                 return sb.ToString();
             }

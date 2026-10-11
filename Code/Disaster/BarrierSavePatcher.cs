@@ -30,7 +30,7 @@ namespace Code.Disaster
 
             try
             {
-                _harmony = new Harmony("DivineAscension.BarrierSave");
+                _harmony = new Harmony("GeneCultivation.BarrierSave");
 
                 var loadMethod = AccessTools.Method(typeof(SaveManager), "loadWorld", new Type[] { typeof(string), typeof(bool) });
                 if (loadMethod != null)

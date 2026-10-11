@@ -259,11 +259,11 @@ namespace Code.Realm
                 int actorTier = CultivationData.GetRealmTier(actor);
                 if (actorTier < 8 && RealmFeatures.HasRuleSuppressorNearby(actor, 12f))
                 {
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 被规则压制，无法使用技能！");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 被规则压制，无法使用技能！");
                     return false;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] UseAbility 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] UseAbility 异常: " + dsEx.Message); }
 
             // 技能释放后，添加状态效果到状态栏（有持续时间）
             // 注意：必须在所有检查通过后再添加，避免检查失败时状态已经加上
@@ -274,13 +274,13 @@ namespace Code.Realm
             int tier = CultivationData.GetRealmTier(actor);
             if (tier < ability.RequiredTier)
             {
-                DSDebug.Warning($"[DivineAscension] {actor.getName()} 境界不足，无法使用 {ability.Name}（需要{ability.RequiredTier}阶）");
+                DSDebug.Warning($"[GeneCultivation] {actor.getName()} 境界不足，无法使用 {ability.Name}（需要{ability.RequiredTier}阶）");
                 return false;
             }
 
             if (IsOnCooldown(actor, abilityId))
             {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 的 {ability.Name} 正在冷却中");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 的 {ability.Name} 正在冷却中");
                 return false;
             }
 
@@ -289,7 +289,7 @@ namespace Code.Realm
             float currentEnergy = CultivationData.GetEnergy(actor);
             if (currentEnergy < actualCost)
             {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 异能能量不足，无法使用 {ability.Name}（需要{actualCost:F0}）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 异能能量不足，无法使用 {ability.Name}（需要{actualCost:F0}）");
                 return false;
             }
 
@@ -326,9 +326,9 @@ namespace Code.Realm
             catch (System.Exception e) { DSDebug.Warning($"技能特效播放失败: {e.Message}"); }
 
             // 基因图谱战斗进度：记录异能使用次数
-            try { CultivationData.AddGeneAbilityUse(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] UseAbility 异常: " + dsEx.Message); }
+            try { CultivationData.AddGeneAbilityUse(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] UseAbility 异常: " + dsEx.Message); }
 
-            DSDebug.Verbose($"[DivineAscension] {actor.getName()}({tier}阶) 使用技能: {ability.Name} (ID={abilityId})");
+            DSDebug.Verbose($"[GeneCultivation] {actor.getName()}({tier}阶) 使用技能: {ability.Name} (ID={abilityId})");
             return true;
         }
 
@@ -385,7 +385,7 @@ namespace Code.Realm
                     catch { /* 忽略单个单位更新失败 */ }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] UpdateRageRegeneration 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] UpdateRageRegeneration 异常: " + dsEx.Message); }
         }
 
         /// <summary>执行技能效果</summary>
@@ -448,7 +448,7 @@ namespace Code.Realm
                                         {
                                             try {
                                                 method.Invoke(null, new object[] { fx, stormTile, null, null, 2.0f, -1f, -1f, null });
-                                            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteAbilityEffect 异常: " + dsEx.Message); }
+                                            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                                         }
                                         break;
                                     }
@@ -457,7 +457,7 @@ namespace Code.Realm
                         }
                         catch (Exception e)
                         {
-                            Code.Core.DSDebug.Verbose($"[DivineAscension] 能量风暴特效播放失败: {e.Message}");
+                            Code.Core.DSDebug.Verbose($"[GeneCultivation] 能量风暴特效播放失败: {e.Message}");
                         }
                         
                         // ★ 调用原版龙卷风灾难
@@ -472,12 +472,12 @@ namespace Code.Realm
                             damageType: 1,  // 魔法伤害
                             distanceDecay: true,
                             hitAllies: false);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {ability.Name} 龙卷风风暴，命中{stormDamaged}个敌人，基础伤害{damage:F0}");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {ability.Name} 龙卷风风暴，命中{stormDamaged}个敌人，基础伤害{damage:F0}");
                     }
                     else if (ability.Id == "ds_ability_energy_bolt")
                     {
                         // 异能冲击：播放帧动画特效 + 范围伤害
-                        try { Code.Realm.DSSkillEffectManager.PlayEffect(actor, ability.Id, null); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteAbilityEffect 异常: " + dsEx.Message); }
+                        try { Code.Realm.DSSkillEffectManager.PlayEffect(actor, ability.Id, null); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                         
                         // ★ 使用统一AOE伤害管理器（修复：只伤害敌人 + 性能优化）
                         int damaged = Code.Combat.DSAoEDamageManager.ApplyAreaDamageAtCaster(
@@ -487,7 +487,7 @@ namespace Code.Realm
                             damageType: 1,
                             distanceDecay: true,
                             hitAllies: false);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {ability.Name} 能量冲击，命中{damaged}个敌人，基础伤害{damage:F0}");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {ability.Name} 能量冲击，命中{damaged}个敌人，基础伤害{damage:F0}");
                     }
                     else if (ability.Id == "ds_ability_divine_punishment")
                     {
@@ -525,7 +525,7 @@ namespace Code.Realm
                             damageType: 1,
                             distanceDecay: true,
                             hitAllies: false);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {ability.Name} 神罚陨石，命中{punished}个敌人");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {ability.Name} 神罚陨石，命中{punished}个敌人");
                     }
                     else if (ability.Id == "ds_ability_dimensional_strike")
                     {
@@ -541,7 +541,7 @@ namespace Code.Realm
                             damageType: 1,
                             distanceDecay: true,
                             hitAllies: false);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {ability.Name} 维度打击地震，命中{stricken}个敌人");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {ability.Name} 维度打击地震，命中{stricken}个敌人");
                     }
                     else
                     {
@@ -553,7 +553,7 @@ namespace Code.Realm
                             damageType: 0,  // 物理伤害
                             distanceDecay: true,
                             hitAllies: false);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {ability.Name} 造成伤害，命中{damaged}个敌人，基础伤害{damage:F0}");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {ability.Name} 造成伤害，命中{damaged}个敌人，基础伤害{damage:F0}");
                     }
                     break;
 
@@ -577,14 +577,14 @@ namespace Code.Realm
                         radius: 10f,
                         healAmount: healAmount,
                         includeSelf: true);
-                    DSDebug.Verbose($"[DivineAscension] {ability.Name} 治疗{healed}个友军，治疗量{healAmount:F0}");
+                    DSDebug.Verbose($"[GeneCultivation] {ability.Name} 治疗{healed}个友军，治疗量{healAmount:F0}");
                     break;
 
                 case AbilityType.Buff:
                     // 增益（添加strong/fast等特质模拟）
                     actor.addTrait("strong", false);
                     actor.addTrait("fast", false);
-                    DSDebug.Verbose($"[DivineAscension] {ability.Name} 增益效果已激活");
+                    DSDebug.Verbose($"[GeneCultivation] {ability.Name} 增益效果已激活");
                     break;
 
                 case AbilityType.Debuff:
@@ -614,8 +614,8 @@ namespace Code.Realm
                             }
                         }
                     }
-                    catch (Exception e) { DSDebug.Verbose($"[DivineAscension] Debuff异常: {e.Message}"); }
-                    DSDebug.Verbose($"[DivineAscension] {ability.Name} 减益{debuffed}个敌人");
+                    catch (Exception e) { DSDebug.Verbose($"[GeneCultivation] Debuff异常: {e.Message}"); }
+                    DSDebug.Verbose($"[GeneCultivation] {ability.Name} 减益{debuffed}个敌人");
                     break;
 
                 case AbilityType.Utility:
@@ -646,10 +646,10 @@ namespace Code.Realm
                             }
                         }
                     }
-                    catch (Exception e) { DSDebug.Verbose($"[DivineAscension] Utility异常: {e.Message}"); }
+                    catch (Exception e) { DSDebug.Verbose($"[GeneCultivation] Utility异常: {e.Message}"); }
                     float currentEnergy = CultivationData.GetEnergy(actor);
                     CultivationData.SetEnergy(actor, currentEnergy + drained);
-                    DSDebug.Verbose($"[DivineAscension] {ability.Name} 汲取能量{drained:F0}");
+                    DSDebug.Verbose($"[GeneCultivation] {ability.Name} 汲取能量{drained:F0}");
                     break;
 
                 case AbilityType.Ultimate:
@@ -744,9 +744,9 @@ namespace Code.Realm
                                 }
                             }
                         }
-                        catch (Exception e) { DSDebug.Verbose($"[DivineAscension] 圣域友军增益异常: {e.Message}"); }
+                        catch (Exception e) { DSDebug.Verbose($"[GeneCultivation] 圣域友军增益异常: {e.Message}"); }
                         //  11阶登神级：凝聚基因化身独立作战
-                        try { RealmMechanics.SummonElementAvatar(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteAbilityEffect 异常: " + dsEx.Message); }
+                        try { RealmMechanics.SummonElementAvatar(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                     }
                     else if (ability.Id == "ds_ability_space_tear")
                     {
@@ -803,13 +803,13 @@ namespace Code.Realm
                             
                             if (destroyed > 0)
                             {
-                                DSDebug.Verbose($"[DivineAscension] {ability.Name} 地形破坏！{destroyed}个地块被摧毁");
+                                DSDebug.Verbose($"[GeneCultivation] {ability.Name} 地形破坏！{destroyed}个地块被摧毁");
                             }
                         }
                         catch (Exception e) { DSDebug.Verbose($"地形破坏异常: {e.Message}"); }
                     }
                     
-                    DSDebug.Verbose($"[DivineAscension]  终极技能 {ability.Name} 释放！命中{ultDamaged}个敌人，伤害{ultDamage:F0}");
+                    DSDebug.Verbose($"[GeneCultivation]  终极技能 {ability.Name} 释放！命中{ultDamaged}个敌人，伤害{ultDamage:F0}");
                     break;
             }
         }
@@ -868,7 +868,7 @@ namespace Code.Realm
                 {
                     DSNotificationManager.NotifyInfo(string.Format(UILocalization.Get("ability_domain_effect"), actor.getName(), suppressed));
                 }
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 场域展开！半径8格，压制{suppressed}个敌人");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 场域展开！半径8格，压制{suppressed}个敌人");
             }
             catch (Exception e)
             {
@@ -1026,7 +1026,7 @@ namespace Code.Realm
                 // 使用技能ID作为状态效果ID，添加到状态栏
                 DSReflectionHelper.SafeAddStatusEffect(actor, abilityId, duration, true);
 
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 释放技能【{ability.Name}】，状态效果已添加到状态栏（持续{duration}秒）");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 释放技能【{ability.Name}】，状态效果已添加到状态栏（持续{duration}秒）");
             }
             catch (System.Exception e)
             {

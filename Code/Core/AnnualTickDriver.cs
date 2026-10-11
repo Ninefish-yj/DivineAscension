@@ -122,9 +122,9 @@ namespace Code.Core
 			_accumulatedTime += timeDiff;
 
 			//  每帧更新待播放特效（技能延迟特效 + 虚拟武器延迟特效 + 循环特效停止）
-			try { Code.Realm.DSSkillEffectManager.UpdatePendingEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] Anonymous 异常: " + dsEx.Message); }
-			try { Code.Realm.DSSkillEffectManager.UpdateScheduledStops(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] Anonymous 异常: " + dsEx.Message); }
-			try { Code.Combat.VirtualWeaponSystem.UpdateDelayedEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] Anonymous 异常: " + dsEx.Message); }
+			try { Code.Realm.DSSkillEffectManager.UpdatePendingEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
+			try { Code.Realm.DSSkillEffectManager.UpdateScheduledStops(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
+			try { Code.Combat.VirtualWeaponSystem.UpdateDelayedEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
 
 
 
@@ -138,7 +138,7 @@ namespace Code.Core
 			{
 				_regenAccumulator -= REGEN_INTERVAL;
 				_lastRegenReal = Time.realtimeSinceStartup;
-				try { ApplyContinuousRegeneration(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] Anonymous 异常: " + dsEx.Message); }
+				try { ApplyContinuousRegeneration(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
 			}
 			}
 
@@ -299,7 +299,7 @@ namespace Code.Core
             }
             catch (Exception e)
             {
-                Code.Core.DSDebug.Warning($"[DivineAscension] 传送挑战者失败: {e.Message}，保持原位置");
+                Code.Core.DSDebug.Warning($"[GeneCultivation] 传送挑战者失败: {e.Message}，保持原位置");
             }
 
             // 等待一帧，让单位位置更新
@@ -316,7 +316,7 @@ namespace Code.Core
             }
             catch (Exception e)
             {
-                Code.Core.DSDebug.Warning($"[DivineAscension] 设置攻击目标失败: {e.Message}");
+                Code.Core.DSDebug.Warning($"[GeneCultivation] 设置攻击目标失败: {e.Message}");
             }
 
             // 等待战斗结束：不死不休，一直打到一方死亡为止
@@ -348,13 +348,13 @@ namespace Code.Core
                             int dfTier = Code.Data.CultivationData.GetRealmTier(defender);
                             if (chTier == dfTier)
                             {
-                                Code.Core.DSDebug.Verbose($"[DivineAscension] 同阶挑战 {challengerName} 逃跑了！终身不能再突破");
+                                Code.Core.DSDebug.Verbose($"[GeneCultivation] 同阶挑战 {challengerName} 逃跑了！终身不能再突破");
                                 // 同阶逃跑了，终身不能再突破
                                 Code.Data.CultivationData.SetLifetimeBan(challenger);
                             }
                             else
                             {
-                                Code.Core.DSDebug.Verbose($"[DivineAscension] 跨阶挑战 {challengerName} 逃跑了，不禁止突破");
+                                Code.Core.DSDebug.Verbose($"[GeneCultivation] 跨阶挑战 {challengerName} 逃跑了，不禁止突破");
                             }
                             // 停止防御者的攻击
                             defender.clearAttackTarget();
@@ -406,7 +406,7 @@ namespace Code.Core
                 if (challengerWins)
                 {
                     // 挑战者赢了，真正执行突破
-                    Code.Core.DSDebug.Verbose($"[DivineAscension] {tierName}名额已满，{challengerName} 挑战上位成功，{defenderName} 陨落腾出位置");
+                    Code.Core.DSDebug.Verbose($"[GeneCultivation] {tierName}名额已满，{challengerName} 挑战上位成功，{defenderName} 陨落腾出位置");
 
                     // 挑战者真正突破到目标境界
                     try
@@ -415,7 +415,7 @@ namespace Code.Core
                     }
                     catch (Exception e)
                     {
-                        Code.Core.DSDebug.Warning($"[DivineAscension] 挑战者突破失败: {e.Message}");
+                        Code.Core.DSDebug.Warning($"[GeneCultivation] 挑战者突破失败: {e.Message}");
                     }
 
                     Code.Core.DSEventManager.RecordEvent(
@@ -427,7 +427,7 @@ namespace Code.Core
                 else if (defenderFled && isSameTierChallenge)
                 {
                     // 同阶被挑战者逃跑：回退一阶，挑战者上位
-                    Code.Core.DSDebug.Verbose($"[DivineAscension] 同阶被挑战者 {defenderName} 逃跑了，回退一阶");
+                    Code.Core.DSDebug.Verbose($"[GeneCultivation] 同阶被挑战者 {defenderName} 逃跑了，回退一阶");
                     Code.Realm.RealmJudge.DemoteActor(defender, tier - 1);
 
                     // 挑战者成功上位
@@ -437,30 +437,30 @@ namespace Code.Core
                     }
                     catch (Exception e)
                     {
-                        Code.Core.DSDebug.Warning($"[DivineAscension] 挑战者突破失败: {e.Message}");
+                        Code.Core.DSDebug.Warning($"[GeneCultivation] 挑战者突破失败: {e.Message}");
                     }
                 }
                 else if (defenderFled)
                 {
                     // 跨阶被挑战者逃跑：不回退，但挑战者赢（原版战斗已分出高下）
-                    Code.Core.DSDebug.Verbose($"[DivineAscension] 跨阶被挑战者 {defenderName} 逃跑了，不回退");
+                    Code.Core.DSDebug.Verbose($"[GeneCultivation] 跨阶被挑战者 {defenderName} 逃跑了，不回退");
                     try
                     {
                         Code.Realm.RealmJudge.DoBreakthrough(challenger);
                     }
                     catch (Exception e)
                     {
-                        Code.Core.DSDebug.Warning($"[DivineAscension] 挑战者突破失败: {e.Message}");
+                        Code.Core.DSDebug.Warning($"[GeneCultivation] 挑战者突破失败: {e.Message}");
                     }
                 }
                 else if (challengerFled)
                 {
                     // 挑战者逃跑了：同阶已终身禁赛（前面处理），跨阶不禁止
-                    Code.Core.DSDebug.Verbose($"[DivineAscension] 挑战者 {challengerName} 逃跑，挑战失败");
+                    Code.Core.DSDebug.Verbose($"[GeneCultivation] 挑战者 {challengerName} 逃跑，挑战失败");
                     if (isSameTierChallenge)
                     {
                         Code.Data.CultivationData.SetLifetimeBan(challenger);
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] 同阶挑战逃跑，{challengerName} 终身不能再突破");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] 同阶挑战逃跑，{challengerName} 终身不能再突破");
                     }
                 }
                 else if (challenger != null && challenger.isAlive())
@@ -468,18 +468,18 @@ namespace Code.Core
                     // 挑战者输了但没死（战斗被中断）：同阶回退一阶，跨阶不回退
                     if (isSameTierChallenge)
                     {
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] 同阶挑战 {challengerName} 失败但没死，回退一阶");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] 同阶挑战 {challengerName} 失败但没死，回退一阶");
                         Code.Realm.RealmJudge.DemoteActor(challenger, tier - 1);
                     }
                     else
                     {
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] 跨阶挑战 {challengerName} 失败但没死，不回退不禁止突破");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] 跨阶挑战 {challengerName} 失败但没死，不回退不禁止突破");
                     }
                 }
                 else
                 {
                     // 挑战者死了
-                    Code.Core.DSDebug.Verbose($"[DivineAscension] {tierName}名额已满，{challengerName} 挑战上位失败，被 {defenderName} 反杀陨落");
+                    Code.Core.DSDebug.Verbose($"[GeneCultivation] {tierName}名额已满，{challengerName} 挑战上位失败，被 {defenderName} 反杀陨落");
                     Code.Core.DSEventManager.RecordEvent(
                         Code.Core.DSEventType.Warning,
                         string.Format(Code.UI.UILocalization.Get("tier_cap_challenge_fail_title"), tierName, challengerName, defenderName),
@@ -587,11 +587,11 @@ namespace Code.Core
                     return;
                 }
 
-                DSDebug.Warning("[DivineAscension] 找不到setAttackTarget/setTarget方法");
+                DSDebug.Warning("[GeneCultivation] 找不到setAttackTarget/setTarget方法");
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 设置攻击目标异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 设置攻击目标异常: {e.Message}");
             }
         }
     }

@@ -335,7 +335,7 @@ namespace Code.Sect
             foreach (Actor r in recruits)
                 JoinSect(r, sectId, SectRank.Member);
 
-            DSDebug.Verbose(string.Format("[DivineAscension] {0} 创立组织 [{1}]（{2}人），异能体系={3}",
+            DSDebug.Verbose(string.Format("[GeneCultivation] {0} 创立组织 [{1}]（{2}人），异能体系={3}",
                 founder.getName(), sectName, sect.MemberIds.Count, ""));
             return sect;
         }
@@ -413,14 +413,14 @@ namespace Code.Sect
                     // 加入概率：境界越高越容易被组织接纳
                     float joinChance = 0.3f + (tier * 0.07f); // 3阶51%，13阶121%必进
                     if (UnityEngine.Random.value < joinChance && JoinSect(actor, pool[UnityEngine.Random.Range(0, pool.Count)].Id, SectRank.Member))
-                        DSDebug.Verbose($"[DivineAscension] {actor.getName()}（{tier}阶）自动加入组织");
+                        DSDebug.Verbose($"[GeneCultivation] {actor.getName()}（{tier}阶）自动加入组织");
                     return;
                 }
 
                 // 没有组织则概率创建（首领=创始人），3阶起可创建，境界越高概率越大
                 float foundChance = 0.03f + (tier * 0.02f); // 3阶9%，5阶13%，13阶29%
                 if (UnityEngine.Random.value < foundChance && FoundSect(actor, null) != null)
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()}（{tier}阶）自动创建组织（概率{foundChance:P0}）");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()}（{tier}阶）自动创建组织（概率{foundChance:P0}）");
             }
             catch (Exception e)
             {
@@ -476,7 +476,7 @@ namespace Code.Sect
                 Code.Traits.TraitManager.ApplySectTrait(heir, (int)SectRank.Leader, false);
                 sect.MasterId = heir.getID();
                 sect.HeritageGen = newGen;
-                DSDebug.Verbose($"[DivineAscension] 首领 {deadLeader.getName()} 陨落，{heir.getName()} 继任组织 [{sect.Name}] 第{newGen}任首领");
+                DSDebug.Verbose($"[GeneCultivation] 首领 {deadLeader.getName()} 陨落，{heir.getName()} 继任组织 [{sect.Name}] 第{newGen}任首领");
             }
             catch (Exception e) { DSDebug.Warning("组织换届失败: " + e.Message); }
         }

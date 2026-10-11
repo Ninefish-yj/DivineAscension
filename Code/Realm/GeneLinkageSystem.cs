@@ -313,7 +313,7 @@ namespace Code
 				CultivationData.SetLinkageDefenseCache(actor, def);
 				CultivationData.SetLinkageHealthCache(actor, hp);
 			}
-			catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] RefreshLinkageCaches 异常: " + dsEx.Message); }
+			catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] RefreshLinkageCaches 异常: " + dsEx.Message); }
 		}
 
 		/// <summary>计算单类连锁加成（含GE倍率）</summary>
@@ -339,7 +339,7 @@ namespace Code
 					else geBonus = Code.Core.GeneEnergyCalculator.GetHealthBonus(actor);
 					float geMultiplier = 1f + Mathf.Min(0.5f, geBonus / 100f); // GE100=+50%
 					total *= geMultiplier;
-				} catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ComputeTotalBonus 异常: " + dsEx.Message); }
+				} catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ComputeTotalBonus 异常: " + dsEx.Message); }
 			}
 			return total;
 		}
@@ -365,7 +365,7 @@ namespace Code
 					float geBonus = Code.Core.GeneEnergyCalculator.GetDamageBonus(actor);
 					float geMultiplier = 1f + Mathf.Min(0.5f, geBonus / 100f); // GE100=+50%
 					total *= geMultiplier;
-				} catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] GetTotalSkillDamageBonus 异常: " + dsEx.Message); }
+				} catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GetTotalSkillDamageBonus 异常: " + dsEx.Message); }
 			}
 			return total;
 		}

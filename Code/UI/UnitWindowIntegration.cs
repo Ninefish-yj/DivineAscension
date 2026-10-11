@@ -166,7 +166,7 @@ namespace Code.UI
                                         bool success = Code.Realm.RealmAbilities.UseAbility(actor, ab.Id);
                                         if (success)
                                         {
-                                            DSDebug.Verbose(string.Format("[DivineAscension] {0} 释放技能: {1}", actor.getName(), ab.Name));
+                                            DSDebug.Verbose(string.Format("[GeneCultivation] {0} 释放技能: {1}", actor.getName(), ab.Name));
                                         }
                                     }
                                     GUI.enabled = true;
@@ -183,7 +183,7 @@ namespace Code.UI
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 单位窗口集成异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 单位窗口集成异常: " + e.Message);
             }
         }
         /// <summary>
@@ -214,7 +214,7 @@ namespace Code.UI
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] showStatRow 反射调用失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] showStatRow 反射调用失败: " + e.Message);
             }
         }
         /// <summary>构建基因图谱显示文本（显示当前境界的基因节点解锁情况）</summary>
@@ -259,7 +259,7 @@ namespace Code.UI
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] BuildGeneGraphText异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] BuildGeneGraphText异常: " + e.Message);
                 return "";
             }
         }
@@ -407,7 +407,7 @@ namespace Code.UI
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 单位窗口基因按钮Patch异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 单位窗口基因按钮Patch异常: " + e.Message);
             }
         }
         private static void CreateGeneButton(UnitWindow window)
@@ -418,7 +418,7 @@ namespace Code.UI
                 Transform background = window.transform.Find("Background");
                 if (background == null)
                 {
-                    DSDebug.Warning("[DivineAscension] 未找到UnitWindow.Background");
+                    DSDebug.Warning("[GeneCultivation] 未找到UnitWindow.Background");
                     return;
                 }
                 // 按钮位置（x=156, y从84开始，每次减40）
@@ -480,7 +480,7 @@ namespace Code.UI
                 }
                 catch (System.Exception e)
                 {
-                    DSDebug.Warning("[DivineAscension] 添加TipButton失败: " + e.Message);
+                    DSDebug.Warning("[GeneCultivation] 添加TipButton失败: " + e.Message);
                 }
                 // 添加拖动脚本（让按钮可以被鼠标拖动，位置保存到PlayerPrefs）
                 try
@@ -489,14 +489,14 @@ namespace Code.UI
                 }
                 catch (System.Exception e)
                 {
-                    DSDebug.Warning("[DivineAscension] 添加基因按钮拖动脚本失败: " + e.Message);
+                    DSDebug.Warning("[GeneCultivation] 添加基因按钮拖动脚本失败: " + e.Message);
                 }
                 _geneButton = buttonObj;
-                DSDebug.Verbose("[DivineAscension] 单位窗口基因图谱按钮已创建（支持拖动）");
+                DSDebug.Verbose("[GeneCultivation] 单位窗口基因图谱按钮已创建（支持拖动）");
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 创建基因按钮失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 创建基因按钮失败: " + e.Message);
             }
         }
         private static void UpdateButtonVisibility(UnitWindow window)
@@ -514,7 +514,7 @@ namespace Code.UI
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 更新基因按钮可见性失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 更新基因按钮可见性失败: " + e.Message);
             }
         }
     }

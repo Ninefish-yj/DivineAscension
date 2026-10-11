@@ -183,11 +183,11 @@ namespace Code.Core
                     999999f
                 );
 
-                DSDebug.Verbose("[DivineAscension] 技能状态效果注册完成，共17个状态效果");
+                DSDebug.Verbose("[GeneCultivation] 技能状态效果注册完成，共17个状态效果");
             }
             catch (System.Exception e)
             {
-                DSDebug.Error("[DivineAscension] 技能状态效果注册失败: " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 技能状态效果注册失败: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -200,7 +200,7 @@ namespace Code.Core
                 System.Type statusAssetType = System.Type.GetType("StatusAsset, Assembly-CSharp");
                 if (statusAssetType == null)
                 {
-                    DSDebug.Warning("[DivineAscension] 未找到StatusAsset类型，状态效果注册跳过: " + id);
+                    DSDebug.Warning("[GeneCultivation] 未找到StatusAsset类型，状态效果注册跳过: " + id);
                     return;
                 }
 
@@ -225,18 +225,18 @@ namespace Code.Core
                         if (addMethod != null)
                         {
                             addMethod.Invoke(statusLibrary, new[] { statusAsset });
-                            DSDebug.Verbose("[DivineAscension] 状态效果注册成功: " + id);
+                            DSDebug.Verbose("[GeneCultivation] 状态效果注册成功: " + id);
                         }
                         else
                         {
-                            DSDebug.Warning("[DivineAscension] 未找到status.add方法: " + id);
+                            DSDebug.Warning("[GeneCultivation] 未找到status.add方法: " + id);
                         }
                     }
                 }
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 状态效果注册失败 " + id + ": " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 状态效果注册失败 " + id + ": " + e.Message);
             }
         }
 

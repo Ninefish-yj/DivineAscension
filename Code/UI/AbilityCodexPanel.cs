@@ -675,7 +675,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		}
 		catch (System.Exception dsEx)
 		{
-			Code.Core.DSDebug.Warning("[DivineAscension] BuildRealmStatsText 异常: " + dsEx.Message);
+			Code.Core.DSDebug.Warning("[GeneCultivation] BuildRealmStatsText 异常: " + dsEx.Message);
 			return "";
 		}
 	}
@@ -699,7 +699,7 @@ public class AbilityCodexPanel : MonoBehaviour
 				if (val != null) return System.Convert.ToSingle(val);
 			}
 		}
-		catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] GetBaseStatValue 异常: " + dsEx.Message); }
+		catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GetBaseStatValue 异常: " + dsEx.Message); }
 		return 0f;
 	}
 
@@ -1161,7 +1161,7 @@ public class AbilityCodexPanel : MonoBehaviour
 			}
 			catch (Exception ex)
 			{
-				DSDebug.Warning("[DivineAscension] 打开单位面板失败: " + ex.Message);
+				DSDebug.Warning("[GeneCultivation] 打开单位面板失败: " + ex.Message);
 			}
 			current.Use();
 		}
@@ -1781,7 +1781,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		}
 		catch (Exception ex)
 		{
-			DSDebug.Warning("[DivineAscension] JumpToActor Error: " + ex.Message);
+			DSDebug.Warning("[GeneCultivation] JumpToActor Error: " + ex.Message);
 		}
 	}
 
@@ -1811,7 +1811,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		}
 		catch (Exception ex)
 		{
-			DSDebug.Warning("[DivineAscension] JumpToPosition Error: " + ex.Message);
+			DSDebug.Warning("[GeneCultivation] JumpToPosition Error: " + ex.Message);
 		}
 	}
 

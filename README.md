@@ -1,4 +1,4 @@
-# 登神长阶 (Divine Ascension)
+# 基因修炼 (GeneCultivation)
 
 ## v0.10.5 更新内容
 

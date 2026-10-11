@@ -36,7 +36,7 @@ namespace Code.Data
         /// <summary>初始化（源码模式下不需要，保留空方法兼容）</summary>
         public static void Init()
         {
-            Code.Core.DSDebug.Verbose("[DivineAscension] ActorDataAccessor 源码模式，直接访问data/stats");
+            Code.Core.DSDebug.Verbose("[GeneCultivation] ActorDataAccessor 源码模式，直接访问data/stats");
         }
 
         /// <summary>获取Actor的data字段（直接访问）</summary>

@@ -27,7 +27,7 @@ namespace Code.Data
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] FindActorById失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] FindActorById失败: " + e.Message);
             }
             return null;
         }

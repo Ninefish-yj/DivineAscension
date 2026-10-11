@@ -92,7 +92,7 @@ namespace Code.Core
                         break;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] RecordEvent 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] RecordEvent 异常: " + dsEx.Message); }
 
             // 控制台只输出重要事件（突破、规则反噬、灾变、警告、错误）
             if (_logToConsole && ShouldLogToConsole(type, tier))

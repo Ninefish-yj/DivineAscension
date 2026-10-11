@@ -141,7 +141,7 @@ namespace Code.Combat
                     if (divineCrit > 0f && UnityEngine.Random.value < divineCrit)
                     {
                         damage *= 2f;
-                        Code.Core.DSDebug.Verbose($"[DivineAscension] {from.getName()} 神创暴击！伤害×2");
+                        Code.Core.DSDebug.Verbose($"[GeneCultivation] {from.getName()} 神创暴击！伤害×2");
                     }
                 }
 
@@ -165,7 +165,7 @@ namespace Code.Combat
                                     fromData.health = (int)newHp;
                                 }
                             }
-                            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] 神创吸血异常: " + dsEx.Message); }
+                            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 神创吸血异常: " + dsEx.Message); }
                         }
                     }
                 }
@@ -191,7 +191,7 @@ namespace Code.Combat
             }
             catch (Exception dsEx)
             {
-                DSDebug.Warning("[DivineAscension] GetHit_Prefix 异常: " + dsEx.Message);
+                DSDebug.Warning("[GeneCultivation] GetHit_Prefix 异常: " + dsEx.Message);
             }
         }
 

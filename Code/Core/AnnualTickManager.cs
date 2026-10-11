@@ -264,10 +264,10 @@ namespace Code.Core
                     if (actor != null && actor.isAlive() && CultivationData.IsAscended(actor))
                     {
                         // 清理无存活成员的空组织（防"没人组织"残留）
-                        try { Code.Sect.SectManager.CleanupEmptySects(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
+                        try { Code.Sect.SectManager.CleanupEmptySects(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
                         // 兜底：组织自动归属 + 自动收藏（突破未触发时年度补齐）
-                        try { Code.Sect.SectManager.EnsureSectMembership(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
-                        try { Code.Core.AutoFavoriteManager.CheckAndAutoFavorite(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
+                        try { Code.Sect.SectManager.EnsureSectMembership(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
+                        try { Code.Core.AutoFavoriteManager.CheckAndAutoFavorite(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
                         ExecuteUnitAnnualSettlement(actor);
                         settledCount++;
                     }
@@ -300,7 +300,7 @@ namespace Code.Core
                 }
                 catch (Exception e)
                 {
-                    DSDebug.Warning("[DivineAscension] 领域系统年度结算异常: " + e.Message);
+                    DSDebug.Warning("[GeneCultivation] 领域系统年度结算异常: " + e.Message);
                 }
 
                 // 步骤10.55：年度信仰结算（登神级收集信徒贡献的信仰能量）
@@ -338,7 +338,7 @@ namespace Code.Core
                 Realm.RealmJudge.OnDominatorDeath(dominator.ActorId);
                 int newEra = Realm.RealmJudge.GetCurrentEra();
 
-                DSDebug.Verbose($"[DivineAscension] 纪元主宰 {deadName} 陨落，第{oldEra}纪元终结，第{newEra}纪元开启（混沌无主）");
+                DSDebug.Verbose($"[GeneCultivation] 纪元主宰 {deadName} 陨落，第{oldEra}纪元终结，第{newEra}纪元开启（混沌无主）");
 
                 // 全局通知 + 历史记录
                 try
@@ -381,7 +381,7 @@ namespace Code.Core
             }
             catch (Exception e)
             {
-                DSDebug.Error("[DivineAscension] 单位年度结算异常: " + e.Message + "\n" + e.StackTrace);
+                DSDebug.Error("[GeneCultivation] 单位年度结算异常: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -400,8 +400,8 @@ namespace Code.Core
             catch { }
             
             //  年度统计钩子：修炼年数+1，更新历史失控峰值
-            try { CultivationData.AddCultivationYear(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
-            try { CultivationData.UpdateMaxTurbulence(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+            try { CultivationData.AddCultivationYear(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
+            try { CultivationData.UpdateMaxTurbulence(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
             if (Code.Core.DengShenConfig.EnableAutoCultivation)
             {
@@ -409,9 +409,9 @@ namespace Code.Core
                 EnergyTurbulenceCalculator.SettleAnnualQi(actor);
 
                 // 步骤2.1：更新基因能量缓存（年度Tick时计算，战斗时直接读取，减轻性能负担）
-                try { GeneEnergyCalculator.CalculateAndCacheGeneEnergy(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+                try { GeneEnergyCalculator.CalculateAndCacheGeneEnergy(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
                 // 步骤2.1.1：更新基因连锁加成缓存（年度Tick时计算，战斗时直接读取，减轻性能负担）
-                try { GeneLinkageSystem.RefreshLinkageCaches(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+                try { GeneLinkageSystem.RefreshLinkageCaches(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
                 // 注：GE 攻速/射程/速度加成已改由 Actor.updateStats Postfix 应用（stats 每次重建自动带上），
                 // 不在年度结算重复调用，避免双倍叠加（GeneEnergyAttributeApplier.ApplyAttributes）
@@ -429,7 +429,7 @@ namespace Code.Core
                         }
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
                 // 步骤3：失控指数结算
                 float externalGain = EnergyTurbulenceCalculator.ConsumeAnnualTurbulenceGain(actor);
@@ -458,12 +458,12 @@ namespace Code.Core
                             actor.data.health = (int)(currentHp * 0.9f); // 扣10%血
                         }
                         catch { }
-                        DSDebug.Verbose($"[DivineAscension] 非12阶单位 {actor.name} 被排斥出维度空间，扣10%血");
+                        DSDebug.Verbose($"[GeneCultivation] 非12阶单位 {actor.name} 被排斥出维度空间，扣10%血");
                     }
                 }
                 catch (Exception e)
                 {
-                    DSDebug.Verbose($"[DivineAscension] 自动进入维度空间失败: {e.Message}");
+                    DSDebug.Verbose($"[GeneCultivation] 自动进入维度空间失败: {e.Message}");
                 }
 
                 //  维度空间效果：修炼加速+失控消解
@@ -491,7 +491,7 @@ namespace Code.Core
                         CultivationData.SetDimensionSpaceEnergy(actor, spaceEnergy + 10f);
                     }
                 }
-                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
                 // 步骤4：深度觉醒经验积累
                 EnergyTurbulenceCalculator.SettleEnlightenment(actor);
@@ -523,7 +523,7 @@ namespace Code.Core
             Realm.RealmFeatures.ApplyAnnualRealmFeatures(actor);
 
             // 步骤11：年度刷新称号（组织职位/基因变化自动反映；基因称号已缓存不会变）
-            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 异常: " + dsEx.Message); }
+            try { Code.Realm.TitleSuffixManager.UpdateTitleSuffix(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
             // 步骤12：组织贡献年度累积（按职位，供组织贡献榜/单位窗口显示）
             try
@@ -535,7 +535,7 @@ namespace Code.Core
                     if (contrib > 0f) CultivationData.AddSectContribution(actor, contrib);
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleSingleCultivator 组织贡献异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 组织贡献异常: " + dsEx.Message); }
         }
 
         /// <summary>年度能力掌控度提升（现代异能体系，替代印记系统）</summary>
@@ -579,7 +579,7 @@ namespace Code.Core
 
                 CultivationData.AddMastery(actor, finalGain);
 
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 能力掌控度提升 {finalGain:F1}  {CultivationData.GetMastery(actor):F1}/100");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 能力掌控度提升 {finalGain:F1}  {CultivationData.GetMastery(actor):F1}/100");
             }
             catch (Exception e)
             {
@@ -694,13 +694,13 @@ namespace Code.Core
                     {
                         CultivationData.UnlockGene(actor, node.Id);
                         newlyUnlocked++;
-                        DSDebug.Verbose($"[DivineAscension] {actor.getName()} 解锁基因节点: {node.NameZh} ({node.Id})");
+                        DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 解锁基因节点: {node.NameZh} ({node.Id})");
                     }
                 }
 
                 if (newlyUnlocked > 0)
                 {
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 年度基因图谱解锁: {newlyUnlocked}个新节点");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 年度基因图谱解锁: {newlyUnlocked}个新节点");
                 }
 
                 //  基因突变机制：完成基因任务后按概率获得，未获得可重复尝试（下一年度）
@@ -798,7 +798,7 @@ namespace Code.Core
                 if (enlightDur <= 0f)
                 {
                     enlightDur = 0f;
-                    DSDebug.Verbose($"[DivineAscension] {actor.getName()} 深度觉醒状态结束");
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 深度觉醒状态结束");
                 }
                 CultivationData.SetEnlightenmentDuration(actor, enlightDur);
             }
@@ -830,7 +830,7 @@ namespace Code.Core
                             try
                             {
                                 hasStatus = actor.hasStatus(ability.Id);
-                            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleStatusDurations 异常: " + dsEx.Message); }
+                            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleStatusDurations 异常: " + dsEx.Message); }
                             
                             if (hasStatus)
                             {
@@ -853,9 +853,9 @@ namespace Code.Core
                                 // 能量不足，移除所有活跃技能状态效果
                                 foreach (var ability in activeAbilities)
                                 {
-                                    try { Code.Core.DSStatusManager.RemoveStatus(actor, ability.Id); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SettleStatusDurations 异常: " + dsEx.Message); }
+                                    try { Code.Core.DSStatusManager.RemoveStatus(actor, ability.Id); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleStatusDurations 异常: " + dsEx.Message); }
                                 }
-                                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 异能能量不足，{activeAbilities.Count}个技能状态效果提前消散");
+                                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 异能能量不足，{activeAbilities.Count}个技能状态效果提前消散");
                             }
                         }
                     }
@@ -904,12 +904,12 @@ namespace Code.Core
         {
             if (!Code.Core.DengShenConfig.EnableAutoAwakening)
             {
-                DSDebug.Verbose("[DivineAscension] 自动觉醒已关闭，跳过凡人觉醒抽样");
+                DSDebug.Verbose("[GeneCultivation] 自动觉醒已关闭，跳过凡人觉醒抽样");
                 return;
             }
             if (World.world == null || World.world.units == null)
             {
-                DSDebug.Warning("[DivineAscension] AwakenMortals: World或units为null");
+                DSDebug.Warning("[GeneCultivation] AwakenMortals: World或units为null");
                 return;
             }
 
@@ -924,7 +924,7 @@ namespace Code.Core
                 var aliveUnits = World.world.units.units_only_alive;
                 if (aliveUnits == null)
                 {
-                    DSDebug.Warning("[DivineAscension] AwakenMortals: units_only_alive为null");
+                    DSDebug.Warning("[GeneCultivation] AwakenMortals: units_only_alive为null");
                     return;
                 }
 
@@ -957,14 +957,14 @@ namespace Code.Core
                         errorCount++;
                         if (errorCount <= 3) // 只输出前3个错误，避免刷屏
                         {
-                            DSDebug.Error($"[DivineAscension] AwakenMortals处理单位异常: {e.Message}\n{e.StackTrace}");
+                            DSDebug.Error($"[GeneCultivation] AwakenMortals处理单位异常: {e.Message}\n{e.StackTrace}");
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Error($"[DivineAscension] AwakenMortals遍历异常: {e.Message}\n{e.StackTrace}");
+                DSDebug.Error($"[GeneCultivation] AwakenMortals遍历异常: {e.Message}\n{e.StackTrace}");
             }
 
             // 详细调试日志（仅在调试模式下输出）
@@ -1048,7 +1048,7 @@ namespace Code.Core
                         if (sect != null)
                         {
                             foundedCount++;
-                            DSDebug.Verbose($"[DivineAscension] {actor.getName()}({tier}阶) 自动创立组织 [{sectName}]");
+                            DSDebug.Verbose($"[GeneCultivation] {actor.getName()}({tier}阶) 自动创立组织 [{sectName}]");
 
                             // 记录到事件管理器（个人史诗风格）
                             DSEventManager.RecordEvent(
@@ -1116,7 +1116,7 @@ namespace Code.Core
                         return true;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] IsHumanoidCivilized 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] IsHumanoidCivilized 异常: " + dsEx.Message); }
 
             // 判断标准2：civilized（文明化）特质非智慧种族通过异能或进化开智后获得
             if (actor.hasTrait("civilized"))
@@ -1190,7 +1190,7 @@ namespace Code.Core
                 // 前10次调用输出日志，确认Patch生效
                 if (_patchCallCount <= 10)
                 {
-                    DSDebug.Verbose($"[DivineAscension] updateAge Patch触发 #{_patchCallCount}");
+                    DSDebug.Verbose($"[GeneCultivation] updateAge Patch触发 #{_patchCallCount}");
                 }
 
                 Actor actor = __instance as Actor;
@@ -1202,7 +1202,7 @@ namespace Code.Core
                         _settleCount++;
                         if (_settleCount <= 5)
                         {
-                            DSDebug.Verbose($"[DivineAscension] 年度结算触发 #{_settleCount}，单位: {actor.getName()}，年龄: {actor.getAge()}");
+                            DSDebug.Verbose($"[GeneCultivation] 年度结算触发 #{_settleCount}，单位: {actor.getName()}，年龄: {actor.getAge()}");
                         }
                     }
                 }
@@ -1213,7 +1213,7 @@ namespace Code.Core
                 if (_patchExceptionCount < 20)
                 {
                     _patchExceptionCount++;
-                DSDebug.Warning("[DivineAscension] updateAge Patch异常: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] updateAge Patch异常: " + e.Message);
                 }
             }
         }

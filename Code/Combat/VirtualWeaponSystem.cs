@@ -47,14 +47,14 @@ namespace Code.Combat
 
             try
             {
-                DSDebug.Verbose("[DivineAscension] 虚拟武器系统初始化（伤害加成已合并到AbilityStatusPatch）");
+                DSDebug.Verbose("[GeneCultivation] 虚拟武器系统初始化（伤害加成已合并到AbilityStatusPatch）");
                 // 初始化能量刃投射物
                 InitEnergyBladeProjectile();
-                DSDebug.Verbose("[DivineAscension] 虚拟武器系统初始化完成");
+                DSDebug.Verbose("[GeneCultivation] 虚拟武器系统初始化完成");
             }
             catch (Exception e)
             {
-                DSDebug.Error($"[DivineAscension] 虚拟武器系统初始化失败: {e.Message}\n{e.StackTrace}");
+                DSDebug.Error($"[GeneCultivation] 虚拟武器系统初始化失败: {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -146,7 +146,7 @@ namespace Code.Combat
                     prop.SetValue(obj, value);
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] SetPropertyIfExists 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] SetPropertyIfExists 异常: " + dsEx.Message); }
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Code.Combat
                 // GE加成每10点，护甲穿透+5%（基础20%，GE=10时25%，GE=20时30%）
                 baseArmorPen += geBonus * 0.005f;
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] GetVirtualWeaponArmorPenetration 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GetVirtualWeaponArmorPenetration 异常: " + dsEx.Message); }
             
             // 护甲穿透上限50%
             return Mathf.Min(0.5f, baseArmorPen);
@@ -238,7 +238,7 @@ namespace Code.Combat
             }
             catch (Exception e)
             {
-                DSDebug.Verbose($"[DivineAscension] 虚拟武器攻击特效播放失败: {e.Message}");
+                DSDebug.Verbose($"[GeneCultivation] 虚拟武器攻击特效播放失败: {e.Message}");
             }
         }
 
@@ -357,7 +357,7 @@ namespace Code.Combat
                             Vector2 pos = delayed.Target.current_position;
                             PlayHitEffect(pos);
                         }
-                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] UpdateDelayedEffects 异常: " + dsEx.Message); }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] UpdateDelayedEffects 异常: " + dsEx.Message); }
                     }
                     _delayedEffects.RemoveAt(i);
                 }
@@ -389,7 +389,7 @@ namespace Code.Combat
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] PlayHitEffect 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] PlayHitEffect 异常: " + dsEx.Message); }
         }
     }
 }

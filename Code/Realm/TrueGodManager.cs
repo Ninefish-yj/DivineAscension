@@ -64,13 +64,21 @@ namespace Code.Realm
 				// 这样OWL启动器和Steam直接启动都自动匹配，不需要手动处理两个位置
 				string dataDir = Path.Combine(
 					Application.persistentDataPath,
-					"DivineAscension", "data"
+					"GeneCultivation", "data"
 				);
 				if (!Directory.Exists(dataDir))
 				{
 					Directory.CreateDirectory(dataDir);
 				}
-				return Path.Combine(dataDir, "true_gods_global.json");
+				// 旧目录数据迁移兼容：新目录无数据时复制旧目录数据，避免改名后丢失跨存档真神记录
+				string newFile = Path.Combine(dataDir, "true_gods_global.json");
+				string legacyDir = Path.Combine(Application.persistentDataPath, "DivineAscension", "data");
+				string legacyFile = Path.Combine(legacyDir, "true_gods_global.json");
+				if (!File.Exists(newFile) && File.Exists(legacyFile))
+				{
+					try { File.Copy(legacyFile, newFile); } catch { }
+				}
+				return newFile;
 			}
 		}
 
@@ -85,7 +93,7 @@ namespace Code.Realm
 				_initialized = true;
 
 				LoadGlobalData();
-				DSDebug.Verbose($"[DivineAscension] 真神跨存档系统初始化完成，当前共有 {_globalData.TrueGods.Count} 位真神");
+				DSDebug.Verbose($"[GeneCultivation] 真神跨存档系统初始化完成，当前共有 {_globalData.TrueGods.Count} 位真神");
 			}
 		}
 
@@ -118,7 +126,7 @@ namespace Code.Realm
 			}
 			catch (Exception e)
 			{
-				DSDebug.Error($"[DivineAscension] 加载真神全局数据失败: {e.Message}");
+				DSDebug.Error($"[GeneCultivation] 加载真神全局数据失败: {e.Message}");
 				_globalData = new TrueGodGlobalData();
 			}
 		}
@@ -136,7 +144,7 @@ namespace Code.Realm
 			}
 			catch (Exception e)
 			{
-				DSDebug.Error($"[DivineAscension] 保存真神全局数据失败: {e.Message}");
+				DSDebug.Error($"[GeneCultivation] 保存真神全局数据失败: {e.Message}");
 			}
 		}
 
@@ -185,7 +193,7 @@ namespace Code.Realm
 				_globalData.TotalTrueGods = _globalData.TrueGods.Count;
 				SaveGlobalData();
 
-				DSDebug.Verbose($"[DivineAscension] 真神 {godName} 已载入跨存档神殿，当前共有 {_globalData.TrueGods.Count} 位真神");
+				DSDebug.Verbose($"[GeneCultivation] 真神 {godName} 已载入跨存档神殿，当前共有 {_globalData.TrueGods.Count} 位真神");
 			}
 		}
 

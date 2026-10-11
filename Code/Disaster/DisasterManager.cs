@@ -181,7 +181,7 @@ namespace Code.Disaster
                     SetAttackTargetViaReflection(a, primeTarget);
             }
 
-            DSDebug.Warning($"[DivineAscension] 天地狂乱：{highTiers.Count}名高阶异能者陷入互相仇恨，失控最严重的{primeTarget?.getName()}被全员围杀，直至屏障恢复");
+            DSDebug.Warning($"[GeneCultivation] 天地狂乱：{highTiers.Count}名高阶异能者陷入互相仇恨，失控最严重的{primeTarget?.getName()}被全员围杀，直至屏障恢复");
         }
 
         /// <summary>反射设置攻击目标（attack_target字段运行时非public，避免FieldAccess异常）</summary>
@@ -196,7 +196,7 @@ namespace Code.Disaster
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] 设置攻击目标失败: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] 设置攻击目标失败: {e.Message}");
             }
         }
 
@@ -278,12 +278,12 @@ namespace Code.Disaster
             _rifts.Add(rift);
 
             //  全局统计钩子：灾变计数+1
-            try { Code.Core.DSGlobalStats.IncrementDisasterCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] SpawnRift 异常: " + dsEx.Message); }
+            try { Code.Core.DSGlobalStats.IncrementDisasterCount(); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SpawnRift 异常: " + dsEx.Message); }
 
             // 应用裂隙视觉效果
             ApplyRiftVisualEffect(rift);
 
-            DSDebug.Verbose(string.Format("[DivineAscension] 虚空裂隙生成! 位置=({0:F0},{1:F0}) 强度={2:F1} 屏障={3:F1}%",
+            DSDebug.Verbose(string.Format("[GeneCultivation] 虚空裂隙生成! 位置=({0:F0},{1:F0}) 强度={2:F1} 屏障={3:F1}%",
                 x, y, rift.Power, _barrierIntegrity));
         }
 
@@ -297,7 +297,7 @@ namespace Code.Disaster
                 {
                     // 裂隙消散：恢复被修改的原始地块类型
                     RestoreRiftVisualEffect(r);
-                    DSDebug.Verbose(string.Format("[DivineAscension] 虚空裂隙#{0} 已消散，已恢复{1}个地块", r.Id, r.ModifiedTiles.Count));
+                    DSDebug.Verbose(string.Format("[GeneCultivation] 虚空裂隙#{0} 已消散，已恢复{1}个地块", r.Id, r.ModifiedTiles.Count));
                     return true;
                 }
                 return false;
@@ -355,14 +355,14 @@ namespace Code.Disaster
                             restored++;
                         }
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] RestoreRiftVisualEffect 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] RestoreRiftVisualEffect 异常: " + dsEx.Message); }
                 }
 
                 rift.ModifiedTiles.Clear();
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] RestoreRiftVisualEffect异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] RestoreRiftVisualEffect异常: {e.Message}");
             }
         }
 
@@ -420,7 +420,7 @@ namespace Code.Disaster
                         //  统计钩子：裂隙影响范围内（30格）的异能者记录经历灾变
                         if (tier > 0)
                         {
-                            try { CultivationData.AddDisasterSurvived(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[DivineAscension] ApplyRiftDamage 异常: " + dsEx.Message); }
+                            try { CultivationData.AddDisasterSurvived(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ApplyRiftDamage 异常: " + dsEx.Message); }
                         }
                     }
                 }
@@ -428,7 +428,7 @@ namespace Code.Disaster
 
             if (damagedCount > 0 || corruptedCount > 0)
             {
-                DSDebug.Verbose($"[DivineAscension] 虚空裂隙伤害: 伤害{damagedCount}个单位, 虚空侵蚀{corruptedCount}个异能者");
+                DSDebug.Verbose($"[GeneCultivation] 虚空裂隙伤害: 伤害{damagedCount}个单位, 虚空侵蚀{corruptedCount}个异能者");
             }
 
             // 天地屏障破碎后的全局效果
@@ -464,11 +464,11 @@ namespace Code.Disaster
                 rift.VisualApplied = true;
                 rift.NextPulseTime = GetCurrentYear() + 1; // 1年后第一次脉冲
 
-                DSDebug.Verbose($"[DivineAscension] 虚空裂隙 #{rift.Id} 生成特效已播放 (中心:{rift.X:F0},{rift.Y:F0}, 强度:{rift.Power:F1}, 缩放:{effectScale:F2})");
+                DSDebug.Verbose($"[GeneCultivation] 虚空裂隙 #{rift.Id} 生成特效已播放 (中心:{rift.X:F0},{rift.Y:F0}, 强度:{rift.Power:F1}, 缩放:{effectScale:F2})");
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] ApplyRiftVisualEffect异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] ApplyRiftVisualEffect异常: {e.Message}");
             }
         }
 
@@ -503,7 +503,7 @@ namespace Code.Disaster
                         PlayOriginalEffect("fx_cast_ground_purple", randomPos, scale);
                         PlayOriginalEffect("fx_cast_top_purple", randomPos, scale * 0.7f);
                     }
-                    DSDebug.Verbose($"[DivineAscension] 天地屏障破碎：全图{eruptionCount}处虚空能量爆发！");
+                    DSDebug.Verbose($"[GeneCultivation] 天地屏障破碎：全图{eruptionCount}处虚空能量爆发！");
                 }
 
                 // 3. 全局提示消息
@@ -511,7 +511,7 @@ namespace Code.Disaster
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] ApplyBarrierBrokenVisualEffect异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] ApplyBarrierBrokenVisualEffect异常: {e.Message}");
             }
         }
 
@@ -567,7 +567,7 @@ namespace Code.Disaster
                     ApplyDamage(actor, dmg);
                     casualtyCount++;
                 }
-                DSDebug.Verbose($"[DivineAscension] 天地屏障破碎！虚空裂隙爆发，全图湮灭伤害波及{casualtyCount}个单位");
+                DSDebug.Verbose($"[GeneCultivation] 天地屏障破碎！虚空裂隙爆发，全图湮灭伤害波及{casualtyCount}个单位");
 
                 // 全图失控指数暴涨（破碎瞬间，仅一次）
                 int affectedCount = ApplyTurbulenceSurge();
@@ -647,11 +647,11 @@ namespace Code.Disaster
                     PlayOriginalEffect("fx_cast_top_purple", center, 0.8f);
                 }
 
-                DSDebug.Verbose($"[DivineAscension] 天地屏障破碎：虚空裂隙爆发（{_rifts.Count}道裂隙喷涌）");
+                DSDebug.Verbose($"[GeneCultivation] 天地屏障破碎：虚空裂隙爆发（{_rifts.Count}道裂隙喷涌）");
             }
             catch (Exception e)
             {
-                DSDebug.Warning($"[DivineAscension] TriggerRiftEruption异常: {e.Message}");
+                DSDebug.Warning($"[GeneCultivation] TriggerRiftEruption异常: {e.Message}");
             }
         }
 
@@ -665,10 +665,10 @@ namespace Code.Disaster
             if (wasBroken && _barrierIntegrity > 0f)
             {
                 _barrierBrokenApplied = false;
-                DSDebug.Verbose("[DivineAscension] 天地屏障已强制修复，破碎爆发标记已重置");
+                DSDebug.Verbose("[GeneCultivation] 天地屏障已强制修复，破碎爆发标记已重置");
             }
 
-            DSDebug.Verbose($"[DivineAscension] 强制修复天地屏障 +{amount:F1}%，当前={_barrierIntegrity:F1}%");
+            DSDebug.Verbose($"[GeneCultivation] 强制修复天地屏障 +{amount:F1}%，当前={_barrierIntegrity:F1}%");
         }
 
         /// <summary>在指定位置生成虚空裂隙（调试/技能用）</summary>
@@ -691,7 +691,7 @@ namespace Code.Disaster
             // 应用裂隙视觉效果（修复：调试面板生成裂隙时也播放特效）
             ApplyRiftVisualEffect(rift);
 
-            DSDebug.Verbose($"[DivineAscension] 虚空裂隙生成(技能触发)! 位置=({x:F0},{y:F0}) 强度={rift.Power:F1}");
+            DSDebug.Verbose($"[GeneCultivation] 虚空裂隙生成(技能触发)! 位置=({x:F0},{y:F0}) 强度={rift.Power:F1}");
         }
 
         // ============================================================

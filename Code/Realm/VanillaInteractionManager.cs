@@ -110,7 +110,7 @@ namespace Code.Realm
 
             if (granted > 0)
             {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 突破到{newTier}阶，授予{granted}个原版特质");
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破到{newTier}阶，授予{granted}个原版特质");
             }
         }
 
@@ -148,7 +148,7 @@ namespace Code.Realm
                     }
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetIntelligence 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetIntelligence 异常: " + dsEx.Message); }
             // 回退：通过特质判断
             float intel = 1f; // 基础智力1
             if (actor.hasTrait(V_SMART)) intel += 2f;
@@ -222,7 +222,7 @@ namespace Code.Realm
                     mult += eraEffect.CultivationBonus;
                 }
             }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] GetCultivationSpeedMultiplier 异常: " + dsEx.Message); }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetCultivationSpeedMultiplier 异常: " + dsEx.Message); }
 
             //  专精加成：鼓励只掌握2个基因（初始基因+觉醒第二基因）走专精路线
             // 此时修炼速度+30%，突破成功率+10%
@@ -305,7 +305,7 @@ namespace Code.Realm
                 if (!applied)
                 {
                     var fields = actor.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    DSDebug.Verbose($"[DivineAscension] Actor所有字段:");
+                    DSDebug.Verbose($"[GeneCultivation] Actor所有字段:");
                     foreach (var field in fields)
                     {
                         if (field.FieldType == typeof(float) || field.FieldType == typeof(int))
@@ -329,29 +329,29 @@ namespace Code.Realm
                             {
                                 field.SetValue(actor, (float)currentValue + bonusYears);
                                 applied = true;
-                                DSDebug.Verbose("[DivineAscension] " + actor.getName() + " 寿命加成 +" + bonusYears.ToString("F0") + "年（字段:" + fieldName + "）");
+                                DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 寿命加成 +" + bonusYears.ToString("F0") + "年（字段:" + fieldName + "）");
                                 break;
                             }
                             else if (currentValue is int)
                             {
                                 field.SetValue(actor, (int)currentValue + (int)bonusYears);
                                 applied = true;
-                                DSDebug.Verbose("[DivineAscension] " + actor.getName() + " 寿命加成 +" + bonusYears.ToString("F0") + "年（字段:" + fieldName + "）");
+                                DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 寿命加成 +" + bonusYears.ToString("F0") + "年（字段:" + fieldName + "）");
                                 break;
                             }
                         }
                     }
-                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[DivineAscension] ApplyLifespanBonus 异常: " + dsEx.Message); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] ApplyLifespanBonus 异常: " + dsEx.Message); }
                 }
 
                 if (!applied)
                 {
-                    DSDebug.Verbose("[DivineAscension] " + actor.getName() + " 寿命加成未找到年龄字段，跳过（" + bonusYears.ToString("F0") + "年）");
+                    DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 寿命加成未找到年龄字段，跳过（" + bonusYears.ToString("F0") + "年）");
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[DivineAscension] 应用寿命加成失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 应用寿命加成失败: " + e.Message);
             }
         }
 

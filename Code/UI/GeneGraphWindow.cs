@@ -642,7 +642,7 @@ namespace Code.UI
 					if (_selectedActor != null)
 					{
 						SaveDivineTexts();
-						DSDebug.Verbose("[DivineAscension] 神创基因数值已保存");
+						DSDebug.Verbose("[GeneCultivation] 神创基因数值已保存");
 					}
 				}
 				GUI.color = Color.white;
