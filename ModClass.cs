@@ -104,6 +104,8 @@ namespace Code
 
             // 6.5.0.6 初始化纪元桥接（突破真神级/超神级时自动切换原版时代）
             Code.Realm.EraBridge.Init();
+            // 注册超神纪元到era_library（必须先注册，SwitchToTrueGodEra才能找到并切换）
+            Code.Realm.RealmJudge.RegisterTranscendentEra();
 
             // 6.5.0.7 接入原版BuildOrder系统：把所有建筑注册到城市建造队列，工人自动来建
 //             Code.Realm.BuildOrderBridge.Init();
