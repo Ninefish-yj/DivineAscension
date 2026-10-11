@@ -90,8 +90,7 @@ namespace Code.UI
                 //     var allPowers = AssetManager.powers.list;
                 //     foreach (var power in allPowers)
                 //     {
-                //         if (power.id.StartsWith("ds_building_") && !string.IsNullOrEmpty(power.drop_id))
-                //         {
+                                //         {
                 //             PowerButton buildBtn = PowerButtonCreator.CreateGodPowerButton(power.id, null);
                 //             SetPowerButtonTooltip(buildBtn, power.id.Underscore(), power.id);
                 //             _tab.AddPowerButton("tools", buildBtn);

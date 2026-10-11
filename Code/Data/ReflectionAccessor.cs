@@ -9,24 +9,6 @@ using UnityEngine;
 namespace Code.Data
 {
     /// <summary>
-    /// Actor扩展访问器
-    /// </summary>
-    public static class ActorExtensions
-    {
-        /// <summary>获取Actor的attackedBy字段（攻击者，直接访问）</summary>
-        public static BaseSimObject GetAttackedBy(this Actor actor)
-        {
-            return actor?.attackedBy;
-        }
-
-        /// <summary>获取Actor的data字段（直接访问）</summary>
-        public static ActorData GetData(this Actor actor)
-        {
-            return actor?.data;
-        }
-    }
-
-    /// <summary>
     /// SystemManager扩展访问器
     /// </summary>
     public static class SystemManagerExtensions
@@ -50,16 +32,3 @@ namespace Code.Data
             return null;
         }
     }
-
-    /// <summary>
-    /// UnitWindow扩展访问器
-    /// </summary>
-    public static class UnitWindowExtensions
-    {
-        /// <summary>获取UnitWindow的actor属性（直接访问）</summary>
-        public static Actor GetActor(this UnitWindow window)
-        {
-            return window?.actor;
-        }
-    }
-}

@@ -1525,15 +1525,5 @@
   "judge_demote_notify": "{0} 席位争夺失利，境界回退至{1}阶 {2}",
   "judge_demote_title": "境界回退：{0}",
   "judge_demote_desc": "{0} 在高位之争中失利，境界回退至{1}阶 {2}，让出席位。",
-  "event_gene_collapse": "基因崩溃",
-  "ds_building_dimensional_gate": "维度之门",
-  "ds_building_dimensional_gate_description": "通往维度空间的传送门",
-  "ds_building_space_anchor": "空间锚点",
-  "ds_building_space_anchor_description": "稳定空间坐标，屏障每年修复+0.5%",
-  "ds_building_law_hall": "法则殿堂",
-  "ds_building_law_hall_description": "研究法则之地，全局异能者全属性提升",
-  "ds_building_domain_tower": "领域之塔",
-  "ds_building_domain_tower_description": "扩大领域范围，领域效果增强",
-  "ds_building_cultivation_room": "修炼室",
-  "ds_building_cultivation_room_description": "加速修炼，能量恢复提升"
+  "event_gene_collapse": "基因崩溃"
 }

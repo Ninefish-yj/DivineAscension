@@ -324,7 +324,6 @@ namespace Code.Dimension
 //                             
 // //                             foreach (var b in buildings)
 //                             {
-//                                 if (b.BuildingId == "ds_building_dimensional_gate" && b.IsActive)
 //                                 {
 //                                     float dx = actorPos.x - b.X;
 //                                     float dy = actorPos.y - b.Y;

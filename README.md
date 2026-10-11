@@ -1,4 +1,15 @@
-﻿# 登神长阶 (Divine Ascension)
+# 登神长阶 (Divine Ascension)
+
+## v0.10.5 更新内容
+
+### 修复：超神纪元从未注册（纪元切换失效的根因）
+- **根因**：`RegisterTranscendentEra()` 定义了但从未被调用，超神纪元（age_ds_transcendent）从未注册进 era_library，导致突破超神级时 `SwitchToTrueGodEra()` 查不到纪元资产、切换静默失败
+- **修复**：`ModClass.OnModLoad` 补上 `RealmJudge.RegisterTranscendentEra()`，注册先于切换执行
+- **效果**：突破 13 阶超神级后，原版时代现在能真正切换到"超神纪元"
+
+### 清理
+- **死代码**：删除 `ChallengeDominator`（从未调用）、`ActorExtensions`/`UnitWindowExtensions`（未使用）
+- **建筑残留**：删除 10 个 `ds_building_*` 本地化 key 与代码注释残留
 
 ## v0.9.4 更新内容
 

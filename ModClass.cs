@@ -107,19 +107,6 @@ namespace Code
             // 注册超神纪元到era_library（必须先注册，SwitchToTrueGodEra才能找到并切换）
             Code.Realm.RealmJudge.RegisterTranscendentEra();
 
-            // 6.5.0.7 接入原版BuildOrder系统：把所有建筑注册到城市建造队列，工人自动来建
-//             Code.Realm.BuildOrderBridge.Init();
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_awakening_altar", 5);      // 觉醒祭坛
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_energy_well", 10);         // 能量井
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_domain_tower", 15);        // 场域塔
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_law_hall", 20);           // 规则殿
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_space_anchor", 25);         // 空间锚点
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_dimensional_gate", 30);       // 维度之门
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_sanctuary", 40);           // 圣所
-//             Code.Realm.BuildOrderBridge.RegisterBuilding("ds_building_divine_temple", 50);               // 神殿
-            // 关键修复：之前漏了这行，订单集合根本没提交到 city_build_orders，城市不知道有这个订单
-//             Code.Realm.BuildOrderBridge.CommitToLibrary();
-
             // 6.5.1 初始化技能状态效果系统（StatusAsset注册 + 战斗计算Patch）
             Core.DSStatusAsset.Init();
             

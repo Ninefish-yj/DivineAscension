@@ -650,64 +650,6 @@ namespace Code.Realm
         }
 
         /// <summary>新真神降世：挑战当前主宰，胜者成为纪元主宰。返回true表示挑战成功成为新主宰</summary>
-        public static bool ChallengeDominator(Actor actor)
-        {
-            float actorEnergy = CultivationData.GetEnergy(actor);
-            int actorElements = CultivationData.GetUnlockedElements(actor)?.Count ?? 0;
-
-            // 无当前主宰  直接成为主宰
-            if (_currentDominator == null)
-            {
-                SetDominator(actor, actorEnergy, actorElements);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 成为第{_currentEra}纪元首位主宰！");
-                return true;
-            }
-
-            // 挑战当前主宰：用原版战斗系统真打一架
-            Actor dominator = SystemManagerExtensions.FindActorById(long.Parse(_currentDominator.ActorId));
-            if (dominator == null || !dominator.isAlive())
-            {
-                // 旧主宰死了，直接上位
-                SetDominator(actor, actorEnergy, actorElements);
-                DSDebug.Verbose($"[DivineAscension] 旧主宰已死，{actor.getName()} 直接成为新主宰！");
-                return true;
-            }
-
-            // 调用原版战斗系统：挑战者和主宰真刀真枪打一架
-            try
-            {
-                actor.startFightingWith(dominator);
-                dominator.startFightingWith(actor);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 挑战 {dominator.getName()}，原版战斗开始！");
-            }
-            catch (Exception e)
-            {
-                DSDebug.Verbose($"[DivineAscension] 触发原版战斗失败，回退到数值对比: {e.Message}");
-            }
-
-            // 胜负判定：谁先死或谁跑了谁输
-            // 简单版：等几秒看谁死了（后面改成真正监听战斗结束事件）
-            // 现在先检查：如果旧主宰死了，挑战者直接赢
-            if (dominator == null || !dominator.isAlive())
-            {
-                // 旧主宰死了，挑战者赢
-                string oldName = _currentDominator.Name;
-                SetDominator(actor, actorEnergy, actorElements);
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 击杀 {oldName}，成为第{_currentEra}纪元新主宰！");
-                return true;
-            }
-
-            // 如果挑战者死了，挑战者输
-            if (!actor.isAlive())
-            {
-                DSDebug.Verbose($"[DivineAscension] {actor.getName()} 战斗中死亡，挑战失败");
-                return false;
-            }
-
-            // 都没死的话，异步等待战斗结束，用原版战斗结果判定
-            WaitForCombatAndDecide(actor, dominator, actorEnergy, actorElements);
-            return true; // 先返回true，等战斗结束再真正判定
-        }
         /// <summary>异步等待战斗结束，然后判定胜负</summary>
         public static void WaitForCombatAndDecide(Actor challenger, Actor dominator, float challengerEnergy, int challengerElements)
         {
