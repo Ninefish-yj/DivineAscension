@@ -16,6 +16,51 @@ namespace Code.UI
     [HarmonyPatch(typeof(UnitWindow), "showStatsRows")]
     public static class UnitWindowIntegration
     {
+        /// <summary>获取单位窗口对应的Actor（兼容不同游戏版本：优先反射字段，失败反射方法）</summary>
+        private static Actor GetUnitActor(UnitWindow window)
+        {
+            if (window == null) return null;
+            // 0.51.x：actor 是 internal 属性（actor => SelectedUnit.unit）
+            try
+            {
+                var actorProp = typeof(UnitWindow).GetProperty("actor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (actorProp != null)
+                {
+                    var actor = actorProp.GetValue(window, null) as Actor;
+                    if (actor != null) return actor;
+                }
+            }
+            catch { }
+            // 兼容旧版本：actor 字段
+            try
+            {
+                var actorField = typeof(UnitWindow).GetField("actor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (actorField != null)
+                {
+                    var actor = actorField.GetValue(window) as Actor;
+                    if (actor != null) return actor;
+                }
+            }
+            catch { }
+            // 兼容其他版本：GetActor() 方法
+            try
+            {
+                var getActor = typeof(UnitWindow).GetMethod("GetActor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (getActor != null) return getActor.Invoke(window, null) as Actor;
+            }
+            catch { }
+            return null;
+        }
+ 
         [HarmonyPostfix]
         public static void Postfix(UnitWindow __instance)
         {
@@ -518,51 +563,6 @@ namespace Code.UI
                 DSDebug.Warning("[GeneCultivation] 更新基因按钮可见性失败: " + e.Message);
             }
         }
-
-        /// <summary>获取单位窗口对应的Actor（兼容不同游戏版本：优先反射字段，失败反射方法）</summary>
-        private static Actor GetUnitActor(UnitWindow window)
-        {
-            if (window == null) return null;
-            // 0.51.x：actor 是 internal 属性（actor => SelectedUnit.unit）
-            try
-            {
-                var actorProp = typeof(UnitWindow).GetProperty("actor",
-                    System.Reflection.BindingFlags.Public |
-                    System.Reflection.BindingFlags.NonPublic |
-                    System.Reflection.BindingFlags.Instance);
-                if (actorProp != null)
-                {
-                    var actor = actorProp.GetValue(window, null) as Actor;
-                    if (actor != null) return actor;
-                }
-            }
-            catch { }
-            // 兼容旧版本：actor 字段
-            try
-            {
-                var actorField = typeof(UnitWindow).GetField("actor",
-                    System.Reflection.BindingFlags.Public |
-                    System.Reflection.BindingFlags.NonPublic |
-                    System.Reflection.BindingFlags.Instance);
-                if (actorField != null)
-                {
-                    var actor = actorField.GetValue(window) as Actor;
-                    if (actor != null) return actor;
-                }
-            }
-            catch { }
-            // 兼容其他版本：GetActor() 方法
-            try
-            {
-                var getActor = typeof(UnitWindow).GetMethod("GetActor",
-                    System.Reflection.BindingFlags.Public |
-                    System.Reflection.BindingFlags.NonPublic |
-                    System.Reflection.BindingFlags.Instance);
-                if (getActor != null) return getActor.Invoke(window, null) as Actor;
-            }
-            catch { }
-            return null;
-        }
-    }
+   }
 }
 
