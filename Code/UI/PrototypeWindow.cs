@@ -67,7 +67,10 @@ namespace Code.UI
             Instance._visible = true;
             if (!wasVisible) MouseOverlayBlocker.RequestBlock();
             Instance.InitTextures();
-            Instance.InitStyles();
+            // 注意：不在此处调用 InitStyles()——new GUIStyle 读取 GUI.skin，
+            // 只能在 OnGUI 上下文内执行（按钮回调等非 OnGUI 场景会抛
+            // "You can only call GUI functions from inside OnGUI"）。
+            // 样式在 OnGUI 每帧惰性初始化（InitStyles 内部判空）。
         }
 
         public static void Hide()
