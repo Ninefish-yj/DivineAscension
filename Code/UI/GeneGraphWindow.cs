@@ -5,6 +5,7 @@ using Code.UI;
 using UnityEngine;
 using Code.Data;
 using Code.Realm;
+using Code.Realm.Prototype;
 using Code.Traits;
 using Code.Sect;
 
@@ -337,6 +338,10 @@ namespace Code.UI
 			}
 
 			GUILayout.Label(isAwakened ? UILocalization.Get("graph_awakening_desc1") : UILocalization.Get("graph_awakening_desc2"), DSGUIStylePool.Label(9, FontStyle.Normal, true));
+
+			// === 原版基因 → 生效加成（三系统桥接显性入口） ===
+			GUILayout.Space(2f);
+			VanillaGenePanel.DrawSourceLine(_selectedActor);
 
 			// === 玩家操作按钮 ===
 			GUI.color = new Color(0.4f, 0.7f, 1f, 0.7f);
@@ -760,6 +765,13 @@ namespace Code.UI
 				GUI.color = levelColors[exprLevel];
 				GUILayout.Label("表达层级: " + levelName, DSGUIStylePool.Label(10, FontStyle.Bold));
 				GUI.color = Color.white;
+			}
+
+			// === 原版基因 → 染色体亲和（三系统桥接显性层） ===
+			if (_selectedActor != null)
+			{
+				VanillaGenePanel.DrawRealmBridgeSection(_selectedActor, elem.Group);
+				GUILayout.Space(6f);
 			}
 
 			// === 效果概览（基因效果数值，贴底显示） ===

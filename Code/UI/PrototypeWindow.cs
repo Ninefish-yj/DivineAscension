@@ -635,6 +635,21 @@ namespace Code.UI
                     GetChromosomeName(def.ChromosomePreference) + GetText("proto_chromo_line", "染色体亲和 ") + chromoAff.ToString("F1") + "/8",
                     _tagStyle);
                 GUI.color = Color.white;
+
+                // 原版基因支撑来源（三系统桥接显性层：原版基因 → 标签 → 本异能）
+                y += 36f;
+                var feedingKeywords = new System.Collections.Generic.List<string>();
+                var mainGenes = GeneVanillaMapping.GetGenesForTag(def.MainTag);
+                var subGenes = GeneVanillaMapping.GetGenesForTag(def.SubTag);
+                if (mainGenes != null) foreach (var g in mainGenes) if (!feedingKeywords.Contains(g)) feedingKeywords.Add(g);
+                if (subGenes != null) foreach (var g in subGenes) if (!feedingKeywords.Contains(g)) feedingKeywords.Add(g);
+                if (feedingKeywords.Count > 0)
+                {
+                    string sourceText = GetText("proto_sources_line", "原版基因支撑: ") + string.Join(" / ", feedingKeywords.ToArray());
+                    GUI.color = new Color(0.6f, 0.9f, 0.75f);
+                    GUI.Label(new Rect(x, y, w, 18f), sourceText, _tagStyle);
+                    GUI.color = Color.white;
+                }
             }
             else
             {

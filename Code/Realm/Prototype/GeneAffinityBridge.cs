@@ -25,111 +25,7 @@ namespace Code.Realm.Prototype
         public const string KEY_AFFINITY_PREFIX = "ds_affinity_";    // 染色体亲和（float，0-7）
         public const string KEY_TAGAFF_PREFIX = "ds_tagaff_";        // 标签亲和（float，按标签名）
 
-        // 原版基因 id → 染色体分组（真实基因 id，见反编译 GeneLibrary.cs）
-        // 力量：damage_* / scale_plus
-        // 敏捷：speed_* / attack_speed
-        // 体质：armor_* / health_* / stamina_*
-        // 智力：intelligence_*
-        // 感知：diplomacy_*
-        // 意志：warfare_*
-        // 潜能：stewardship_*
-        private static readonly Dictionary<string, int> _vanillaToChromosome = new Dictionary<string, int>
-        {
-            // damage → 力量(0)
-            { "damage", 0 },
-            { "scale", 0 },
-            // speed/attack_speed → 敏捷(1)
-            { "speed", 1 },
-            { "attack_speed", 1 },
-            // armor/health/stamina → 体质(2)
-            { "armor", 2 },
-            { "health", 2 },
-            { "stamina", 2 },
-            // intelligence → 智力(3)
-            { "intelligence", 3 },
-            // diplomacy → 感知(4)
-            { "diplomacy", 4 },
-            // warfare → 意志(5)
-            { "warfare", 5 },
-            // stewardship → 潜能(7)
-            { "stewardship", 7 }
-        };
-
-        // 原版基因关键词 → 标签亲和（桥C：天生异能亲和）
-        private static readonly Dictionary<string, List<PrototypeTag>> _vanillaToTags = new Dictionary<string, List<PrototypeTag>>
-        {
-            { "damage",  new List<PrototypeTag> { PrototypeTag.Burn, PrototypeTag.Crit, PrototypeTag.Chain } },
-            { "armor",   new List<PrototypeTag> { PrototypeTag.Shield, PrototypeTag.Heal } },
-            { "health",  new List<PrototypeTag> { PrototypeTag.Shield, PrototypeTag.Heal } },
-            { "stamina", new List<PrototypeTag> { PrototypeTag.Shield, PrototypeTag.Heal } },
-            { "speed",   new List<PrototypeTag> { PrototypeTag.Dodge, PrototypeTag.Slow } },
-            { "attack_speed", new List<PrototypeTag> { PrototypeTag.Dodge, PrototypeTag.Chain } },
-            { "intelligence", new List<PrototypeTag> { PrototypeTag.Heal, PrototypeTag.Stun } },
-            { "warfare", new List<PrototypeTag> { PrototypeTag.Chain, PrototypeTag.Crit } },
-            { "diplomacy", new List<PrototypeTag> { PrototypeTag.Heal, PrototypeTag.Shield } },
-            { "stewardship", new List<PrototypeTag> { PrototypeTag.Heal, PrototypeTag.Shield } }
-        };
-
-        /// <summary>
-        /// 遍历单位原版基因（亚种 nucleus 染色体），安全采集基因 id 列表。
-        /// 与 TranscendentSpeciesSystem.ScanAndApplyGeneticBoost 同一数据源（actor.subspecies.nucleus.chromosomes）。
-        /// 只读，绝不写回原版数据结构。
-        /// </summary>
-        private static List<string> CollectVanillaGenes(Actor actor)
-        {
-            var result = new List<string>();
-            if (actor == null) return result;
-            try
-            {
-                var nucleus = actor.subspecies?.nucleus;
-                if (nucleus == null || nucleus.chromosomes == null) return result;
-                foreach (var chr in nucleus.chromosomes)
-                {
-                    if (chr == null || chr.genes == null) continue;
-                    foreach (var g in chr.genes)
-                    {
-                        GeneAsset gene = g as GeneAsset;
-                        if (gene == null || string.IsNullOrEmpty(gene.id)) continue;
-                        result.Add(gene.id);
-                    }
-                }
-            }
-            catch (System.Exception dsEx)
-            {
-                DSDebug.Verbose("[GeneCultivation] GeneAffinityBridge 采集原版基因异常: " + dsEx.Message);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 从原版基因 id 提取强度等级（damage_3 → 3；无数字 → 1）。
-        /// </summary>
-        private static int GetGeneLevel(string geneId)
-        {
-            try
-            {
-                int idx = geneId.LastIndexOf('_');
-                if (idx >= 0 && idx < geneId.Length - 1)
-                {
-                    string suffix = geneId.Substring(idx + 1);
-                    if (int.TryParse(suffix, out int level)) return Mathf.Clamp(level, 1, 5);
-                }
-            }
-            catch { }
-            return 1;
-        }
-
-        /// <summary>
-        /// 匹配原版基因关键词（damage_1 → "damage"）。
-        /// </summary>
-        private static string MatchKeyword(string geneId)
-        {
-            foreach (var kv in _vanillaToChromosome)
-            {
-                if (geneId.StartsWith(kv.Key, System.StringComparison.Ordinal)) return kv.Key;
-            }
-            return null;
-        }
+        // 原版基因 id → 染色体/标签映射已抽至 GeneVanillaMapping（数据知识单一职责）
 
         /// <summary>
         /// 桥A + 桥C 核心：同步亲和度。
@@ -153,22 +49,21 @@ namespace Code.Realm.Prototype
                 // 标签亲和（枚举到 float）
                 float[] tagAff = new float[System.Enum.GetValues(typeof(PrototypeTag)).Length];
 
-                var genes = CollectVanillaGenes(actor);
+                var genes = GeneVanillaMapping.CollectVanillaGenes(actor);
                 foreach (string geneId in genes)
                 {
                     if (string.IsNullOrEmpty(geneId)) continue;
-                    int level = GetGeneLevel(geneId);
+                    int level = GeneVanillaMapping.GetGeneLevel(geneId);
                     float weight = 1f + level * 0.5f;   // 等级越高亲和越强（_1=1.5，_5=3.5）
 
                     // 桥A：染色体亲和
-                    string kw = MatchKeyword(geneId);
-                    if (kw != null && _vanillaToChromosome.TryGetValue(kw, out int chr))
-                    {
-                        if (chr >= 0 && chr < chromoAff.Length) chromoAff[chr] += weight;
-                    }
+                    string kw = GeneVanillaMapping.MatchKeyword(geneId);
+                    int chr = GeneVanillaMapping.GetChromosomeOf(kw);
+                    if (chr >= 0 && chr < chromoAff.Length) chromoAff[chr] += weight;
 
                     // 桥C：标签亲和
-                    if (kw != null && _vanillaToTags.TryGetValue(kw, out var tags))
+                    var tags = GeneVanillaMapping.GetTagsOf(kw);
+                    if (tags != null)
                     {
                         foreach (var tag in tags)
                         {
