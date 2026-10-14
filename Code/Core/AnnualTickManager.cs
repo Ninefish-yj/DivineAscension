@@ -239,6 +239,7 @@ namespace Code.Core
                 // 步骤2：活跃异能者年度结算（修炼异能能量、失控指数、突破）
                 var snapshot = new List<long>(_activeCultivatorIds);
                 int settledCount = 0;
+                List<string> prototypeBackfilled = null;
                 foreach (long id in snapshot)
                 {
                     Actor actor = FindActorById(id);
@@ -249,11 +250,49 @@ namespace Code.Core
                         // 兜底：组织自动归属 + 自动收藏（突破未触发时年度补齐）
                         try { Code.Sect.SectManager.EnsureSectMembership(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
                         try { Code.Core.AutoFavoriteManager.CheckAndAutoFavorite(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteGlobalAnnualSettlement 异常: " + dsEx.Message); }
+                        // 异能定相补齐（v0.17.1）：旧档/存量已觉醒单位补发异能（新觉醒单位在觉醒时已定相）
+                        // 三系统联动入口：原版基因 → 染色体/标签亲和 → 元素异能（终身锁定）
+                        try
+                        {
+                            if (!Code.Realm.Prototype.PrototypeRegistry.HasPrototype(actor))
+                            {
+                                Code.Realm.Prototype.GeneAffinityBridge.SyncAffinities(actor);
+                                string newProto = Code.Realm.Prototype.GeneAffinityBridge.RollPrototype(actor);
+                                if (!string.IsNullOrEmpty(newProto))
+                                {
+                                    var protoDef = Code.Realm.Prototype.PrototypeRegistry.Get(newProto);
+                                    if (protoDef != null)
+                                    {
+                                        if (prototypeBackfilled == null) prototypeBackfilled = new List<string>();
+                                        prototypeBackfilled.Add(actor.getName() + "·" + protoDef.NameZh);
+                                    }
+                                }
+                            }
+                        }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 异能定相补齐异常: " + dsEx.Message); }
                         ExecuteUnitAnnualSettlement(actor);
                         settledCount++;
                     }
                 }
                 DSDebug.Verbose($"活跃异能者年度结算: {settledCount}人");
+
+                // 异能补发通知（v0.17.1）：首次补发才通知，限流——≤3条逐条，更多则汇总一条（防刷屏）
+                if (prototypeBackfilled != null && prototypeBackfilled.Count > 0)
+                {
+                    try
+                    {
+                        if (prototypeBackfilled.Count <= 3)
+                        {
+                            foreach (string backfill in prototypeBackfilled)
+                                Code.Core.DSNotificationManager.NotifyInfo(backfill + " 觉醒元素异能");
+                        }
+                        else
+                        {
+                            Code.Core.DSNotificationManager.NotifyInfo(prototypeBackfilled.Count + " 位觉醒者觉醒了元素异能");
+                        }
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 异能补发通知异常: " + dsEx.Message); }
+                }
 
                 // 步骤9：灾变系统年度结算（天地屏障、虚空裂隙）
                 if (Code.Core.GeneCultivationConfig.EnableDisasterSystem) Disaster.DisasterManager.OnAnnualTick();

@@ -949,11 +949,20 @@ namespace Code.Realm
 
                 // 三系统联动·觉醒定相（v0.17.0 新增，不影响现有觉醒流程）：
                 // 桥A：读原版基因（亚种 nucleus 染色体，只读）同步染色体亲和/标签亲和 → custom_data
-                // 桥C：按亲和加权分配元素系异能（ds_prototype，终身锁定）
+                // 桥C：按亲和加权分配元素系异能（ds_prototype，终身锁定）；觉醒即通知玩家
                 try
                 {
                     Code.Realm.Prototype.GeneAffinityBridge.SyncAffinities(actor);
-                    Code.Realm.Prototype.GeneAffinityBridge.RollPrototype(actor);
+                    string newProto = Code.Realm.Prototype.GeneAffinityBridge.RollPrototype(actor);
+                    if (!string.IsNullOrEmpty(newProto))
+                    {
+                        var protoDef = Code.Realm.Prototype.PrototypeRegistry.Get(newProto);
+                        if (protoDef != null)
+                        {
+                            Code.Core.DSNotificationManager.NotifyInfo(actor.getName() + " 觉醒异能：" + protoDef.NameZh);
+                            DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 觉醒异能=" + protoDef.NameZh);
+                        }
+                    }
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 觉醒定相异常: " + dsEx.Message); }
 

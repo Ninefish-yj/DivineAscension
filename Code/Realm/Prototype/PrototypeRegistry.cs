@@ -88,5 +88,14 @@ namespace Code.Realm.Prototype
                 return Get(id);
             return null;
         }
+
+        /// <summary>单位是否已定相异能（补发判定用）</summary>
+        public static bool HasPrototype(Actor actor)
+        {
+            if (actor == null) return false;
+            var data = Code.Data.ActorDataAccessor.GetData(actor);
+            if (data == null || data.custom_data_string == null) return false;
+            return data.custom_data_string.TryGetValue("ds_prototype", out string id) && !string.IsNullOrEmpty(id);
+        }
     }
 }
