@@ -56,14 +56,18 @@ namespace Code.Dimension
             if (_initialized) return;
             _inhabitants.Clear();
             _initialized = true;
+            // 挂载多世界切换系统（存档目录/原存档路径记录）
+            DimensionWorldManager.Init();
             RebuildInhabitants();
             DSDebug.Verbose("[维度空间] 宏观维度空间系统初始化完成");
         }
 
-        /// <summary>从单位数据重建空间居民列表</summary>
+        /// <summary>从单位数据重建空间居民列表（仅维度空间地图运行时收集化身；主地图清空）</summary>
         public static void RebuildInhabitants()
         {
             _inhabitants.Clear();
+            // 世界级：不在维度空间地图时，空间居民列表为空（主地图无"在空间内"单位）
+            if (!DimensionWorldManager.IsInDimensionWorld) return;
             try
             {
                 if (World.world == null || World.world.units == null) return;
@@ -104,53 +108,42 @@ namespace Code.Dimension
             return result;
         }
 
-        /// <summary>单位进入维度空间</summary>
+        /// <summary>单位进入维度空间（v0.13.0：世界切换——真独立地图，所有已登记空间居民随行）</summary>
         public static bool EnterDimension(Actor actor)
         {
-            if (actor == null) return false;
+            // 世界切换入口：备份主世界 → 加载/生成维度空间地图 → 化身重建
+            return DimensionWorldManager.TryEnterDimensionWorld(actor);
+        }
 
+        /// <summary>单位退出维度空间（v0.13.0：世界切换——返回主世界，修炼成果写回）</summary>
+        public static bool ExitDimension(Actor actor)
+        {
+            // 世界级返回：保存空间地图 → 加载主世界备份 → 数据回写
+            return DimensionWorldManager.ReturnToMainWorld();
+        }
+
+        /// <summary>登记空间居民（世界级自动登记，不切图；进入空间时随行）</summary>
+        public static bool RegisterAsInhabitant(Actor actor)
+        {
+            if (actor == null || !actor.isAlive()) return false;
             try
             {
-                // 防御：单位有境界特质但custom_data未同步（调试赐特质/旧存档）时，先同步再判断
-                // 否则GetRealmTier返回0，12阶单位也会被"无法进入"拒绝
-                try { CultivationData.SyncFromTraits(actor); } catch (System.Exception syncEx) { Code.Core.DSDebug.Warning("[GeneCultivation] EnterDimension 同步境界失败: " + syncEx.Message); }
-
+                try { CultivationData.SyncFromTraits(actor); } catch (Exception) { }
                 int tier = CultivationData.GetRealmTier(actor);
-                if (tier < 12)
-                {
-                    DSDebug.Warning(string.Format("[GeneCultivation] 进入维度被拒: {0} 当前境界={1} (需要12阶以上)", actor.getName(), tier));
-                    DSNotificationManager.NotifyInfo(UILocalization.Get("dim_cannot_enter"));
-                    return false;
-                }
-
-                if (CultivationData.IsInDimensionSpace(actor))
-                {
-                    DSNotificationManager.NotifyInfo(string.Format(UILocalization.Get("dim_already_inside"), actor.getName()));
-                    return false;
-                }
-
-                if (_bannedIds.Contains(actor.getID()))
-                {
-                    DSNotificationManager.NotifyInfo(string.Format("维度空间拒绝进入：{0} 已被空间主宰封禁", actor.getName()));
-                    return false;
-                }
+                if (tier < 12) return false;
+                if (_bannedIds.Contains(actor.getID())) return false;
+                if (CultivationData.IsInDimensionSpace(actor)) return false;
 
                 CultivationData.SetInDimensionSpace(actor, true);
 
-                // 添加维度空间状态效果（半透明、无敌、不可选中、AI暂停）
-                try { DSReflectionHelper.SafeAddStatusEffect(actor, "ds_in_dimension", 999999f, true); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] EnterDimension 异常: " + dsEx.Message); }
-
-                // 真隐藏三件套：无敌 + 不可见（移出地图视野） + AI暂停
-                ApplyDimensionInvisibility(actor, true);
-
-                // 初始化空间数据
+                // 初始化空间数据（首次）
                 if (CultivationData.GetDimensionSpaceLevel(actor) == 0)
                 {
                     CultivationData.SetDimensionSpaceLevel(actor, tier >= 13 ? 2 : 1);
                     CultivationData.SetDimensionSpaceSize(actor, tier >= 13 ? 100 : 50);
                 }
 
-                // 设置全局空间主人（第一个进入的真神）
+                // 设置全局空间主人（第一个登记的真神）
                 if (_ownerId == -1 && tier >= 13)
                 {
                     _ownerId = actor.getID();
@@ -158,104 +151,40 @@ namespace Code.Dimension
                     _realmLevel = 2;
                     _realmSize = 200;
                 }
-
-                AddInhabitant(actor);
-
-                DSNotificationManager.NotifyMajor(UILocalization.Get("dim_enter"),
-                    string.Format(UILocalization.Get("dim_enter_macro"), actor.getName()));
-
-                DSHistoryManager.LogEvent("system", UILocalization.Get("dim_enter"),
-                    string.Format(UILocalization.Get("dim_enter_simple"), actor.getName()), actor.getName());
-
-                DSDebug.Warning(string.Format("[GeneCultivation] {0} 已进入维度空间 (境界={1})", actor.getName(), tier));
                 return true;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                // 异常时回滚标记，避免"标记已设但流程中断"的状态不一致
-                try { CultivationData.SetInDimensionSpace(actor, false); } catch { }
-                DSDebug.Warning("[GeneCultivation] 进入维度空间失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 登记空间居民失败: " + e.Message);
                 return false;
             }
         }
 
-        /// <summary>维度空间隐身控制：无敌 + 可见性 + AI暂停（进入隐藏/退出恢复）</summary>
-        private static void ApplyDimensionInvisibility(Actor actor, bool hidden)
-        {
-            if (actor == null) return;
-            try
-            {
-                // 无敌（原版公开状态：invincible）
-                if (hidden) actor.addStatusEffect("invincible", 999999f);
-                else actor.finishStatusEffect("invincible");
-            }
-            catch (System.Exception invEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 维度无敌切换失败: " + invEx.Message); }
-
-            try
-            {
-                // 可见性（internal 字段 is_visible，反射控制渲染与交互）
-                var visField = typeof(Actor).GetField("is_visible",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (visField != null) visField.SetValue(actor, !hidden);
-
-                // AI 暂停（internal 字段 ai，MonoBehaviour 的 enabled 属性）
-                var aiField = typeof(Actor).GetField("ai",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var aiObj = aiField != null ? aiField.GetValue(actor) : null;
-                if (aiObj != null)
-                {
-                    var enabledProp = aiObj.GetType().GetProperty("enabled",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (enabledProp != null) enabledProp.SetValue(aiObj, !hidden);
-                }
-            }
-            catch (System.Exception hidEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 维度隐身切换失败: " + hidEx.Message); }
-        }
-
-        /// <summary>单位退出维度空间</summary>
-        public static bool ExitDimension(Actor actor)
+        /// <summary>取消空间居民登记（排斥出空间）</summary>
+        public static bool UnregisterInhabitant(Actor actor)
         {
             if (actor == null) return false;
-            if (!CultivationData.IsInDimensionSpace(actor)) return false;
-
-            CultivationData.SetInDimensionSpace(actor, false);
-
-            // 移除维度空间状态效果
-            try { actor.finishStatusEffect("ds_in_dimension"); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExitDimension 异常: " + dsEx.Message); }
-
-            // 恢复三件套：解除无敌 + 恢复可见 + 恢复AI
-            ApplyDimensionInvisibility(actor, false);
-
-            _inhabitants.RemoveAll(i => i.ActorId == actor.getID());
-
-            // 如果是空间主人退出，转移主人
-            if (actor.getID() == _ownerId)
+            try
             {
-                var newOwner = _inhabitants.Find(i => i.RealmTier >= 13);
-                if (newOwner != null)
-                {
-                    _ownerId = newOwner.ActorId;
-                    _ownerName = newOwner.ActorName;
-                }
-                else
-                {
-                    _ownerId = -1;
-                    _ownerName = "";
-                }
+                CultivationData.SetInDimensionSpace(actor, false);
+                _inhabitants.RemoveAll(i => i.ActorId == actor.getID());
+                return true;
             }
-
-            DSNotificationManager.NotifyInfo(string.Format(UILocalization.Get("dim_exit"), actor.getName()));
-            return true;
+            catch (Exception e)
+            {
+                DSDebug.Warning("[GeneCultivation] 取消空间居民登记失败: " + e.Message);
+                return false;
+            }
         }
 
-        /// <summary>切换单位在维度空间中的状态</summary>
+        /// <summary>切换维度空间状态（v0.13.0：世界级——主地图进入 / 空间地图返回）</summary>
         public static bool ToggleDimension(Actor actor)
         {
             if (actor == null) return false;
-            if (CultivationData.IsInDimensionSpace(actor))
-                return ExitDimension(actor);
+            if (DimensionWorldManager.IsInDimensionWorld)
+                return ExitDimension(actor);      // 已在空间地图 → 返回主世界
             else
-                return EnterDimension(actor);
+                return EnterDimension(actor);     // 在主地图 → 进入维度空间
         }
 
         /// <summary>添加空间居民</summary>
@@ -281,10 +210,17 @@ namespace Code.Dimension
             _inhabitants.Add(inhabitant);
         }
 
-        /// <summary>年度结算：应用维度空间效果</summary>
+        /// <summary>年度结算：应用维度空间效果（v0.13.0：仅在维度空间地图运行时结算）</summary>
         public static void OnAnnualTick()
         {
             if (!_initialized) Init();
+
+            // 世界级守卫：不在维度空间地图时不结算空间效果（主地图居民列表为空，能量经济暂停）
+            if (!DimensionWorldManager.IsInDimensionWorld)
+            {
+                _inhabitants.Clear();
+                return;
+            }
 
             try
             {
@@ -327,12 +263,12 @@ namespace Code.Dimension
             }
         }
 
-        /// <summary>自动出入维度空间逻辑</summary>
+        /// <summary>自动登记/排斥空间居民（v0.13.0：登记制，不切图——进入空间仍手动，登记者在进入时随行）</summary>
         private static void AutoEnterExitLogic()
         {
             try
             {
-                // 1. 检查维度空间里的非12阶单位 → 扣血并排斥出去
+                // 1. 排斥：空间居民中非12阶单位 → 取消登记
                 var inhabitantsCopy = new List<DimensionInhabitant>(_inhabitants);
                 foreach (var inhabitant in inhabitantsCopy)
                 {
@@ -342,77 +278,38 @@ namespace Code.Dimension
                     int tier = CultivationData.GetRealmTier(actor);
                     if (tier < 12)
                     {
-                        // 非12阶单位在维度空间里 → 扣血并排斥
+                        // 非12阶单位在维度空间里 → 取消登记（世界级：切回主世界后不再随行）
                         DSDebug.Verbose($"[维度空间] 非12阶单位 {actor.getName()} 被维度空间排斥");
-                        
-                        // 退出维度空间
-                        ExitDimension(actor);
+                        UnregisterInhabitant(actor);
                     }
                 }
 
-                // 2. 遍历所有存活单位，检查是否需要自动进入
+                // 2. 登记：遍历所有存活单位，12阶以上修炼中的自动登记为空间居民（不切图）
                 if (World.world.units == null || World.world.units.units_only_alive == null) return;
 
                 foreach (Actor actor in World.world.units.units_only_alive)
                 {
                     if (actor == null || !actor.isAlive()) continue;
-                    
-                    // 已经在维度空间里了，跳过
+
+                    // 已经是空间居民，跳过
                     if (CultivationData.IsInDimensionSpace(actor)) continue;
 
                     int tier = CultivationData.GetRealmTier(actor);
-                    
-                    // 只有12阶以上才能进入
                     if (tier < 12) continue;
 
-                    bool shouldEnter = false;
+                    // 修炼中 → 自动登记（进入空间时随行）
+                    bool shouldRegister = false;
+                    try { if (actor.hasTrait("ds_cultivating")) shouldRegister = true; } catch { }
 
-                    // 条件1：在修炼（有修炼buff）
-                    try
+                    if (shouldRegister)
                     {
-                        if (actor.hasTrait("ds_cultivating"))
-                        {
-                            shouldEnter = true;
-                        }
-                    }
-                    catch { }
-
-                    // 条件2：靠近维度之门建筑（10格范围内）
-//                     if (!shouldEnter)
-//                     {
-//                         try
-//                         {
-// // //                             var buildings = Code.Realm.RealmBuildings.GetAllBuildings();
-//                             Vector2 actorPos = actor.current_position;
-//                             
-// //                             foreach (var b in buildings)
-//                             {
-//                                 {
-//                                     float dx = actorPos.x - b.X;
-//                                     float dy = actorPos.y - b.Y;
-//                                     float dist = Mathf.Sqrt(dx * dx + dy * dy);
-//                                     if (dist < 10f) // 10格范围内
-//                                     {
-//                                         shouldEnter = true;
-//                                         break;
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                         catch { }
-//                     }
-
-                    // 满足条件就自动进入
-                    if (shouldEnter)
-                    {
-                        EnterDimension(actor);
-                        DSDebug.Verbose($"[维度空间] {actor.getName()} 自动进入维度空间");
+                        RegisterAsInhabitant(actor);
                     }
                 }
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[维度空间] 自动出入逻辑失败: " + e.Message);
+                DSDebug.Warning("[维度空间] 自动登记/排斥逻辑失败: " + e.Message);
             }
         }
 
@@ -613,7 +510,7 @@ namespace Code.Dimension
                 DSNotificationManager.NotifyInfo("维度空间封禁失败：不能封禁空间主宰");
                 return false;
             }
-            if (CultivationData.IsInDimensionSpace(target)) ExitDimension(target);
+            if (CultivationData.IsInDimensionSpace(target)) UnregisterInhabitant(target);
             _bannedIds.Add(target.getID());
             DSNotificationManager.NotifyMajor("维度空间·封禁",
                 string.Format("{0} 已被空间主宰封禁，驱逐出维度空间。", target.getName()));
@@ -655,7 +552,7 @@ namespace Code.Dimension
                 DSNotificationManager.NotifyInfo("维度空间封禁失败：目标不存在");
                 return false;
             }
-            if (CultivationData.IsInDimensionSpace(target)) ExitDimension(target);
+            if (CultivationData.IsInDimensionSpace(target)) UnregisterInhabitant(target);
             _bannedIds.Add(targetId);
             DSNotificationManager.NotifyMajor("维度空间·封禁",
                 string.Format("{0} 已被空间主宰封禁，驱逐出维度空间。", target.getName()));

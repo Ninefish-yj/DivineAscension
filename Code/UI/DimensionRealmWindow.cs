@@ -636,16 +636,37 @@ namespace Code.UI
             float btnY = y + (height - BUTTON_HEIGHT) / 2f;
 
             bool hasSelection = _selectedActor != null;
-            bool inDimension = hasSelection && DimensionRealmManager.IsInDimension(_selectedActor);
-            string btnText = !hasSelection ? UILocalization.Get("dim_window_please_select") : (inDimension ? UILocalization.Get("dim_window_exit_space") : UILocalization.Get("dim_window_enter_space"));
-            Texture2D btnTex = inDimension ? _activeButtonTex : _buttonBgTex;
-
-            if (hasSelection && GUI.Button(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), btnText,
-                new GUIStyle(GUI.skin.button) { fontSize = 15, fontStyle = FontStyle.Bold, normal = { textColor = Color.white, background = btnTex }, hover = { background = _buttonHoverTex } }))
+            // v0.13.0 世界级：按钮状态=当前是否处于维度空间地图（返回主世界）
+            bool inDimension = DimensionWorldManager.IsInDimensionWorld;
+            string btnText;
+            Texture2D btnTex;
+            if (inDimension)
             {
-                DimensionRealmManager.ToggleDimension(_selectedActor);
+                // 在空间地图：无需选中单位，一键返回主世界
+                btnText = UILocalization.Get("dim_window_exit_space");
+                btnTex = _activeButtonTex;
             }
-            else if (!hasSelection)
+            else if (hasSelection)
+            {
+                btnText = UILocalization.Get("dim_window_enter_space");
+                btnTex = _buttonBgTex;
+            }
+            else
+            {
+                btnText = UILocalization.Get("dim_window_please_select");
+                btnTex = _buttonBgTex;
+            }
+
+            if (inDimension || hasSelection)
+            {
+                if (GUI.Button(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), btnText,
+                    new GUIStyle(GUI.skin.button) { fontSize = 15, fontStyle = FontStyle.Bold, normal = { textColor = Color.white, background = btnTex }, hover = { background = _buttonHoverTex } }))
+                {
+                    // 世界级切换：空间地图 → 返回主世界；主地图 → 进入维度空间
+                    DimensionRealmManager.ToggleDimension(_selectedActor);
+                }
+            }
+            else
             {
                 // 禁用状态显示
                 GUI.DrawTexture(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), _buttonBgTex);

@@ -420,15 +420,15 @@ namespace Code.Core
                     int tier = CultivationData.GetRealmTier(actor);
                     bool isInDimension = CultivationData.IsInDimensionSpace(actor);
 
-                    // 12阶以上自动进入维度空间修炼
+                    // 12阶以上自动登记为空间居民（v0.13.0 世界级：登记不切图，进入空间时随行）
                     if (tier >= 12 && !isInDimension)
                     {
-                        Code.Dimension.DimensionRealmManager.EnterDimension(actor);
+                        Code.Dimension.DimensionRealmManager.RegisterAsInhabitant(actor);
                     }
-                    // 非12阶单位在维度空间里，自动排斥出去
+                    // 非12阶单位已登记 → 取消登记
                     else if (tier < 12 && isInDimension)
                     {
-                        Code.Dimension.DimensionRealmManager.ExitDimension(actor);
+                        Code.Dimension.DimensionRealmManager.UnregisterInhabitant(actor);
                         // 扣血惩罚
                         // 扣血惩罚：当前血量存在 actor.data.health（int类型）
                         try
