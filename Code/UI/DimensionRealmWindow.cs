@@ -491,7 +491,7 @@ namespace Code.UI
             // 滚动区域
             Rect scrollRect = new Rect(contentX, contentY, contentWidth, height - (contentY - y) - 15f);
             _rightScrollPosition = GUI.BeginScrollView(scrollRect, _rightScrollPosition,
-                new Rect(0, 0, contentWidth - 20f, 600f));
+                new Rect(0, 0, contentWidth - 20f, 760f));
 
             float funcY = 0f;
 
@@ -540,6 +540,23 @@ namespace Code.UI
                     false,
                     () => { if (_selectedActor != null) DimensionRealmManager.CreateEnergyLifeform(_selectedActor); });
             }
+
+            // 功能7：封禁居民（主宰权限，作用于选中的非主宰居民）
+            if (_selectedActor != null && !DimensionRealmManager.IsOwner(_selectedActor))
+            {
+                funcY = DrawFunctionCard(0f, funcY, contentWidth - 20f,
+                    "封禁居民",
+                    "将选中居民逐出维度空间并禁止其再次进入（主宰权限）",
+                    false,
+                    () => { if (_selectedActor != null) DimensionRealmManager.BanSelectedInhabitant(_selectedActor.getID()); });
+            }
+
+            // 功能8：修炼倍率调控（主宰权限，循环档位）
+            funcY = DrawFunctionCard(0f, funcY, contentWidth - 20f,
+                "修炼倍率调控",
+                string.Format("当前加速 {0:F1} 倍（点击循环 0.5~3 倍，主宰权限）", DimensionRealmManager.GetCultivationBonus()),
+                false,
+                () => { DimensionRealmManager.CycleCultivationBonus(); });
 
             GUI.EndScrollView();
         }

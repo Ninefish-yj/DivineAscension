@@ -1527,5 +1527,9 @@
   "ds_log_anomaly": "异常",
   "enableglobalhealthsuppression": "战斗中全压外部治疗",
   "enableglobalhealthsuppression description": "我方异能者战斗中（10秒内受伤），拦截原版恢复特质/其他模组治疗buff/牧师加血，防止边打边回杀不死",
-  "event_gene_collapse": "基因崩溃"
+  "event_gene_collapse": "基因崩溃",
+  "trait_ds_trait_awakened_heart": "Awakened Heart",
+  "trait_ds_trait_awakened_heart_desc": "Trait resonance: units at tier 9+ awaken the power within their genes, greatly increasing attack and health, moving faster, and raising energy cap.",
+  "trait_ds_trait_gene_resonance": "Gene Resonance",
+  "trait_ds_trait_gene_resonance_desc": "Trait resonance: units at tier 12+ experience gene-chain resonance, with explosive growth in attack and health, qualitative defense and attack speed gains, and extended range."
 }

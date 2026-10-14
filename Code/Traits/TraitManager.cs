@@ -36,6 +36,8 @@ namespace Code.Traits
         
         // 纪元主宰专属唯一特质（只有当前纪元主宰才能拥有）
         public const string ERA_DOMINATOR_TRAIT = "ds_era_dominator_trait";
+        public const string TIER_AWAKENED_HEART = "ds_trait_awakened_heart";   // 觉醒之心（9阶+联动）
+        public const string TIER_GENE_RESONANCE = "ds_trait_gene_resonance";   // 基因共鸣（12阶+联动）
 
         private static readonly string[] _realmTraits =
         {
@@ -121,6 +123,17 @@ namespace Code.Traits
             RegisterRealmTrait(TIER_13_TRUEGOD, UILocalization.Get(TIER_13_TRUEGOD),  UILocalization.Get(TIER_13_TRUEGOD + "_desc"), 13);
 
             
+            // === 天赋觉醒联动（高阶自动挂载，形成跨阶共鸣）===
+            var awakenedStats = new BaseStats();
+            awakenedStats["damage"] = 8000; awakenedStats["health"] = 80000; awakenedStats["speed"] = 0.2f;
+            awakenedStats["armor"] = 200f; awakenedStats["mana"] = 100;
+            RegisterAwakeningTrait(TIER_AWAKENED_HEART, awakenedStats);  // 觉醒之心：9阶起自动觉醒
+
+            var resonanceStats = new BaseStats();
+            resonanceStats["damage"] = 80000; resonanceStats["health"] = 800000; resonanceStats["armor"] = 2000f;
+            resonanceStats["attack_speed"] = 15f; resonanceStats["range"] = 2f;
+            RegisterAwakeningTrait(TIER_GENE_RESONANCE, resonanceStats);  // 基因共鸣：12阶起基因链共鸣爆发
+
             // 纪元主宰专属唯一特质（只有当前纪元主宰才能拥有，主宰变更时自动转移）
             RegisterStatusTrait(ERA_DOMINATOR_TRAIT, UILocalization.Get(ERA_DOMINATOR_TRAIT), UILocalization.Get(ERA_DOMINATOR_TRAIT + "_desc"), false);
             // === Buff技能改为被动特质（达到对应境界自动获得）===
@@ -246,6 +259,32 @@ namespace Code.Traits
             catch (System.Exception e)
             {
                 DSDebug.Error("[GeneCultivation] 境界特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
+            }
+        }
+
+/// <summary>注册天赋觉醒联动特质（觉醒之心/基因共鸣）</summary>
+        private static void RegisterAwakeningTrait(string id, BaseStats stats)
+        {
+            try
+            {
+                var trait = new ActorTrait
+                {
+                    id = id,
+                    group_id = "ds_realm_group",
+                    can_be_removed = false,
+                    can_be_given = false,
+                    needs_to_be_explored = false,
+                    has_locales = true,
+                    has_description_1 = true,
+                    base_stats = stats,
+                    path_icon = "trait/" + id,
+                };
+                AssetManager.traits.add(trait);
+                DSDebug.Verbose("觉醒联动特质注册成功: " + id);
+            }
+            catch (System.Exception e)
+            {
+                DSDebug.Error("[GeneCultivation] 觉醒联动特质注册失败: " + id + " - " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -438,6 +477,12 @@ namespace Code.Traits
             {
                 GrantImmortal(actor);
             }
+
+            // 天赋觉醒联动：9阶起觉醒之心，12阶起基因共鸣
+            if (tier >= 9 && !actor.hasTrait(TIER_AWAKENED_HEART))
+                actor.addTrait(TIER_AWAKENED_HEART, false);
+            if (tier >= 12 && !actor.hasTrait(TIER_GENE_RESONANCE))
+                actor.addTrait(TIER_GENE_RESONANCE, false);
         }
 
         /// <summary>移除单位身上全部境界Trait</summary>
@@ -451,6 +496,9 @@ namespace Code.Traits
                     actor.removeTrait(traitId);
                 }
             }
+            // 同步移除觉醒联动天赋
+            if (actor.hasTrait(TIER_AWAKENED_HEART)) actor.removeTrait(TIER_AWAKENED_HEART);
+            if (actor.hasTrait(TIER_GENE_RESONANCE)) actor.removeTrait(TIER_GENE_RESONANCE);
         }
 
         /// <summary>

@@ -37,11 +37,18 @@ namespace Code.Dimension
         private static int _realmSize = 100;
         private static long _ownerId = -1;  // 空间主人（第一个进入的真神）
         private static string _ownerName = "";
+        private static bool _energyStable = true;   // 空间能量是否足以维持（影响修炼加速）
+        private static readonly HashSet<long> _bannedIds = new HashSet<long>();  // 被主宰封禁的单位
+        private static float _cultivationBonus = CULTIVATION_BONUS;  // 主宰调控的修炼倍率（0.5~3）
 
         // 常量
         private const float CULTIVATION_BONUS = 1.0f;  // 修炼加速100%
         private const float TURBULENCE_DECAY = 5f;     // 失控消解5/年
-        private const float ENERGY_REGEN = 10f;         // 空间能量恢复10/年
+        private const float ENERGY_REGEN = 10f;         // 空间能量基础恢复10/年
+        private const float ENERGY_PER_INHABITANT = 50f;  // 每位居民每年贡献空间能量
+        private const float ENERGY_MAINTENANCE = 100f;    // 空间每级每年维持成本
+        private const float ENERGY_ACCEL_COST = 50f;      // 修炼加速每人每年消耗
+        private const float ENERGY_OWNER_BONUS = 500f;    // 主宰每年额外注入
 
         /// <summary>初始化维度空间</summary>
         public static void Init()
@@ -122,10 +129,19 @@ namespace Code.Dimension
                     return false;
                 }
 
+                if (_bannedIds.Contains(actor.getID()))
+                {
+                    DSNotificationManager.NotifyInfo(string.Format("维度空间拒绝进入：{0} 已被空间主宰封禁", actor.getName()));
+                    return false;
+                }
+
                 CultivationData.SetInDimensionSpace(actor, true);
 
                 // 添加维度空间状态效果（半透明、无敌、不可选中、AI暂停）
                 try { DSReflectionHelper.SafeAddStatusEffect(actor, "ds_in_dimension", 999999f, true); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] EnterDimension 异常: " + dsEx.Message); }
+
+                // 真隐藏三件套：无敌 + 不可见（移出地图视野） + AI暂停
+                ApplyDimensionInvisibility(actor, true);
 
                 // 初始化空间数据
                 if (CultivationData.GetDimensionSpaceLevel(actor) == 0)
@@ -163,6 +179,39 @@ namespace Code.Dimension
             }
         }
 
+        /// <summary>维度空间隐身控制：无敌 + 可见性 + AI暂停（进入隐藏/退出恢复）</summary>
+        private static void ApplyDimensionInvisibility(Actor actor, bool hidden)
+        {
+            if (actor == null) return;
+            try
+            {
+                // 无敌（原版公开状态：invincible）
+                if (hidden) actor.addStatusEffect("invincible", 999999f);
+                else actor.finishStatusEffect("invincible");
+            }
+            catch (System.Exception invEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 维度无敌切换失败: " + invEx.Message); }
+
+            try
+            {
+                // 可见性（internal 字段 is_visible，反射控制渲染与交互）
+                var visField = typeof(Actor).GetField("is_visible",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (visField != null) visField.SetValue(actor, !hidden);
+
+                // AI 暂停（internal 字段 ai，MonoBehaviour 的 enabled 属性）
+                var aiField = typeof(Actor).GetField("ai",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var aiObj = aiField != null ? aiField.GetValue(actor) : null;
+                if (aiObj != null)
+                {
+                    var enabledProp = aiObj.GetType().GetProperty("enabled",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (enabledProp != null) enabledProp.SetValue(aiObj, !hidden);
+                }
+            }
+            catch (System.Exception hidEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 维度隐身切换失败: " + hidEx.Message); }
+        }
+
         /// <summary>单位退出维度空间</summary>
         public static bool ExitDimension(Actor actor)
         {
@@ -173,6 +222,9 @@ namespace Code.Dimension
 
             // 移除维度空间状态效果
             try { actor.finishStatusEffect("ds_in_dimension"); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExitDimension 异常: " + dsEx.Message); }
+
+            // 恢复三件套：解除无敌 + 恢复可见 + 恢复AI
+            ApplyDimensionInvisibility(actor, false);
 
             _inhabitants.RemoveAll(i => i.ActorId == actor.getID());
 
@@ -255,8 +307,19 @@ namespace Code.Dimension
                 // 自动出入逻辑
                 AutoEnterExitLogic();
 
-                // 空间能量自动恢复
-                _realmEnergy += ENERGY_REGEN;
+                // 能量经济闭环：基础恢复 + 居民产出 + 主宰注入 - 等级维持 - 加速消耗
+                float income = _inhabitants.Count * ENERGY_PER_INHABITANT;
+                if (_ownerId != -1) income += ENERGY_OWNER_BONUS;
+                float maintenance = _realmLevel * ENERGY_MAINTENANCE;
+                float accelCost = _inhabitants.Count * ENERGY_ACCEL_COST;
+                float delta = income - maintenance - accelCost;
+                _realmEnergy += ENERGY_REGEN + delta;
+                if (_realmEnergy < 0f) { _realmEnergy = 0f; _energyStable = false; }
+                else if (income > 0f) { _energyStable = (_realmEnergy >= maintenance); }
+                else { _energyStable = (_realmEnergy >= maintenance); }
+
+                // 空间随机事件
+                ProcessDimensionEvent();
             }
             catch (Exception e)
             {
@@ -353,11 +416,61 @@ namespace Code.Dimension
             }
         }
 
+        /// <summary>维度空间随机事件（每年触发，影响能量与居民失控）</summary>
+        private static void ProcessDimensionEvent()
+        {
+            if (_inhabitants.Count == 0) return;
+            float roll = UnityEngine.Random.value;
+            if (roll < 0.10f) TriggerEnergySurge();
+            else if (roll < 0.22f) TriggerSpaceRift();
+            else if (roll < 0.32f) TriggerInvasion();
+            // 其余年份空间平静
+        }
+
+        /// <summary>能量潮汐：空间能量爆发（正事件）</summary>
+        private static void TriggerEnergySurge()
+        {
+            float surge = _realmLevel * 500f;
+            _realmEnergy += surge;
+            _energyStable = true;
+            DSNotificationManager.NotifyMajor("维度空间·能量潮汐",
+                string.Format("空间能量爆发，充盈 {0:F0} 点能量。居民修炼加速恢复满额。", surge));
+            DSDebug.Warning("[GeneCultivation] 维度空间能量潮汐: +" + surge.ToString("F0"));
+        }
+
+        /// <summary>空间裂缝：能量流失 + 居民失控（负事件）</summary>
+        private static void TriggerSpaceRift()
+        {
+            _realmEnergy *= 0.8f;
+            foreach (var inhabitant in _inhabitants)
+            {
+                Actor actor = FindActorById(inhabitant.ActorId);
+                if (actor == null || !actor.isAlive()) continue;
+                float turb = CultivationData.GetTurbulence(actor);
+                CultivationData.SetTurbulence(actor, turb + 2f);
+            }
+            DSNotificationManager.NotifyMajor("维度空间·空间裂缝",
+                "空间出现裂缝，能量流失20%，居民失控指数小幅上升。");
+            DSDebug.Warning("[GeneCultivation] 维度空间空间裂缝: 能量流失");
+        }
+
+        /// <summary>入侵者：空间能量被掠夺（负事件）</summary>
+        private static void TriggerInvasion()
+        {
+            float loss = _realmLevel * 300f;
+            _realmEnergy = Mathf.Max(0f, _realmEnergy - loss);
+            if (_realmEnergy < _realmLevel * ENERGY_MAINTENANCE) _energyStable = false;
+            DSNotificationManager.NotifyMajor("维度空间·入侵者",
+                string.Format("虚空生物入侵维度空间，掠夺了 {0:F0} 点能量。", loss));
+            DSDebug.Warning("[GeneCultivation] 维度空间入侵者: -" + loss.ToString("F0"));
+        }
+
         /// <summary>应用维度空间效果到单个单位</summary>
         private static void ApplyDimensionEffects(Actor actor, DimensionInhabitant inhabitant)
         {
-            // 1. 修炼加成（额外异能能量）
-            float bonusQi = CultivationData.GetEnergy(actor) * CULTIVATION_BONUS * 0.01f;
+            // 1. 修炼加成（额外异能能量；空间能量不足时减半；倍率受主宰调控）
+            float accelRatio = _energyStable ? 1f : 0.5f;
+            float bonusQi = CultivationData.GetEnergy(actor) * _cultivationBonus * accelRatio * 0.01f;
             if (bonusQi > 0.1f)
             {
                 CultivationData.SetEnergy(actor, CultivationData.GetEnergy(actor) + bonusQi);
@@ -473,6 +586,93 @@ namespace Code.Dimension
         public static int GetRealmLevel()
         {
             return _realmLevel;
+        }
+
+        public static bool GetRealmEnergyStable() { return _energyStable; }
+
+        public static float GetCultivationBonus() { return _cultivationBonus; }
+
+        public static bool IsBanned(long actorId) { return _bannedIds.Contains(actorId); }
+
+        public static bool IsOwner(Actor actor)
+        {
+            return actor != null && actor.getID() == _ownerId;
+        }
+
+        /// <summary>主宰封禁单位（逐出空间并禁止再入）</summary>
+        public static bool BanInhabitant(Actor owner, Actor target)
+        {
+            if (owner == null || target == null) return false;
+            if (owner.getID() != _ownerId)
+            {
+                DSNotificationManager.NotifyInfo("维度空间封禁失败：仅空间主宰可行使此权限");
+                return false;
+            }
+            if (target.getID() == _ownerId)
+            {
+                DSNotificationManager.NotifyInfo("维度空间封禁失败：不能封禁空间主宰");
+                return false;
+            }
+            if (CultivationData.IsInDimensionSpace(target)) ExitDimension(target);
+            _bannedIds.Add(target.getID());
+            DSNotificationManager.NotifyMajor("维度空间·封禁",
+                string.Format("{0} 已被空间主宰封禁，驱逐出维度空间。", target.getName()));
+            DSDebug.Warning("[GeneCultivation] 主宰封禁: " + target.getName());
+            return true;
+        }
+
+        /// <summary>主宰解除封禁</summary>
+        public static bool UnbanInhabitant(Actor owner, long targetId)
+        {
+            if (owner == null || owner.getID() != _ownerId) return false;
+            _bannedIds.Remove(targetId);
+            DSNotificationManager.NotifyInfo("维度空间封禁已解除。");
+            return true;
+        }
+
+        /// <summary>主宰调控修炼倍率（0.5~3倍）</summary>
+        public static bool SetCultivationBonus(Actor owner, float multiplier)
+        {
+            if (owner == null || owner.getID() != _ownerId) return false;
+            _cultivationBonus = Mathf.Clamp(multiplier, 0.5f, 3f);
+            DSNotificationManager.NotifyMajor("维度空间·规则调整",
+                string.Format("空间主宰将修炼加速调整为 {0:F1} 倍。", _cultivationBonus));
+            DSDebug.Warning("[GeneCultivation] 主宰调控修炼倍率: x" + _cultivationBonus.ToString("F1"));
+            return true;
+        }
+
+        /// <summary>UI便捷：封禁指定居民（宏观面板=主宰操作）</summary>
+        public static bool BanSelectedInhabitant(long targetId)
+        {
+            if (targetId == _ownerId)
+            {
+                DSNotificationManager.NotifyInfo("维度空间封禁失败：不能封禁空间主宰");
+                return false;
+            }
+            Actor target = FindActorById(targetId);
+            if (target == null)
+            {
+                DSNotificationManager.NotifyInfo("维度空间封禁失败：目标不存在");
+                return false;
+            }
+            if (CultivationData.IsInDimensionSpace(target)) ExitDimension(target);
+            _bannedIds.Add(targetId);
+            DSNotificationManager.NotifyMajor("维度空间·封禁",
+                string.Format("{0} 已被空间主宰封禁，驱逐出维度空间。", target.getName()));
+            DSDebug.Warning("[GeneCultivation] 主宰封禁(UI): " + target.getName());
+            return true;
+        }
+
+        /// <summary>UI便捷：修炼倍率循环档位（0.5/1/1.5/2/2.5/3）</summary>
+        public static void CycleCultivationBonus()
+        {
+            float[] steps = { 0.5f, 1f, 1.5f, 2f, 2.5f, 3f };
+            int idx = System.Array.IndexOf(steps, _cultivationBonus);
+            int next = idx < 0 ? 1 : (idx + 1) % steps.Length;
+            _cultivationBonus = steps[next];
+            DSNotificationManager.NotifyMajor("维度空间·规则调整",
+                string.Format("空间主宰将修炼加速调整为 {0:F1} 倍。", _cultivationBonus));
+            DSDebug.Warning("[GeneCultivation] 主宰调控(UI): x" + _cultivationBonus.ToString("F1"));
         }
 
         public static float GetRealmEnergy()

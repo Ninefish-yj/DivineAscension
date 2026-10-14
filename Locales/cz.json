@@ -1525,5 +1525,9 @@
   "judge_demote_notify": "{0} 席位争夺失利，境界回退至{1}阶 {2}",
   "judge_demote_title": "境界回退：{0}",
   "judge_demote_desc": "{0} 在高位之争中失利，境界回退至{1}阶 {2}，让出席位。",
-  "event_gene_collapse": "基因崩溃"
+  "event_gene_collapse": "基因崩溃",
+  "trait_ds_trait_awakened_heart": "觉醒之心",
+  "trait_ds_trait_awakened_heart_desc": "天赋觉醒联动：9阶以上单位自动觉醒基因深处的力量，攻击与生命大幅提升，行动更迅捷，能量上限提升。",
+  "trait_ds_trait_gene_resonance": "基因共鸣",
+  "trait_ds_trait_gene_resonance_desc": "天赋觉醒联动：12阶以上单位基因链产生共鸣，攻击与生命爆发式增长，防御与攻击速度质变，攻击范围延伸。"
 }
