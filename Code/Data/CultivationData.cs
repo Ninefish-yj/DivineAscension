@@ -183,17 +183,7 @@ namespace Code.Data
             data.custom_data_float[K_LINKAGE_DEFENSE] = value;
         }
 
-        /// <summary>读取基因连锁生命缓存（-1=未缓存）</summary>
-        public static float GetLinkageHealthCache(Actor actor)
-        {
-            var data = GetDataOnce(actor);
-            if (data == null) return -1f;
-            EnsureCustomDataInitialized(actor);
-            if (data.custom_data_float == null) return -1f;
-            if (data.custom_data_float.TryGetValue(K_LINKAGE_HEALTH, out float val)) return val;
-            return -1f;
-        }
-        public static void SetLinkageHealthCache(Actor actor, float value)
+                public static void SetLinkageHealthCache(Actor actor, float value)
         {
             var data = GetDataOnce(actor);
             if (data == null) return;
@@ -417,7 +407,6 @@ namespace Code.Data
         public static void SetLifetimeBan(Actor actor) { SetCustomInt(actor, K_LIFETIME_BANNED, 1); }
         public static bool IsLifetimeBanned(Actor actor) { return GetCustomInt(actor, K_LIFETIME_BANNED) > 0; }
         public static int GetGeneCombatDefense(Actor actor) { return GetCustomInt(actor, K_GENE_COMBAT_DEFENSE); }
-        public static void AddGeneCombatDefense(Actor actor) { SetCustomInt(actor, K_GENE_COMBAT_DEFENSE, GetGeneCombatDefense(actor) + 1); }
         public static int GetGeneAbilityUses(Actor actor) { return GetCustomInt(actor, K_GENE_ABILITY_USES); }
         public static void AddGeneAbilityUse(Actor actor)
         {
@@ -535,8 +524,6 @@ namespace Code.Data
         private const string K_ELEMENTS_UNLOCKED = "ds_elem_unlocked";    // 已解锁基因ID（逗号分隔）
         private const string K_ELEMENTS_ATTEMPTED = "ds_elem_attempted";  // 已尝试获得的基因ID（逗号分隔，任务只能完成一次）
         private const string K_ACTIVE_COMBOS = "ds_combos_active";         // 已激活组合ID（逗号分隔）
-        private const string K_COMBO_DAMAGE = "ds_combo_dmg";              // 组合伤害加成
-        private const string K_COMBO_DEFENSE = "ds_combo_def";             // 组合防御加成
         private const string K_AWAKENED = "ds_awakened";               // 是否已基因觉醒
 
         // ===== 运行时缓存（纯内存，不随存档；世界加载时清空，防止跨存档串数据）=====
@@ -638,10 +625,6 @@ namespace Code.Data
             return result;
         }
 
-        /// <summary>获取组合伤害加成</summary>
-        public static float GetComboDamageBonus(Actor actor) { return GetCustomFloat(actor, K_COMBO_DAMAGE); }
-        /// <summary>获取组合防御加成</summary>
-        public static float GetComboDefenseBonus(Actor actor) { return GetCustomFloat(actor, K_COMBO_DEFENSE); }
         // 自定义int数据访问器
         private static int GetCustomInt(Actor actor, string key)
         {
@@ -660,11 +643,11 @@ namespace Code.Data
         }
 
         // 自定义float数据访问器
-        private static float GetCustomFloat(Actor actor, string key)
+        private static float GetCustomFloat(Actor actor, string key, float def = 0f)
         {
-            if (actor == null || ActorDataAccessor.GetData(actor) == null) return 0f;
+            if (actor == null || ActorDataAccessor.GetData(actor) == null) return def;
             EnsureCustomDataInitialized(actor);
-            if (ActorDataAccessor.GetData(actor).custom_data_float == null) return 0f;
+            if (ActorDataAccessor.GetData(actor).custom_data_float == null) return def;
             ActorDataAccessor.GetData(actor).custom_data_float.TryGetValue(key, out float val);
             return val;
         }
@@ -691,13 +674,6 @@ namespace Code.Data
             if (data == null || data.custom_data_bool == null) return false;
             data.custom_data_bool.TryGetValue(K_MONOLITH, out bool val);
             return val;
-        }
-
-        public static void SetMonolithDone(Actor actor, bool value)
-        {
-            var data = actor == null ? null : ActorDataAccessor.GetData(actor);
-            if (data == null || data.custom_data_bool == null) return;
-            data.custom_data_bool[K_MONOLITH] = value;
         }
 
         // ============================================================
@@ -1217,9 +1193,6 @@ namespace Code.Data
         // ============================================================
 
         private const string K_DIVINE_GENE_UNLOCKED = "ds_divine_gene_unlocked";   // 神创基因是否已解锁
-        private const string K_DIVINE_GENE_NAME = "ds_divine_gene_name";           // 神创基因名字
-        private const string K_DIVINE_GENE_GROUP = "ds_divine_gene_group";         // 神创基因染色体类型（0-7）
-        private const string K_DIVINE_GENE_VALUE = "ds_divine_gene_value";         // 神创基因效果值
 
         /// <summary>检查神创基因是否已解锁</summary>
         public static bool IsDivineGeneUnlocked(Actor actor)
@@ -1241,71 +1214,16 @@ namespace Code.Data
             UnlockGene(actor, ElementDef.DivineGeneId);
         }
 
-        /// <summary>获取神创基因名字</summary>
-        public static string GetDivineGeneName(Actor actor)
-        {
-            if (!IsDivineGeneUnlocked(actor)) return null;
-            if (ActorDataAccessor.GetData(actor)?.custom_data_string == null) return "神创基因";
-            ActorDataAccessor.GetData(actor).custom_data_string.TryGetValue(K_DIVINE_GENE_NAME, out string val);
-            return string.IsNullOrEmpty(val) ? "神创基因" : val;
-        }
-
-        /// <summary>设置神创基因名字</summary>
-        public static void SetDivineGeneName(Actor actor, string name)
-        {
-            EnsureCustomDataInitialized(actor);
-            if (ActorDataAccessor.GetData(actor)?.custom_data_string == null) return;
-            ActorDataAccessor.GetData(actor).custom_data_string[K_DIVINE_GENE_NAME] = name ?? "神创基因";
-        }
-
-        /// <summary>获取神创基因染色体类型（0-7）</summary>
-        public static int GetDivineGeneGroup(Actor actor)
-        {
-            if (!IsDivineGeneUnlocked(actor)) return 7; // 默认潜能染色体
-            return GetCustomInt(actor, K_DIVINE_GENE_GROUP);
-        }
-
-        /// <summary>设置神创基因染色体类型（0-7）</summary>
-        public static void SetDivineGeneGroup(Actor actor, int group)
-        {
-            SetCustomInt(actor, K_DIVINE_GENE_GROUP, group);
-        }
-
-        /// <summary>获取神创基因效果值</summary>
-        public static float GetDivineGeneValue(Actor actor)
-        {
-            if (!IsDivineGeneUnlocked(actor)) return 0f;
-            return GetCustomFloat(actor, K_DIVINE_GENE_VALUE);
-        }
-
-        /// <summary>设置神创基因效果值</summary>
-        public static void SetDivineGeneValue(Actor actor, float value)
-        {
-            SetCustomFloat(actor, K_DIVINE_GENE_VALUE, value);
-        }
-
         // ========== 神创基因自定义数值存取（13个效果值，单位%） ==========
-        private static readonly Dictionary<long, Dictionary<string, float>> divineValues = new Dictionary<long, Dictionary<string, float>>();
+        // 直接存到Actor的custom_data_float持久化（随存档保存，读档不丢）
+        private const string DIVINE_PREFIX = "ds_divine_";
         public static float GetDivineFloat(Actor actor, string key, float def = 0f)
         {
-            if (actor == null) return def;
-            long id = actor.id;
-            Dictionary<string, float> perActor;
-            if (!divineValues.TryGetValue(id, out perActor)) return def;
-            float val;
-            return perActor.TryGetValue(key, out val) ? val : def;
+            return GetCustomFloat(actor, DIVINE_PREFIX + key, def);
         }
         public static void SetDivineFloat(Actor actor, string key, float value)
         {
-            if (actor == null) return;
-            long id = actor.id;
-            Dictionary<string, float> perActor;
-            if (!divineValues.TryGetValue(id, out perActor))
-            {
-                perActor = new Dictionary<string, float>();
-                divineValues[id] = perActor;
-            }
-            perActor[key] = value;
+            SetCustomFloat(actor, DIVINE_PREFIX + key, value);
         }
     }
 }

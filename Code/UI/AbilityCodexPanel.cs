@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Code.UI;
 using System.Reflection;
@@ -703,125 +703,6 @@ public class AbilityCodexPanel : MonoBehaviour
 		return 0f;
 	}
 
-	private void DrawRealmDetail(int tier)
-	{
-		Color tierColor = DSUITheme.GetTierColor(tier);
-		float qiThreshold = RealmJudge.GetQiThreshold(tier);
-		string tierName = UILocalization.GetTierName(tier);
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUI.color = tierColor;
-		GUILayout.Label(string.Format(UILocalization.Get("realm_title_fmt"), tier, tierName), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(28f) });
-		GUILayout.FlexibleSpace();
-		GUI.color = new Color(0.7f, 0.7f, 0.7f);
-		GUILayout.Label(string.Format(UILocalization.Get("realm_energy_threshold"), qiThreshold), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(28f) });
-		GUI.color = Color.white;
-		GUILayout.EndHorizontal();
-		GUILayout.Space(10f);
-		string realmFeatureDescription = RealmFeatures.GetRealmFeatureDescription(tier);
-		if (!string.IsNullOrEmpty(realmFeatureDescription))
-		{
-			GUI.color = new Color(0.9f, 0.9f, 0.9f);
-			GUILayout.Label(string.Format(UILocalization.Get("realm_feature"), realmFeatureDescription), new GUIStyle(GUI.skin.label) { fontSize = 12, wordWrap = true });
-			GUI.color = Color.white;
-		}
-		GUILayout.Space(12f);
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUI.color = new Color(1f, 0.4f, 0.4f);
-		GUILayout.Label(string.Format(UILocalization.Get("realm_combat"), RealmFeatures.GetRealmCombatMultiplier(tier)), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(150f),
-			GUILayout.Height(20f)
-		});
-		GUI.color = new Color(0.4f, 0.6f, 1f);
-		GUILayout.Label(string.Format(UILocalization.Get("realm_defense"), RealmFeatures.GetRealmDefenseMultiplier(tier)), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(150f),
-			GUILayout.Height(20f)
-		});
-		GUI.color = new Color(0.4f, 1f, 0.6f);
-		GUILayout.Label(string.Format(UILocalization.Get("realm_cultivation"), RealmFeatures.GetRealmCultivationEfficiency(tier)), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(150f),
-			GUILayout.Height(20f)
-		});
-		GUI.color = Color.white;
-		GUILayout.EndHorizontal();
-		GUILayout.Space(12f);
-		List<RealmAbility> abilitiesForTier = RealmAbilities.GetAbilitiesForTier(tier);
-		if (abilitiesForTier != null && abilitiesForTier.Count > 0)
-		{
-			GUI.color = new Color(0.8f, 0.6f, 1f);
-			GUILayout.Label(UILocalization.Get("realm_detail_abilities"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(20f) });
-			GUI.color = Color.white;
-			foreach (RealmAbility item in abilitiesForTier)
-			{
-				GUILayout.BeginVertical((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(40f) });
-				GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-				GUILayout.Space(15f);
-				GUI.color = new Color(0.9f, 0.9f, 0.9f);
-				GUILayout.Label(" " + item.GetName(), (GUILayoutOption[])(object)new GUILayoutOption[2]
-				{
-					GUILayout.Width(150f),
-					GUILayout.Height(18f)
-				});
-				GUILayout.FlexibleSpace();
-				GUI.color = new Color(0.7f, 0.7f, 0.5f);
-				GUILayout.Label(string.Format(UILocalization.Get("realm_skill_cost_cd"), item.EnergyCost, item.Cooldown), (GUILayoutOption[])(object)new GUILayoutOption[2]
-				{
-					GUILayout.Width(140f),
-					GUILayout.Height(18f)
-				});
-				GUI.color = Color.white;
-				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-				GUILayout.Space(30f);
-				GUI.color = new Color(0.6f, 0.6f, 0.6f);
-				GUIStyle val = new GUIStyle(GUI.skin.label)
-				{
-					wordWrap = true,
-					fontSize = 11
-				};
-				GUILayout.Label(item.GetDescription(), val);
-				GUI.color = Color.white;
-				GUILayout.EndHorizontal();
-				GUILayout.EndVertical();
-				GUILayout.Space(10f);
-			}
-		}
-		GUILayout.Space(10f);
-		GUI.color = new Color(0.6f, 0.8f, 1f);
-		GUILayout.Label(UILocalization.Get("realm_detail_conditions"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(20f) });
-		GUI.color = Color.white;
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Space(15f);
-		GUI.color = new Color(0.8f, 0.8f, 0.8f);
-		GUILayout.Label(string.Format(UILocalization.Get("realm_cond_energy"), qiThreshold), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(200f),
-			GUILayout.Height(18f)
-		});
-		GUILayout.Label(UILocalization.Get("realm_cond_mastery"), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(160f),
-			GUILayout.Height(18f)
-		});
-		GUILayout.Label(UILocalization.Get("realm_cond_turbulence"), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(140f),
-			GUILayout.Height(18f)
-		});
-		if (tier >= 8)
-		{
-			GUILayout.Label(UILocalization.Get("realm_cond_enlight"), (GUILayoutOption[])(object)new GUILayoutOption[2]
-			{
-				GUILayout.Width(180f),
-				GUILayout.Height(18f)
-			});
-		}
-		GUI.color = Color.white;
-		GUILayout.EndHorizontal();
-	}
-
 	private void DrawTabAbilityCodex()
 	{
 		DSGUIHelper.Title(UILocalization.Get("ability_codex_title"), _currentFontSize + 2);
@@ -978,24 +859,6 @@ public class AbilityCodexPanel : MonoBehaviour
 			}
 		}
 		GUILayout.EndVertical();
-	}
-
-	private string GetUnlockTypeName(GeneUnlockType type, float param)
-	{
-		bool en = UILocalization.CurrentLanguage == "en";
-		switch (type)
-		{
-			case GeneUnlockType.CombatKills: return en ? ("Defeat " + param + " enemies") : (UILocalization.Get("codex_defeat") + param + UILocalization.Get("codex_enemies"));
-			case GeneUnlockType.CombatDefense: return en ? ("Sustain " + param + " attacks") : (UILocalization.Get("codex_tank") + param + UILocalization.Get("codex_attacks"));
-			case GeneUnlockType.ContinuousCultivation: return en ? ("Cultivate continuously for " + param + " years") : (UILocalization.Get("codex_cultivate") + param + UILocalization.Get("codex_years"));
-			case GeneUnlockType.LowCorruption: return en ? ("Turbulence <70 for " + param + " years") : (UILocalization.Get("codex_low_turbulence") + param + UILocalization.Get("codex_years"));
-			case GeneUnlockType.DeepEnlightenment: return en ? ("Deep enlightenment x" + param) : (UILocalization.Get("codex_deep_awakening") + param + UILocalization.Get("codex_times"));
-			case GeneUnlockType.Ritual: return en ? "Unlock all 5 prior periods of the same group" : UILocalization.Get("codex_unlock_family");
-			case GeneUnlockType.EnergyThreshold: return en ? ("Reach " + param + " energy") : (UILocalization.Get("codex_energy_reach") + param);
-			case GeneUnlockType.AgeRequirement: return en ? ("Reach age " + param) : (UILocalization.Get("codex_age_reach") + param + UILocalization.Get("codex_age_years"));
-			case GeneUnlockType.SourceUnknown: return en ? "Unknown" : UILocalization.Get("codex_unknown");
-			default: return type.ToString();
-		}
 	}
 
 	private void DrawTabCultivators()
@@ -1246,7 +1109,7 @@ public class AbilityCodexPanel : MonoBehaviour
 
 		try
 		{
-// 			if (Code.Core.DengShenConfig.EnableRealmBuildings && World.world != null && World.world.units != null)
+// 			if (Code.Core.GeneCultivationConfig.EnableRealmBuildings && World.world != null && World.world.units != null)
 			{
 				Actor bestBuilder = null;
 				float bestEnergy = 0f;
@@ -1543,119 +1406,9 @@ public class AbilityCodexPanel : MonoBehaviour
 		GUILayout.EndScrollView();
 	}
 
-	private void DrawConfigField(string label, ref string field, Action<float> apply)
-	{
-		int num = _currentFontSize + 8;
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Label(label + ":", (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(120f),
-			GUILayout.Height((float)num)
-		});
-		field = GUILayout.TextField(field, (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(80f),
-			GUILayout.Height((float)num)
-		});
-		if (GUILayout.Button(new GUIContent(UILocalization.Get("apply"), UILocalization.Get("apply_tip")), (GUILayoutOption[])(object)new GUILayoutOption[2]
-		{
-			GUILayout.Width(50f),
-			GUILayout.Height((float)num)
-		}))
-		{
-			if (float.TryParse(field, out var result))
-			{
-				apply(result);
-				SetStatus(string.Format(UILocalization.Get("config_set_fmt"), label, result));
-			}
-			else
-			{
-				SetStatus(UILocalization.Get("invalid_value"));
-			}
-		}
-		GUILayout.EndHorizontal();
-	}
-
 	private bool TipButton(string textKey, string tipKey, params GUILayoutOption[] options)
 	{
 		return GUILayout.Button(new GUIContent(UILocalization.Get(textKey), UILocalization.Get(tipKey)), options);
-	}
-
-	private void DrawCultivatorTraits(Actor actor)
-	{
-		if (actor == null || actor.traits == null)
-		{
-			GUILayout.Label(UILocalization.Get("no_traits"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(20f) });
-			return;
-		}
-		int num = 0;
-		foreach (ActorTrait trait in actor.traits)
-		{
-			string text = ((trait != null) ? ((Asset)trait).id : "");
-			if (string.IsNullOrEmpty(text) || !text.StartsWith("ds_"))
-			{
-				continue;
-			}
-			num++;
-			string text2 = text;
-			try
-			{
-				ActorTrait val = ((AssetLibrary<ActorTrait>)(object)AssetManager.traits).get(text);
-				if (val != null)
-				{
-					text2 = ((Asset)val).id;
-					if (!string.IsNullOrEmpty(((BaseAugmentationAsset)val).special_locale_id))
-					{
-						text2 = ((BaseAugmentationAsset)val).special_locale_id;
-					}
-				}
-			}
-			catch
-			{
-			}
-			string traitDisplayName = GetTraitDisplayName(text);
-			string traitDisplayDesc = GetTraitDisplayDesc(text);
-			GUILayout.BeginVertical(GUI.skin.box, Array.Empty<GUILayoutOption>());
-			GUILayout.Label(string.Format(UILocalization.Get("trait_item_fmt"), traitDisplayName), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(20f) });
-			if (!string.IsNullOrEmpty(traitDisplayDesc))
-			{
-				GUILayout.Label(traitDisplayDesc, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(14f) });
-			}
-			GUILayout.EndVertical();
-			GUILayout.Space(10f);
-		}
-		if (num == 0)
-		{
-			GUILayout.Label(UILocalization.Get("no_cultivator_traits"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(20f) });
-		}
-	}
-
-	private static string GetTraitDisplayName(string traitId)
-	{
-		if (traitId.StartsWith("ds_tier_"))
-		{
-			string[] array = traitId.Split('_');
-			if (array.Length >= 3 && int.TryParse(array[2], out var result))
-			{
-				return UILocalization.GetTierName(result);
-			}
-		}
-		return traitId;
-	}
-
-	private static string GetTraitDisplayDesc(string traitId)
-	{
-		return traitId switch
-		{
-			"ds_tier_1_ganqi" => UILocalization.Get("trait_desc_tier_1"), 
-			"ds_tier_5_hengyuan" => UILocalization.Get("trait_desc_tier_5"), 
-			"ds_tier_6_lingyu" => UILocalization.Get("trait_desc_tier_6"), 
-			"ds_tier_8_mingdao" => UILocalization.Get("trait_desc_tier_8"), 
-			"ds_tier_11_sanctuary" => UILocalization.Get("trait_desc_tier_11"), 
-			"ds_tier_12_ascended" => UILocalization.Get("trait_desc_tier_12"), 
-			"ds_tier_13_truegod" => UILocalization.Get("trait_desc_tier_13"), 
-			_ => "", 
-		};
 	}
 
 	private void DrawSeparator()
@@ -1679,50 +1432,6 @@ public class AbilityCodexPanel : MonoBehaviour
 		GUI.skin.label.richText = true;
 		GUILayout.Label(text, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)(num + 8)) });
 		GUI.skin.label.fontSize = fontSize2;
-		GUI.skin.label.richText = richText;
-	}
-
-	private void DrawRealmProgress(int currentTier)
-	{
-		if (currentTier > 0)
-		{
-			GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-			for (int i = 1; i <= 13; i++)
-			{
-				bool flag = i <= currentTier;
-				bool flag2 = i == currentTier;
-				Color color = (Color)(flag ? DSUITheme.GetTierColor(i) : new Color(0.3f, 0.3f, 0.35f, 0.5f));
-				GUI.color = color;
-				string text = (flag2 ? $"[{i}]" : (flag ? $"{i}" : "·"));
-				GUILayout.Box(text, (GUILayoutOption[])(object)new GUILayoutOption[2]
-				{
-					GUILayout.Width(28f),
-					GUILayout.Height(22f)
-				});
-				GUI.color = Color.white;
-			}
-			GUILayout.EndHorizontal();
-			string tierName = GetTierName(currentTier);
-			string arg = ColorUtility.ToHtmlStringRGB(DSUITheme.GetTierColor(currentTier));
-			int fontSize = GUI.skin.label.fontSize;
-			bool richText = GUI.skin.label.richText;
-			GUI.skin.label.fontSize = _currentFontSize - 1;
-			GUI.skin.label.richText = true;
-			GUILayout.Label(string.Format("<color=#{0}>" + UILocalization.Get("current_realm_fmt") + "</color>", arg, currentTier, tierName), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)(_currentFontSize + 2)) });
-			GUI.skin.label.fontSize = fontSize;
-			GUI.skin.label.richText = richText;
-		}
-	}
-
-	private void DrawSectionTitle(string title)
-	{
-		string text = "<color=#C0A060><b> " + title + " </b></color>";
-		int fontSize = GUI.skin.label.fontSize;
-		bool richText = GUI.skin.label.richText;
-		GUI.skin.label.fontSize = _currentFontSize + 1;
-		GUI.skin.label.richText = true;
-		GUILayout.Label(text, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)(_currentFontSize + 6)) });
-		GUI.skin.label.fontSize = fontSize;
 		GUI.skin.label.richText = richText;
 	}
 

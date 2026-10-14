@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // 鏂囦欢: Code/Core/DSHistoryManager.cs
 // 妯″潡: 鐧荤闀块樁 - 鍘嗗彶绯荤粺绠＄悊鍣?
 // 鑱岃矗: 灏嗘ā缁勫ぇ浜嬩欢鍐欏叆WorldBox鍘熺敓鍘嗗彶绯荤粺
@@ -24,7 +24,7 @@ namespace Code.Core
         private static bool _initialized = false;
 
         // 鍘嗗彶鍒嗙粍ID
-        private const string GROUP_DS = "DengShen";
+        private const string GROUP_DS = "GeneCultivation";
         private const string GROUP_ICON_PATH = "ui/iconBook";
 
         // 鑷畾涔塛orldLogAsset锛堥潤鎬佸紩鐢紝鏂逛究鍚庣画浣跨敤锛?

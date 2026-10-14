@@ -44,11 +44,5 @@ namespace Code.Data
         {
             return actor?.data;
         }
-
-        /// <summary>获取BaseSimObject的stats字段（直接访问）</summary>
-        public static object GetStats(BaseSimObject obj)
-        {
-            return obj?.stats;
-        }
     }
 }

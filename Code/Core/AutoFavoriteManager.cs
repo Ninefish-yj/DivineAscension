@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using UnityEngine;
 using Code.Data;
@@ -14,7 +14,7 @@ namespace Code.Core
     public static class AutoFavoriteManager
     {
         // ============================================================
-        //  配置开关（统一读取 DengShenConfig，NML设置界面直接生效）
+        //  配置开关（统一读取 GeneCultivationConfig，NML设置界面直接生效）
         //  旧版自有静态字段已移除，避免与配置系统脱节
         // ============================================================
 
@@ -49,7 +49,7 @@ namespace Code.Core
                 if (tier >= TIER_13_THRESHOLD)
                 {
                     // 13阶超神级：独立开关
-                    if (DengShenConfig.AutoFavoriteTier13)
+                    if (GeneCultivationConfig.AutoFavoriteTier13)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(13);
@@ -58,7 +58,7 @@ namespace Code.Core
                 else if (tier >= TIER_12_THRESHOLD)
                 {
                     // 12阶真神级：独立开关
-                    if (DengShenConfig.AutoFavoriteTier12)
+                    if (GeneCultivationConfig.AutoFavoriteTier12)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(12);
@@ -67,7 +67,7 @@ namespace Code.Core
                 else if (tier >= TIER_11_THRESHOLD)
                 {
                     // 11阶登神级：独立开关
-                    if (DengShenConfig.AutoFavoriteTier11)
+                    if (GeneCultivationConfig.AutoFavoriteTier11)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(11);
@@ -76,7 +76,7 @@ namespace Code.Core
                 else if (tier >= TIER_10_THRESHOLD)
                 {
                     // 10阶使徒级：独立开关
-                    if (DengShenConfig.AutoFavoriteTier10)
+                    if (GeneCultivationConfig.AutoFavoriteTier10)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(10);
@@ -85,7 +85,7 @@ namespace Code.Core
                 else if (tier >= TIER_9_THRESHOLD)
                 {
                     // 9阶解析者：独立开关
-                    if (DengShenConfig.AutoFavoriteTier9)
+                    if (GeneCultivationConfig.AutoFavoriteTier9)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(9);
@@ -94,7 +94,7 @@ namespace Code.Core
                 else if (tier >= TIER_8_THRESHOLD)
                 {
                     // 8阶干涉者：独立开关
-                    if (DengShenConfig.AutoFavoriteTier8)
+                    if (GeneCultivationConfig.AutoFavoriteTier8)
                     {
                         shouldFavorite = true;
                         reason = UILocalization.GetTierName(8);

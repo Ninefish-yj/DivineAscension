@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ namespace Code.Realm
         Fail_Risk,         // 突破风险失败
         Fail_AscensionLocked, // 成神被锁：成神条件未满足（≥12个基因、失控<50、深度觉醒经验≥500000）
         Fail_GeneCollapse,    // 基因崩溃：突破失败时基因序列彻底崩溃，单位死亡
+        Fail_LifetimeBanned,  // 终身禁赛：同阶挑战逃跑过，终身不能再突破
         AlreadyMax,
         Invalid
     }
@@ -467,45 +468,7 @@ namespace Code.Realm
             }
         }
 
-        /// <summary>通过反射获取单位属性值（stats字典）</summary>
-        private static float GetActorStat(Actor actor, string statName, float defaultValue)
-        {
-            if (actor == null) return defaultValue;
-            try
-            {
-                // 通过反射获取 stats 字典
-                var statsField = actor.GetType().GetField("stats",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (statsField == null) return defaultValue;
-                var stats = statsField.GetValue(actor);
-                if (stats == null) return defaultValue;
-
-                // 尝试按字典取值
-                var statsType = stats.GetType();
-                var indexer = statsType.GetProperty("Item");
-                if (indexer != null)
-                {
-                    try
-                    {
-                        object val = indexer.GetValue(stats, new object[] { statName });
-                        if (val != null) return System.Convert.ToSingle(val);
-                    }
-                    catch { /* 键不存在 */ }
-                }
-
-                // 回退：尝试属性访问
-                var prop = statsType.GetProperty(statName);
-                if (prop != null)
-                {
-                    object val = prop.GetValue(stats);
-                    if (val != null) return System.Convert.ToSingle(val);
-                }
-            }
-            catch { /* 反射失败 */ }
-            return defaultValue;
-        }
-
-        /// <summary>
+                /// <summary>
         /// 确保指定境界有空位。如果达到上限，随机杀死一个同境界单位腾出位置。
         /// 弱肉强食：高位阶名额有限，后来者要上位，旧人就得陨落。
         /// </summary>
@@ -603,42 +566,7 @@ namespace Code.Realm
             }
         }
 
-        /// <summary>延迟移除破境之势状态</summary>
-        private static System.Collections.IEnumerator RemoveBreakthroughMomentumDelayed(Actor challenger, float delay)
-        {
-            yield return new UnityEngine.WaitForSeconds(delay);
-            try { challenger?.removeTrait(TraitManager.STATUS_BREAKTHROUGH_MOMENTUM); } catch { }
-        }
-
-        /// <summary>通过挑战杀死单位（触发正常死亡流程）</summary>
-        private static void KillActorByChallenge(Actor victim, Actor killer)
-        {
-            try
-            {
-                if (victim == null || !victim.isAlive()) return;
-
-                try
-                {
-                    // 直接调用 getHit 方法（publicized环境下直接访问）
-                    victim.getHit(99999f, false, AttackType.Other, killer, false, false, true);
-                }
-                catch
-                {
-                    // 备用方案：直接设置血量为0
-                    var actorData = ActorDataAccessor.GetData(victim);
-                    if (actorData != null)
-                    {
-                        actorData.health = 0;
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                DSDebug.Warning($"[GeneCultivation] 挑战击杀 {victim?.getName()} 失败: {e.Message}");
-            }
-        }
-
-        /// <summary>获取纪元名称（动态：第N纪元·当前主宰名；无主宰则第N纪元·混沌）</summary>
+                        /// <summary>获取纪元名称（动态：第N纪元·当前主宰名；无主宰则第N纪元·混沌）</summary>
         public static string GetEraName(int era)
         {
             if (era == _currentEra && _currentDominator != null)
@@ -649,70 +577,7 @@ namespace Code.Realm
             return string.Format(UILocalization.Get("judge_era_chaos_format"), era);
         }
 
-        /// <summary>新真神降世：挑战当前主宰，胜者成为纪元主宰。返回true表示挑战成功成为新主宰</summary>
-        /// <summary>异步等待战斗结束，然后判定胜负</summary>
-        public static void WaitForCombatAndDecide(Actor challenger, Actor dominator, float challengerEnergy, int challengerElements)
-        {
-            // 简单版：等10秒，然后检查谁死了
-            // 后面改成真正监听战斗结束事件
-            DSDebug.Verbose($"[GeneCultivation] 战斗开始，等待10秒后判定胜负...");
-
-            // 用AnnualTickManager的每年更新来检查（游戏内的时间）
-            // 现在先简单版：直接判定
-            System.Threading.Tasks.Task.Delay(10000).ContinueWith(_ =>
-            {
-                try
-                {
-                    if (dominator == null || !dominator.isAlive())
-                    {
-                        // 旧主宰死了，挑战者赢
-                        SetDominator(challenger, challengerEnergy, challengerElements);
-                        DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 击杀主宰，成为新主宰！");
-                    }
-                    else if (!challenger.isAlive())
-                    {
-                        // 挑战者死了
-                        DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 战斗中死亡，挑战失败");
-                    }
-                    else
-                    {
-                        // 检查谁跑了（原版逃亡任务id是run_away）
-                        bool challengerFled = false;
-                        try { challengerFled = challenger.hasTask() && challenger.ai.task.id == "run_away"; } catch { }
-                        bool dominatorFled = false;
-                        try { dominatorFled = dominator.hasTask() && dominator.ai.task.id == "run_away"; } catch { }
-
-                        if (challengerFled)
-                        {
-                            // 挑战者跑了 → 终身不能突破，阶位回退
-                            DSDebug.Verbose($"[GeneCultivation] 挑战者 {challenger.getName()} 逃跑了！终身不能突破，阶位回退");
-                            try { DemoteActor(challenger, CultivationData.GetRealmTier(challenger) - 1); } catch { }
-                        }
-                        else if (dominatorFled)
-                        {
-                            // 主宰跑了 → 主宰输，阶位回退，挑战者上位
-                            DSDebug.Verbose($"[GeneCultivation] 主宰 {dominator.getName()} 逃跑了！阶位回退");
-                            try { DemoteActor(dominator, CultivationData.GetRealmTier(dominator) - 1); } catch { }
-                            SetDominator(challenger, challengerEnergy, challengerElements);
-                            DSDebug.Verbose($"[GeneCultivation] {challenger.getName()} 击败逃跑的主宰，成为新主宰！");
-                        }
-                        else
-                        {
-                            // 都没死也没跑，先结束战斗，按数值判定
-                            challenger.clearAttackTarget();
-                            dominator.clearAttackTarget();
-                            DSDebug.Verbose($"[GeneCultivation] 战斗结束，双方都活着，按数值判定");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    DSDebug.Verbose($"[GeneCultivation] 异步判定失败: {e.Message}");
-                }
-            });
-        }
-
-        /// <summary>挑战失败进入虚弱期：全属性降低50%，能量恢复降低，持续20年，期间无法再次挑战主宰</summary>
+        ：全属性降低50%，能量恢复降低，持续20年，期间无法再次挑战主宰</summary>
         private static void ExileChallenger(Actor actor)
         {
             try
@@ -1026,7 +891,7 @@ namespace Code.Realm
         {
             if (actor == null || !actor.isAlive()) return false;
             if (actor.isSapient()) return true; // 智慧生物（人类/精灵/矮人等文明种族）
-            if (actor.isAnimal()) return Code.Core.DengShenConfig.EnableAnimalAwakening; // 动物受配置控制
+            if (actor.isAnimal()) return Code.Core.GeneCultivationConfig.EnableAnimalAwakening; // 动物受配置控制
             return false; // 船/树/石/建筑等非生物单位
         }
 
@@ -1160,6 +1025,13 @@ namespace Code.Realm
         {
             failReason = BreakthroughResult.Invalid;
             if (actor == null || !actor.isAlive()) return false;
+
+            // 终身禁赛：同阶挑战逃跑过的单位不能再突破
+            if (CultivationData.IsLifetimeBanned(actor))
+            {
+                failReason = BreakthroughResult.Fail_LifetimeBanned;
+                return false;
+            }
 
             int currentTier = CultivationData.GetRealmTier(actor);
             if (currentTier <= 0)
@@ -1328,6 +1200,10 @@ namespace Code.Realm
             //  突破风险判定（现代异能体系特色）
             // 境界越高，突破风险越大；失控指数越高，失败概率越大
             float riskChance = GetBreakthroughRiskChance(nextTier, CultivationData.GetTurbulence(actor));
+
+            //  纪元突破加成：真神/超神纪元的主宰染色体降低全球突破失败率（幅度3%~10%）
+            float eraBreakBonus = Code.Core.GeneEnergyCalculator.GetEraBreakthroughBonus();
+            if (eraBreakBonus > 0f) riskChance = Mathf.Max(0f, riskChance - eraBreakBonus);
 
             //  境界特色突破修正
             // 4阶突变者：基因稳定，突破成功率+10%（风险-10%），仅对4-6阶生效（7阶以上基因稳定性递减）
@@ -1691,6 +1567,9 @@ namespace Code.Realm
         public static BreakthroughResult DoEnlightenmentBreakthrough(Actor actor)
         {
             if (actor == null || !actor.isAlive()) return BreakthroughResult.Invalid;
+
+            // 终身禁赛：同阶挑战逃跑过的单位不能再突破
+            if (CultivationData.IsLifetimeBanned(actor)) return BreakthroughResult.Fail_LifetimeBanned;
 
             int currentTier = CultivationData.GetRealmTier(actor);
             if (currentTier <= 0) return BreakthroughResult.Invalid;

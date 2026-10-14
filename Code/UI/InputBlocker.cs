@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System.Collections.Generic;
 using HarmonyLib;
@@ -89,7 +89,7 @@ namespace Code.UI
 
             try
             {
-                var harmony = new Harmony("DengShenChangJie.InputBlocker");
+                var harmony = new Harmony("GeneCultivation.InputBlocker");
 
                 // 拦截点击选中（PlayerControl.checkClickTouchInspectSelect）
                 PatchExplicit(harmony,

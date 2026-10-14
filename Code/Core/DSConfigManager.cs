@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace Code.Core
     /// 配置项在default_config.json中定义，NML自动在游戏设置界面生成UI
     /// 回调方法格式：类名:方法名
     /// </summary>
-    public static class DengShenConfig
+    public static class GeneCultivationConfig
     {
         // === 称号和境界后缀 ===
         public static bool EnableTitleSuffix = true;
@@ -176,121 +176,121 @@ namespace Code.Core
 
     /// <summary>
     /// 配置管理器（兼容层）
-    /// 所有配置值实际存储在DengShenConfig中，NML自动管理持久化
-    /// 此类保留是为了兼容现有代码，所有静态属性都转发到DengShenConfig
+    /// 所有配置值实际存储在GeneCultivationConfig中，NML自动管理持久化
+    /// 此类保留是为了兼容现有代码，所有静态属性都转发到GeneCultivationConfig
     /// </summary>
     public static class DSConfigManager
     {
         // ============================================================
-        //  兼容属性（转发到DengShenConfig）
+        //  兼容属性（转发到GeneCultivationConfig）
         // ============================================================
 
         // === 称号和境界后缀 ===
         public static bool EnableTitleSuffix
         {
-            get => DengShenConfig.EnableTitleSuffix;
-            set => DengShenConfig.EnableTitleSuffix = value;
+            get => GeneCultivationConfig.EnableTitleSuffix;
+            set => GeneCultivationConfig.EnableTitleSuffix = value;
         }
 
         // === 自动收藏（按境界分开）===
         public static bool AutoFavoriteTier8
         {
-            get => DengShenConfig.AutoFavoriteTier8;
-            set => DengShenConfig.AutoFavoriteTier8 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier8;
+            set => GeneCultivationConfig.AutoFavoriteTier8 = value;
         }
 
         public static bool AutoFavoriteTier9
         {
-            get => DengShenConfig.AutoFavoriteTier9;
-            set => DengShenConfig.AutoFavoriteTier9 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier9;
+            set => GeneCultivationConfig.AutoFavoriteTier9 = value;
         }
 
         public static bool AutoFavoriteTier10
         {
-            get => DengShenConfig.AutoFavoriteTier10;
-            set => DengShenConfig.AutoFavoriteTier10 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier10;
+            set => GeneCultivationConfig.AutoFavoriteTier10 = value;
         }
 
         public static bool AutoFavoriteTier11
         {
-            get => DengShenConfig.AutoFavoriteTier11;
-            set => DengShenConfig.AutoFavoriteTier11 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier11;
+            set => GeneCultivationConfig.AutoFavoriteTier11 = value;
         }
 
         public static bool AutoFavoriteTier12
         {
-            get => DengShenConfig.AutoFavoriteTier12;
-            set => DengShenConfig.AutoFavoriteTier12 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier12;
+            set => GeneCultivationConfig.AutoFavoriteTier12 = value;
         }
 
         public static bool AutoFavoriteTier13
         {
-            get => DengShenConfig.AutoFavoriteTier13;
-            set => DengShenConfig.AutoFavoriteTier13 = value;
+            get => GeneCultivationConfig.AutoFavoriteTier13;
+            set => GeneCultivationConfig.AutoFavoriteTier13 = value;
         }
 
         // === 修炼系统 ===
         public static bool EnableAutoCultivation
         {
-            get => DengShenConfig.EnableAutoCultivation;
-            set => DengShenConfig.EnableAutoCultivation = value;
+            get => GeneCultivationConfig.EnableAutoCultivation;
+            set => GeneCultivationConfig.EnableAutoCultivation = value;
         }
 
         public static bool EnableAutoAwakening
         {
-            get => DengShenConfig.EnableAutoAwakening;
-            set => DengShenConfig.EnableAutoAwakening = value;
+            get => GeneCultivationConfig.EnableAutoAwakening;
+            set => GeneCultivationConfig.EnableAutoAwakening = value;
         }
 
         public static bool EnableAutoBreakthrough
         {
-            get => DengShenConfig.EnableAutoBreakthrough;
-            set => DengShenConfig.EnableAutoBreakthrough = value;
+            get => GeneCultivationConfig.EnableAutoBreakthrough;
+            set => GeneCultivationConfig.EnableAutoBreakthrough = value;
         }
 
         public static bool EnableAnimalAwakening
         {
-            get => DengShenConfig.EnableAnimalAwakening;
-            set => DengShenConfig.EnableAnimalAwakening = value;
+            get => GeneCultivationConfig.EnableAnimalAwakening;
+            set => GeneCultivationConfig.EnableAnimalAwakening = value;
         }
 
         // === 世界交互 ===
         public static bool EnableDisasterSystem
         {
-            get => DengShenConfig.EnableDisasterSystem;
-            set => DengShenConfig.EnableDisasterSystem = value;
+            get => GeneCultivationConfig.EnableDisasterSystem;
+            set => GeneCultivationConfig.EnableDisasterSystem = value;
         }
 
         public static bool EnableVoidRifts
         {
-            get => DengShenConfig.EnableVoidRifts;
-            set => DengShenConfig.EnableVoidRifts = value;
+            get => GeneCultivationConfig.EnableVoidRifts;
+            set => GeneCultivationConfig.EnableVoidRifts = value;
         }
 
         public static bool EnableRealmEvents
         {
-            get => DengShenConfig.EnableRealmEvents;
-            set => DengShenConfig.EnableRealmEvents = value;
+            get => GeneCultivationConfig.EnableRealmEvents;
+            set => GeneCultivationConfig.EnableRealmEvents = value;
         }
 
 
         public static bool EnableGlobalHealthSuppression
         {
-            get => DengShenConfig.EnableGlobalHealthSuppression;
-            set => DengShenConfig.EnableGlobalHealthSuppression = value;
+            get => GeneCultivationConfig.EnableGlobalHealthSuppression;
+            set => GeneCultivationConfig.EnableGlobalHealthSuppression = value;
         }
 
         public static bool EnableGlobalNotifications
         {
-            get => DengShenConfig.EnableGlobalNotifications;
-            set => DengShenConfig.EnableGlobalNotifications = value;
+            get => GeneCultivationConfig.EnableGlobalNotifications;
+            set => GeneCultivationConfig.EnableGlobalNotifications = value;
         }
 
 
         public static bool EnableMonolithEffect
         {
-            get => DengShenConfig.EnableMonolithEffect;
-            set => DengShenConfig.EnableMonolithEffect = value;
+            get => GeneCultivationConfig.EnableMonolithEffect;
+            set => GeneCultivationConfig.EnableMonolithEffect = value;
         }
 
         // === UI设置 ===

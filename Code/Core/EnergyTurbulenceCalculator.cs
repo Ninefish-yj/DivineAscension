@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using System.Collections.Generic;
@@ -9,23 +9,23 @@ using UnityEngine;
 namespace Code.Core
 {
     /// <summary>全局可调配置（对应文档19.2节）
-    /// 注意：这些属性直接引用DengShenConfig（NML原生配置系统）的值，
+    /// 注意：这些属性直接引用GeneCultivationConfig（NML原生配置系统）的值，
     /// 用户在游戏设置界面修改配置会实时影响游戏逻辑。
     /// </summary>
     public static class CultivationConfig
     {
         public static float CultivationRateMultiplier {
-            get => DengShenConfig.CultivationRateMultiplier;
-            set => DengShenConfig.CultivationRateMultiplier = value;
+            get => GeneCultivationConfig.CultivationRateMultiplier;
+            set => GeneCultivationConfig.CultivationRateMultiplier = value;
         }
         public static float TurbulenceDecayRate {
-            get => DengShenConfig.TurbulenceDecayRate;
-            set => DengShenConfig.TurbulenceDecayRate = value;
+            get => GeneCultivationConfig.TurbulenceDecayRate;
+            set => GeneCultivationConfig.TurbulenceDecayRate = value;
         }
         public static float DomainUpkeepMultiplier = 1.0f;
         public static float MortalAwakenChance {
-            get => DengShenConfig.MortalAwakenChance;
-            set => DengShenConfig.MortalAwakenChance = value;
+            get => GeneCultivationConfig.MortalAwakenChance;
+            set => GeneCultivationConfig.MortalAwakenChance = value;
         }
         public static float EnlightenmentGainBase = 50f;
         public static float HighTurbulenceThreshold = 80f;

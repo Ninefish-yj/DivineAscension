@@ -136,15 +136,8 @@ namespace Code.Core
                         totalBonus += levelBonus[exprLevel];
                     }
                 }
-                
-                // 神创基因加成：效果值直接加到基因能量加成里（用户自定义）
-                if (CultivationData.IsDivineGeneUnlocked(actor))
-                {
-                    float divineValue = CultivationData.GetDivineGeneValue(actor);
-                    totalBonus += divineValue / 100f; // 效果值是百分比，转成小数
-                }
-                
-                // 上限+150%（神创基因额外加50%上限）
+
+                // 上限+150%
                 return Mathf.Min(1.5f, totalBonus);
             }
             catch

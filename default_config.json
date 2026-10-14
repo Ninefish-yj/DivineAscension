@@ -1,106 +1,106 @@
-﻿{
-    "ConfigDengShenChangJie": [
+{
+    "ConfigGeneCultivation": [
         {
             "Id": "EnableTitleSuffix",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableTitleSuffixCallBack"
+            "Callback": "GeneCultivationConfig:EnableTitleSuffixCallBack"
         },
         {
             "Id": "AutoFavoriteTier8",
             "Type": "SWITCH",
             "BoolVal": false,
-            "Callback": "DengShenConfig:AutoFavoriteTier8CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier8CallBack"
         },
         {
             "Id": "AutoFavoriteTier9",
             "Type": "SWITCH",
             "BoolVal": false,
-            "Callback": "DengShenConfig:AutoFavoriteTier9CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier9CallBack"
         },
         {
             "Id": "AutoFavoriteTier10",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:AutoFavoriteTier10CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier10CallBack"
         },
         {
             "Id": "AutoFavoriteTier11",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:AutoFavoriteTier11CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier11CallBack"
         },
         {
             "Id": "AutoFavoriteTier12",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:AutoFavoriteTier12CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier12CallBack"
         },
         {
             "Id": "AutoFavoriteTier13",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:AutoFavoriteTier13CallBack"
+            "Callback": "GeneCultivationConfig:AutoFavoriteTier13CallBack"
         },
         {
             "Id": "EnableAutoCultivation",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableAutoCultivationCallBack"
+            "Callback": "GeneCultivationConfig:EnableAutoCultivationCallBack"
         },
         {
             "Id": "EnableAutoAwakening",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableAutoAwakeningCallBack"
+            "Callback": "GeneCultivationConfig:EnableAutoAwakeningCallBack"
         },
         {
             "Id": "EnableAutoBreakthrough",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableAutoBreakthroughCallBack"
+            "Callback": "GeneCultivationConfig:EnableAutoBreakthroughCallBack"
         },
         {
             "Id": "EnableAnimalAwakening",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableAnimalAwakeningCallBack"
+            "Callback": "GeneCultivationConfig:EnableAnimalAwakeningCallBack"
         },
         {
             "Id": "EnableDisasterSystem",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableDisasterSystemCallBack"
+            "Callback": "GeneCultivationConfig:EnableDisasterSystemCallBack"
         },
         {
             "Id": "EnableVoidRifts",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableVoidRiftsCallBack"
+            "Callback": "GeneCultivationConfig:EnableVoidRiftsCallBack"
         },
         {
             "Id": "EnableRealmEvents",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableRealmEventsCallBack"
+            "Callback": "GeneCultivationConfig:EnableRealmEventsCallBack"
         },
         {
             "Id": "EnableGlobalHealthSuppression",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableGlobalHealthSuppressionCallBack"
+            "Callback": "GeneCultivationConfig:EnableGlobalHealthSuppressionCallBack"
         },
         {
             "Id": "EnableGlobalNotifications",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableGlobalNotificationsCallBack"
+            "Callback": "GeneCultivationConfig:EnableGlobalNotificationsCallBack"
         },
         {
             "Id": "EnableMonolithEffect",
             "Type": "SWITCH",
             "BoolVal": true,
-            "Callback": "DengShenConfig:EnableMonolithEffectCallBack"
+            "Callback": "GeneCultivationConfig:EnableMonolithEffectCallBack"
         },
 
         {
@@ -110,7 +110,7 @@
             "MinVal": 0.5,
             "MaxVal": 10.0,
             "Step": 0.5,
-            "Callback": "DengShenConfig:CultivationRateMultiplierCallBack"
+            "Callback": "GeneCultivationConfig:CultivationRateMultiplierCallBack"
         },
         {
             "Id": "MortalAwakenChance",
@@ -119,7 +119,7 @@
             "MinVal": 0.001,
             "MaxVal": 0.1,
             "Step": 0.005,
-            "Callback": "DengShenConfig:MortalAwakenChanceCallBack"
+            "Callback": "GeneCultivationConfig:MortalAwakenChanceCallBack"
         },
         {
             "Id": "TurbulenceDecayRate",
@@ -128,13 +128,13 @@
             "MinVal": 0.0,
             "MaxVal": 50.0,
             "Step": 1.0,
-            "Callback": "DengShenConfig:TurbulenceDecayRateCallBack"
+            "Callback": "GeneCultivationConfig:TurbulenceDecayRateCallBack"
         },
         {
             "Id": "EnableVerboseLog",
             "Type": "SWITCH",
             "BoolVal": false,
-            "Callback": "DengShenConfig:EnableVerboseLogCallBack"
+            "Callback": "GeneCultivationConfig:EnableVerboseLogCallBack"
         }
     ]
 }

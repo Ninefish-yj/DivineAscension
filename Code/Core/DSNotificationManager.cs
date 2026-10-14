@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using UnityEngine;
@@ -48,7 +48,7 @@ namespace Code.Core
             try
             {
                 // 检查全局通知开关
-                if (!Code.Core.DengShenConfig.EnableGlobalNotifications) return;
+                if (!Code.Core.GeneCultivationConfig.EnableGlobalNotifications) return;
 
                 if (!CheckCooldown(ref _lastMajorNotifyTime, MAJOR_COOLDOWN)) return;
 
@@ -71,7 +71,7 @@ namespace Code.Core
             try
             {
                 // 检查全局通知开关
-                if (!Code.Core.DengShenConfig.EnableGlobalNotifications) return;
+                if (!Code.Core.GeneCultivationConfig.EnableGlobalNotifications) return;
 
                 if (!CheckCooldown(ref _lastInfoNotifyTime, INFO_COOLDOWN)) return;
 
@@ -92,7 +92,7 @@ namespace Code.Core
             try
             {
                 // 检查全局通知开关（警告通知不受开关限制，总是显示）
-                // if (!Code.Core.DengShenConfig.EnableGlobalNotifications) return;
+                // if (!Code.Core.GeneCultivationConfig.EnableGlobalNotifications) return;
 
                 if (!CheckCooldown(ref _lastWarningNotifyTime, WARNING_COOLDOWN)) return;
 

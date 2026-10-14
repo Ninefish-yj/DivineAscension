@@ -107,21 +107,7 @@ namespace Code.Combat
         /// <summary>
         /// 对目标单位周围的敌人造成范围伤害
         /// </summary>
-        public static int ApplyAreaDamageAtTarget(
-            Actor attacker,
-            Actor target,
-            float radius,
-            float baseDamage,
-            int damageType = 0,
-            bool distanceDecay = true,
-            bool hitAllies = false)
-        {
-            if (target == null) return 0;
-            return ApplyAreaDamage(attacker, target.current_position, radius, baseDamage,
-                damageType, distanceDecay, hitAllies);
-        }
-
-        // ============================================================
+                // ============================================================
         // 范围治疗方法
         // ============================================================
 

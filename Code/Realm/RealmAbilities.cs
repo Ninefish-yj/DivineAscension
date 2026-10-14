@@ -25,8 +25,6 @@ namespace Code.Realm
 
         /// <summary>获取当前语言的技能名称</summary>
         public string GetName() { return UILocalization.CurrentLanguage == "en" ? NameEn : Name; }
-        /// <summary>获取当前语言的技能描述</summary>
-        public string GetDescription() { return UILocalization.CurrentLanguage == "en" ? DescriptionEn : Description; }
     }
 
     public enum AbilityType
@@ -355,40 +353,7 @@ namespace Code.Realm
             _rageValues[actorId] = Mathf.Min(MAX_RAGE, _rageValues[actorId] + amount);
         }
 
-        /// <summary>检查单位是否有足够的怒气释放终极技能</summary>
-        public static bool HasEnoughRage(Actor actor, string abilityId)
-        {
-            if (actor == null) return false;
-            RealmAbility ability = GetAbilityById(abilityId);
-            if (ability == null || ability.RequiredTier < 10) return true; // 非终极技能不需要怒气
-            return GetRage(actor) >= MAX_RAGE; // 终极技能需要满怒气
-        }
-
-        /// <summary>每秒自动恢复怒气值（在Update中调用）</summary>
-        public static void UpdateRageRegeneration()
-        {
-            if (World.world == null || World.world.units == null) return;
-            try
-            {
-                // 只更新活跃异能者的怒气值（避免遍历全图单位）
-                var activeIds = AnnualTickManager.GetActiveCultivatorIds();
-                if (activeIds == null || activeIds.Count == 0) return;
-
-                foreach (long id in activeIds)
-                {
-                    try
-                    {
-                        Actor actor = World.world.units.get(id);
-                        if (actor == null || !actor.isAlive()) continue;
-                        AddRage(actor, RAGE_PER_SECOND * Time.deltaTime);
-                    }
-                    catch { /* 忽略单个单位更新失败 */ }
-                }
-            }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] UpdateRageRegeneration 异常: " + dsEx.Message); }
-        }
-
-        /// <summary>执行技能效果</summary>
+                        /// <summary>执行技能效果</summary>
         private static void ExecuteAbilityEffect(Actor actor, RealmAbility ability, Actor target)
         {
             if (World.world == null || World.world.units == null) return;

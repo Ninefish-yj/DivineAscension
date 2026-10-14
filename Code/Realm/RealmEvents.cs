@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using System.Collections.Generic;
@@ -90,7 +90,7 @@ namespace Code.Realm
             {
                 RequiredTier = 12,
                 Type = RealmEventType.RuleBacklash,
-                Id = "ds_event_dengshen_tribulation",
+                Id = "ds_event_gene_tribulation",
                 Name = UILocalization.Get("event_dimension_storm"),
                 Description = UILocalization.Get("event_dimension_storm_desc"),
                 Damage = 2000f,
@@ -276,7 +276,7 @@ namespace Code.Realm
                     DSDebug.Verbose($"[GeneCultivation]  超神级降临全局效果：{affectedCount}个异能者获得能量洗礼");
                     break;
 
-                case "ds_event_dengshen_tribulation":
+                case "ds_event_gene_tribulation":
                     // 维度风暴：全局异能者受到风暴余波
                     foreach (var unit in World.world.units.units_only_alive)
                     {

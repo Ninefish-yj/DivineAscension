@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using UnityEngine;
 using System.IO;
@@ -121,10 +121,10 @@ namespace Code.Core
             }
         }
 
-        /// <summary>输出详细调试日志（仅在DengShenConfig.EnableVerboseLog=true时输出）</summary>
+        /// <summary>输出详细调试日志（仅在GeneCultivationConfig.EnableVerboseLog=true时输出）</summary>
         public static void Verbose(string message)
         {
-            if (DengShenConfig.EnableVerboseLog)
+            if (GeneCultivationConfig.EnableVerboseLog)
             {
                 Debug.Log("[GeneCultivation] " + message);
                 // WriteToFile("VERBOSE", message);

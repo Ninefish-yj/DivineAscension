@@ -124,17 +124,7 @@ namespace Code.Combat
         /// <summary>
         /// 在施法者周围破坏地形（便捷方法）
         /// </summary>
-        public static int DestroyTerrainAtCaster(
-            Actor caster,
-            float radius,
-            float destructionChance,
-            TerrainDestructionType destructionType = TerrainDestructionType.Generic)
-        {
-            if (caster == null) return 0;
-            return DestroyTerrain(caster.current_position, radius, destructionChance, destructionType, caster);
-        }
-
-        // ============================================================
+                // ============================================================
         // 内部方法
         // ============================================================
 

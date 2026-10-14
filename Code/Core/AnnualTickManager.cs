@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using Code;
@@ -15,28 +15,7 @@ namespace Code.Core
 {
     public static class AnnualTickManager
     {
-        /// <summary>获取所有活跃异能者（供其他系统遍历用，避免遍历所有单位）</summary>
-        public static List<Actor> GetActiveCultivators()
-        {
-            var result = new List<Actor>();
-            try
-            {
-                if (_activeCultivatorIds == null) return result;
-                var snapshot = new List<long>(_activeCultivatorIds);
-                foreach (long id in snapshot)
-                {
-                    Actor actor = FindActorById(id);
-                    if (actor != null && actor.isAlive() && CultivationData.IsAscended(actor))
-                    {
-                        result.Add(actor);
-                    }
-                }
-            }
-            catch { }
-            return result;
-        }
-
-        // 全局年度结算标记（每年只执行一次全局结算：战乱失控指数、灾变、维度投影、持久化）
+                // 全局年度结算标记（每年只执行一次全局结算：战乱失控指数、灾变、维度投影、持久化）
         private static int _globalSettledYear = -1;
 
         // 活跃异能者ID列表（运行时缓存，读档时重建）
@@ -275,7 +254,7 @@ namespace Code.Core
                 DSDebug.Verbose($"活跃异能者年度结算: {settledCount}人");
 
                 // 步骤9：灾变系统年度结算（天地屏障、虚空裂隙）
-                if (Code.Core.DengShenConfig.EnableDisasterSystem) Disaster.DisasterManager.OnAnnualTick();
+                if (Code.Core.GeneCultivationConfig.EnableDisasterSystem) Disaster.DisasterManager.OnAnnualTick();
 
                 // 步骤10：宏观维度空间年度结算
                 Dimension.DimensionRealmManager.OnAnnualTick();
@@ -283,8 +262,8 @@ namespace Code.Core
                 // 步骤10.5：境界内容系统年度结算（技能冷却、事件、建筑效果）
                 Realm.RealmAbilities.OnAnnualTick();
                 Realm.RealmMechanics.OnAnnualTick(); // 基因化身回收 + 神眷清理
-                if (Code.Core.DengShenConfig.EnableRealmEvents) Realm.RealmEvents.OnAnnualTick();
-//                 if (Code.Core.DengShenConfig.EnableRealmBuildings) Realm.RealmBuildings.OnAnnualTick();
+                if (Code.Core.GeneCultivationConfig.EnableRealmEvents) Realm.RealmEvents.OnAnnualTick();
+//                 if (Code.Core.GeneCultivationConfig.EnableRealmBuildings) Realm.RealmBuildings.OnAnnualTick();
 
                 // 步骤10.55：领域系统年度脉冲（对所有活跃异能者触发领域效果）
                 try
@@ -403,7 +382,7 @@ namespace Code.Core
             try { CultivationData.AddCultivationYear(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
             try { CultivationData.UpdateMaxTurbulence(actor); } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleSingleCultivator 异常: " + dsEx.Message); }
 
-            if (Code.Core.DengShenConfig.EnableAutoCultivation)
+            if (Code.Core.GeneCultivationConfig.EnableAutoCultivation)
             {
                 // 步骤2：异能能量结算
                 EnergyTurbulenceCalculator.SettleAnnualQi(actor);
@@ -504,7 +483,7 @@ namespace Code.Core
                 SettleGeneGraph(actor);
             }
 
-            if (Code.Core.DengShenConfig.EnableAutoBreakthrough)
+            if (Code.Core.GeneCultivationConfig.EnableAutoBreakthrough)
             {
                 // 步骤5：进阶判定
                 TryBreakthrough(actor);
@@ -571,8 +550,11 @@ namespace Code.Core
                 //  原版智力属性加成：smart/genius/blessed/scholar/mage等特质提升修炼速度
                 float vanillaIntBonus = VanillaInteractionManager.GetCultivationSpeedMultiplier(actor);
 
+                //  真神/超神纪元修炼加成：纪元主宰的基因染色体决定全局掌控度提升速度
+                float eraCultBonus = 1f + GeneEnergyCalculator.GetEraCultivationBonus();
+
                 // 计算最终提升
-                float finalGain = baseGain * 1.0f * enlightMultiplier * configMultiplier * geneCultBonus * vanillaIntBonus;
+                float finalGain = baseGain * 1.0f * enlightMultiplier * configMultiplier * geneCultBonus * vanillaIntBonus * eraCultBonus;
 
                 // 随机波动（±20%）
                 finalGain *= UnityEngine.Random.Range(0.8f, 1.2f);
@@ -902,7 +884,7 @@ namespace Code.Core
         /// </summary>
         private static void AwakenMortals()
         {
-            if (!Code.Core.DengShenConfig.EnableAutoAwakening)
+            if (!Code.Core.GeneCultivationConfig.EnableAutoAwakening)
             {
                 DSDebug.Verbose("[GeneCultivation] 自动觉醒已关闭，跳过凡人觉醒抽样");
                 return;
@@ -939,7 +921,7 @@ namespace Code.Core
                         if (CultivationData.IsAscended(actor)) continue;
 
                         // 动物也可以觉醒异能（现代异能体系特色），达到3阶后自动获得高级脑功能区·文明化
-                        if (actor.isAnimal() && !Code.Core.DengShenConfig.EnableAnimalAwakening) continue;
+                        if (actor.isAnimal() && !Code.Core.GeneCultivationConfig.EnableAnimalAwakening) continue;
                         checkedCount++;
 
                         // 随机觉醒

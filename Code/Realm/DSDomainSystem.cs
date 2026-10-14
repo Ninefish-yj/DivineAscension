@@ -18,12 +18,7 @@ namespace Code.Realm
         private static Actor s_pulseCaster;
         private static float s_pulseDamageMul = 1f;
 
-        public static void ClearForWorldReset()
-        {
-            s_seen.Clear();
-        }
-
-        /// <summary>
+                /// <summary>
         /// 检查领域是否被压制（同阶或更高阶的单位进入领域时，领域效果减半）
         /// </summary>
         public static bool IsSuppressed(Actor caster)

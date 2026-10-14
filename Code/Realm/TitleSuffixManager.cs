@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using System.Collections.Generic;
@@ -330,7 +330,7 @@ namespace Code.Realm
                 // 基因称号（8阶及以上解锁）
                 string geneTitle = GetElementTitle(actor);
                 // 境界后缀
-                string realmSuffix = Code.Core.DengShenConfig.EnableTitleSuffix ? GetRealmSuffix(tier) : "";
+                string realmSuffix = Code.Core.GeneCultivationConfig.EnableTitleSuffix ? GetRealmSuffix(tier) : "";
 
                 // 组合展示名：基因称号 - 本名-境界后缀
                 string result = baseName;

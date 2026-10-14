@@ -15,28 +15,11 @@ namespace Code.Combat
     public static class AbilityStatusPatch
     {
         private static FieldInfo _maxHpField;
-        private static FieldInfo _hpField;
-        private static FieldInfo _statsField;
-
         private static FieldInfo GetMaxHpField()
         {
             if (_maxHpField == null)
                 _maxHpField = typeof(Actor).GetField("maxHp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return _maxHpField;
-        }
-
-        private static FieldInfo GetHpField()
-        {
-            if (_hpField == null)
-                _hpField = typeof(Actor).GetField("hp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return _hpField;
-        }
-
-        private static FieldInfo GetStatsField()
-        {
-            if (_statsField == null)
-                _statsField = typeof(BaseSimObject).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return _statsField;
         }
 
         [HarmonyPrefix]
@@ -104,6 +87,10 @@ namespace Code.Combat
                         } catch { }
                     }
                 }
+
+                // 纪元战斗加成：真神/超神纪元的主宰染色体赋予全世界战斗增幅（对所有攻击者生效，无纪元时为0）
+                float eraCombat = GeneEnergyCalculator.GetEraCombatBonus();
+                if (eraCombat > 0f) damage *= (1f + eraCombat);
 
                 if (from != null && CultivationData.IsAscended(from))
                 {

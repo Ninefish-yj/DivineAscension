@@ -285,19 +285,7 @@ namespace Code
 			return CultivationData.GetLinkageDefenseCache(actor);
 		}
 
-		/// <summary>
-		/// 获取单位的总生命加成（来自动态基因连锁）
-		/// </summary>
-		public static float GetTotalHealthBonus(Actor actor)
-		{
-			if (actor == null) return 0f;
-			float cached = CultivationData.GetLinkageHealthCache(actor);
-			if (cached >= 0f) return cached;
-			RefreshLinkageCaches(actor);
-			return CultivationData.GetLinkageHealthCache(actor);
-		}
-
-		/// <summary>
+				/// <summary>
 		/// 计算并缓存所有连锁加成（年度Tick时调用；战斗时直接读缓存，与GE缓存同模式）
 		/// </summary>
 		public static void RefreshLinkageCaches(Actor actor)

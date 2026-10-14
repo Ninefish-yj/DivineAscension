@@ -31,23 +31,7 @@ namespace Code.Realm
             }
         }
 
-        /// <summary>获取当前原版时代名称</summary>
-        public static string GetCurrentAgeName()
-        {
-            try
-            {
-                var age = World.world.era_manager?.getCurrentAge();
-                if (age == null) return "未知时代";
-                return age.id ?? "未知时代";
-            }
-            catch (Exception e)
-            {
-                DSDebug.Verbose($"[EraBridge] 获取当前时代失败: {e.Message}");
-                return "未知时代";
-            }
-        }
-
-        /// <summary>切换到超神纪元（age_ds_transcendent）</summary>
+                /// <summary>切换到超神纪元（age_ds_transcendent）</summary>
         public static bool SwitchToTranscendentAge()
         {
             try

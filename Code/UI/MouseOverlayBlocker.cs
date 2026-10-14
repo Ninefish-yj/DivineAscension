@@ -1,4 +1,4 @@
-﻿
+
 using UnityEngine;
 using Code.Core;
 using UnityEngine.UI;
@@ -38,7 +38,7 @@ namespace Code.UI
                 _whiteTex.Apply();
 
                 // 创建GameObject
-                _blockerObject = new GameObject("DengShenMouseOverlayBlocker");
+                _blockerObject = new GameObject("GeneCultivationMouseOverlayBlocker");
                 Object.DontDestroyOnLoad(_blockerObject);
 
                 // 添加Canvas（ScreenSpaceOverlay，最高排序）

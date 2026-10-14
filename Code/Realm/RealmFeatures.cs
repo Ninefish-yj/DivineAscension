@@ -1000,22 +1000,6 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
             }
         }
 
-        /// <summary>黑色方碑效果：4阶突破时召唤黑色方碑，周围单位获得基因强化</summary>
-        private static void ApplyBlackObeliskEffect(Actor actor)
-        {
-            try
-            {
-                if (!actor.hasTrait("ds_black_obelisk"))
-                {
-                    actor.addTrait("ds_black_obelisk", false);
-                }
-                DSDebug.Verbose($"[GeneCultivation] {actor.name} 激活黑色方碑效果");
-            }
-            catch (Exception e)
-            {
-                DSDebug.Verbose($"[GeneCultivation] 黑色方碑效果失败: {e.Message}");
-            }
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 
 using System;
 using Code.UI;
@@ -95,7 +95,7 @@ namespace Code.Disaster
             }
 
             // 4. 虚空裂隙生成（受NML配置开关控制）
-            if (Code.Core.DengShenConfig.EnableVoidRifts)
+            if (Code.Core.GeneCultivationConfig.EnableVoidRifts)
             {
                 if (_barrierIntegrity < RIFT_SPAWN_THRESHOLD && _rifts.Count < MAX_RIFTS)
                 {

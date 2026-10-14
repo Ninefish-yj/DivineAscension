@@ -1,6 +1,6 @@
-﻿// ============================================================
+// ============================================================
 // 文件: ModClass.cs
-// 模组: 基因修炼 (DengShenChangJie)
+// 模组: 基因修炼 (GeneCultivation)
 // 职责: NeoModLoader入口，注册Trait、启动年度Tick驱动、加载配置
 // 禁令遵守:
 //   [禁令1] 不覆写原生底层  仅注册新资产、监听事件、附加独立组件
@@ -55,7 +55,7 @@ namespace Code
 
             // 2.1 创建Harmony实例，Patch所有带[HarmonyPatch]特性的类
             //     包括：ActorUpdateAgePatch（年度Tick驱动）、UnitWindowIntegration（单位窗口境界行）
-            _harmony = new Harmony("DengShenChangJie");
+            _harmony = new Harmony("GeneCultivation");
             _harmony.PatchAll();
 
             // 2.2 初始化鼠标事件拦截器（Unity UI Overlay Canvas，防止面板点击穿透到游戏）
@@ -65,12 +65,12 @@ namespace Code
             UI.InputBlocker.Patch();
 
             // 3. 启动开发调试面板（F3切换显示）
-            GameObject uiObj = new GameObject("[DengShen] DebugPanel");
+            GameObject uiObj = new GameObject("[GeneCultivation] DebugPanel");
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
             _debugPanel = uiObj.AddComponent<DebugPanel>();
 
             // 4. 启动登神道藏综合面板（Shift+L切换显示，玩家主界面）
-            GameObject divineObj = new GameObject("[DengShen] DivineLibrary");
+            GameObject divineObj = new GameObject("[GeneCultivation] DivineLibrary");
             UnityEngine.Object.DontDestroyOnLoad(divineObj);
             _divinePanel = divineObj.AddComponent<AbilityCodexPanel>();
 
@@ -79,7 +79,7 @@ namespace Code
 
             // 4.0 启动全局年度Tick驱动（MonoBehaviour，每帧检查时间，不遍历单位）
             //      这是主要的年度Tick触发方式，年龄驱动作为补充
-            GameObject tickObj = new GameObject("[DengShen] AnnualTickDriver");
+            GameObject tickObj = new GameObject("[GeneCultivation] AnnualTickDriver");
             UnityEngine.Object.DontDestroyOnLoad(tickObj);
             _tickDriver = tickObj.AddComponent<AnnualTickDriver>();
 
@@ -190,7 +190,7 @@ namespace Code
                 var config = GetConfig();
                 if (config == null) return;
 
-                var defaultSection = config["ConfigDengShenChangJie"];
+                var defaultSection = config["ConfigGeneCultivation"];
                 if (defaultSection == null) return;
 
                 // 修炼倍率（范围限制：0.1-100）
