@@ -1,5 +1,5 @@
 // ============================================================
-// 单位窗·基因页签（v0.18.4 新增）——原版交互深度扩展
+// 单位窗·基因页签（v0.18.5 重构）——原版交互深度扩展
 //
 //  参考天人武道 TmShenZangEntryButton/TmShenZangTabPanel：
 //    - 克隆原版单位窗现有页签按钮（族谱/装备/特质优先），改名插入
@@ -7,8 +7,15 @@
 //    - 反射注册进 WindowMetaTabButtonsContainer._tabs 私有列表
 //    - 只克隆 UI 对象，不碰原版基因/存档结构（保持弱兼容边界）
 //
-//  显示条件：任何存活单位都显示（本模组全局可觉醒）；
-//  内容渲染在 UnitGeneTabPanel（uGUI），数据全部来自只读缓存。
+//  职责（软工检查后拆分，Refresh 只做编排）：
+//    ShouldShowEntry  —— 显示判定（存活判定）
+//    HideTab          —— 隐藏路径（单位死亡/窗口未就绪）
+//    EnsureTab        —— 页签按钮创建/复用 + 注册
+//    ResetTabAction   —— 点击页签时 showTab + 懒渲染内容
+//    UnitGeneTabPanel —— 纯视图渲染（数据只读）
+//
+//  懒渲染：默认页签（概览）激活时不重建内容；玩家点击"基因"页签
+//  才渲染——避免每次切换单位全量重建 ~40 节点。
 // ============================================================
 
 using System;
@@ -29,43 +36,48 @@ namespace Code.UI
             AccessTools.Field(typeof(WindowMetaTabButtonsContainer), "_tabs");
         private static readonly FieldInfo WorldTipField =
             AccessTools.Field(typeof(WindowMetaTab), "_worldtip_text");
+        private static readonly FieldInfo ScrollWindowField =
+            AccessTools.Field(typeof(UnitWindow), "scroll_window");
 
-        /// <summary>每次单位窗刷新时调用：无单位/死亡则隐藏页签，否则创建/显示并渲染</summary>
+        /// <summary>每次单位窗刷新时调用——纯编排：判定→建页签→挂内容→按激活态懒渲染</summary>
         public static void Refresh(UnitWindow window)
         {
             try
             {
                 if (window == null) return;
 
-                Actor actor = UnitWindowIntegration.GetUnitActor(window);
-                bool show = actor != null && actor.isAlive();
-
                 ScrollWindow scroll = GetScrollWindow(window);
                 if (scroll == null || scroll.tabs == null)
                 {
-                    if (!show) UnitGeneTabPanel.Hide();
-                    return;
-                }
-
-                if (!show)
-                {
-                    WindowMetaTab existing = FindExistingTab(scroll);
-                    if (existing != null) SetTabVisible(existing, false);
+                    // 预期分支：窗口未完成页签初始化——静默
                     UnitGeneTabPanel.Hide();
                     return;
                 }
 
-                WindowMetaTab tab = FindOrCreateTab(scroll);
-                if (tab == null) return;
+                if (!ShouldShowEntry(window))
+                {
+                    HideTab(scroll);
+                    return;
+                }
+
+                WindowMetaTab tab = EnsureTab(scroll, window);
+                if (tab == null)
+                {
+                    // 预期分支：无可克隆页签源（原版 UI 结构异常）——静默
+                    return;
+                }
 
                 tab.gameObject.SetActive(true);
                 SetTabVisible(tab, true);
+                bool onTab = scroll.tabs.isActiveTab(tab);
                 UnitGeneTabPanel.Ensure(window, tab, scroll);
-                UnitGeneTabPanel.ShowForActor(actor);
+                // 懒渲染：仅当前激活页签是"基因"时才重建内容
+                UnitGeneTabPanel.ShowForActor(UnitWindowIntegration.GetUnitActor(window), onTab);
             }
             catch (Exception ex)
             {
-                Code.Core.DSDebug.Verbose("[GeneCultivation] UnitGeneTab.Refresh 异常: " + ex.Message);
+                // 真异常：打 Warning 便于发现
+                Code.Core.DSDebug.Warning("[GeneCultivation] UnitGeneTab.Refresh 异常: " + ex.Message);
             }
         }
 
@@ -74,6 +86,7 @@ namespace Code.UI
         {
             try
             {
+                if (window == null) return;
                 ScrollWindow scroll = GetScrollWindow(window);
                 if (scroll?.tabs?.tab_default == null) return;
                 WindowMetaTab tab = FindExistingTab(scroll);
@@ -81,11 +94,66 @@ namespace Code.UI
                     scroll.tabs.showTab(scroll.tabs.tab_default);
                 UnitGeneTabPanel.Hide();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Code.Core.DSDebug.Warning("[GeneCultivation] UnitGeneTab.ForceDefaultTab 异常: " + ex.Message);
+            }
         }
 
-        private static readonly System.Reflection.FieldInfo ScrollWindowField =
-            AccessTools.Field(typeof(UnitWindow), "scroll_window");
+        /// <summary>显示判定：存活单位即显示（本模组全局可觉醒）</summary>
+        private static bool ShouldShowEntry(UnitWindow window)
+        {
+            Actor actor = UnitWindowIntegration.GetUnitActor(window);
+            return actor != null && actor.isAlive();
+        }
+
+        /// <summary>隐藏路径：隐藏页签按钮并卸载内容</summary>
+        private static void HideTab(ScrollWindow scroll)
+        {
+            WindowMetaTab existing = FindExistingTab(scroll);
+            if (existing != null) SetTabVisible(existing, false);
+            UnitGeneTabPanel.Hide();
+        }
+
+        /// <summary>页签按钮创建/复用：克隆源页签 → 换名 → 重绑 tab_action → 注册 _tabs</summary>
+        private static WindowMetaTab EnsureTab(ScrollWindow scroll, UnitWindow window)
+        {
+            WindowMetaTab existing = FindExistingTab(scroll);
+            if (existing != null)
+            {
+                Reconfigure(existing, scroll, window);
+                return existing;
+            }
+
+            WindowMetaTab source = FindCloneSource(scroll.tabs);
+            if (source == null) return null;
+
+            GameObject tabObj = UnityEngine.Object.Instantiate(source.gameObject, source.transform.parent);
+            tabObj.name = TabName;
+            tabObj.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
+
+            WindowMetaTab newTab = tabObj.GetComponent<WindowMetaTab>();
+            if (newTab == null)
+            {
+                UnityEngine.Object.Destroy(tabObj);
+                return null;
+            }
+
+            newTab.tab_elements.Clear();
+            ResetTabAction(newTab, scroll, window);
+
+            TipButton tip = newTab.GetComponent<TipButton>();
+            if (tip != null)
+            {
+                tip.textOnClick = UILocalization.CurrentLanguage == "en" ? "Gene" : UILocalization.Get("unit_gene_tab");
+                tip.textOnClickDescription = UILocalization.CurrentLanguage == "en" ? "Gene cultivation overview" : UILocalization.Get("unit_gene_tab_desc");
+                tip.text_description_2 = string.Empty;
+            }
+
+            ApplyWorldTip(newTab);
+            RegisterTab(scroll.tabs, newTab);
+            return newTab;
+        }
 
         internal static ScrollWindow GetScrollWindow(UnitWindow window)
         {
@@ -142,41 +210,6 @@ namespace Code.UI
             cg.blocksRaycasts = show;
         }
 
-        private static WindowMetaTab FindOrCreateTab(ScrollWindow scroll)
-        {
-            WindowMetaTab existing = FindExistingTab(scroll);
-            if (existing != null)
-            {
-                Reconfigure(existing, scroll);
-                return existing;
-            }
-
-            WindowMetaTab source = FindCloneSource(scroll.tabs);
-            if (source == null) return null;
-
-            GameObject tabObj = UnityEngine.Object.Instantiate(source.gameObject, source.transform.parent);
-            tabObj.name = TabName;
-            tabObj.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
-
-            WindowMetaTab newTab = tabObj.GetComponent<WindowMetaTab>();
-            if (newTab == null) return null;
-
-            newTab.tab_elements.Clear();
-            ResetTabAction(newTab, scroll);
-
-            TipButton tip = newTab.GetComponent<TipButton>();
-            if (tip != null)
-            {
-                tip.textOnClick = UILocalization.CurrentLanguage == "en" ? "Gene" : UILocalization.Get("unit_gene_tab");
-                tip.textOnClickDescription = UILocalization.CurrentLanguage == "en" ? "Gene cultivation overview" : UILocalization.Get("unit_gene_tab_desc");
-                tip.text_description_2 = string.Empty;
-            }
-
-            ApplyWorldTip(newTab);
-            RegisterTab(scroll.tabs, newTab);
-            return newTab;
-        }
-
         private static WindowMetaTab FindCloneSource(WindowMetaTabButtonsContainer container)
         {
             WindowMetaTab[] all = container.GetComponentsInChildren<WindowMetaTab>(true);
@@ -201,11 +234,28 @@ namespace Code.UI
             return all.Length > 0 ? all[0] : null;
         }
 
-        /// <summary>替换克隆来的 tab_action（RemoveAllListeners 清不掉序列化持久监听器，必须整体替换）</summary>
-        private static void ResetTabAction(WindowMetaTab tab, ScrollWindow scroll)
+        /// <summary>
+        /// 替换克隆来的 tab_action（RemoveAllListeners 清不掉序列化持久监听器，必须整体替换）。
+        /// 点击"基因"页签时：showTab 激活容器（原版机制）+ 懒渲染内容。
+        /// showTab 内部不回调 tab_action，无递归风险（已核对原版 startTabAction）。
+        /// </summary>
+        private static void ResetTabAction(WindowMetaTab tab, ScrollWindow scroll, UnitWindow window)
         {
             tab.tab_action = new WindowMetaTabEvent();
-            tab.tab_action.AddListener(_ => scroll.tabs.showTab(tab));
+            tab.tab_action.AddListener(_ =>
+            {
+                try
+                {
+                    scroll.tabs.showTab(tab);
+                    Actor actor = UnitWindowIntegration.GetUnitActor(window);
+                    if (actor != null && actor.isAlive())
+                        UnitGeneTabPanel.ShowForActor(actor, true);
+                }
+                catch (Exception ex)
+                {
+                    Code.Core.DSDebug.Warning("[GeneCultivation] UnitGeneTab 页签点击异常: " + ex.Message);
+                }
+            });
         }
 
         private static void ApplyWorldTip(WindowMetaTab tab)
@@ -219,10 +269,10 @@ namespace Code.UI
             catch { }
         }
 
-        private static void Reconfigure(WindowMetaTab tab, ScrollWindow scroll)
+        private static void Reconfigure(WindowMetaTab tab, ScrollWindow scroll, UnitWindow window)
         {
             if (tab == null || scroll == null) return;
-            ResetTabAction(tab, scroll);
+            ResetTabAction(tab, scroll, window);
             RegisterTab(scroll.tabs, tab);
         }
 
