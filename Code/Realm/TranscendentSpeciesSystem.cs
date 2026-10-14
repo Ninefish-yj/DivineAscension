@@ -264,8 +264,10 @@ namespace Code.Realm
                 }
                 else
                 {
-                    var setNameMethod = newSpecies.GetType().GetMethod("set_name",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    // 0.51.x 正确 API：setName(string)（Subspecies 公开方法，沿继承链可查）
+                    var setNameMethod = newSpecies.GetType().GetMethod("setName",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
+                        null, new[] { typeof(string) }, null);
                     if (setNameMethod != null)
                     {
                         setNameMethod.Invoke(newSpecies, new object[] { subspeciesName });

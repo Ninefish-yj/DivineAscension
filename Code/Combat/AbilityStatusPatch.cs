@@ -14,14 +14,6 @@ namespace Code.Combat
     [HarmonyPatch(typeof(Actor), "getHit")]
     public static class AbilityStatusPatch
     {
-        private static FieldInfo _maxHpField;
-        private static FieldInfo GetMaxHpField()
-        {
-            if (_maxHpField == null)
-                _maxHpField = typeof(Actor).GetField("maxHp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return _maxHpField;
-        }
-
         [HarmonyPrefix]
         [HarmonyPriority(Priority.First)]
         public static void GetHit_Prefix(
@@ -78,12 +70,8 @@ namespace Code.Combat
                         if (defenderTier >= 13 && attackerTier <= 12) damage *= 0.05f;
                         try
                         {
-                            var maxHpField = GetMaxHpField();
-                            if (maxHpField != null)
-                            {
-                                float maxHp = (float)maxHpField.GetValue(__instance);
-                                if (damage > maxHp * 0.005f) damage = maxHp * 0.005f;
-                            }
+                            float maxHp = __instance.getMaxHealth();
+                            if (maxHp > 0f && damage > maxHp * 0.005f) damage = maxHp * 0.005f;
                         } catch { }
                     }
                 }

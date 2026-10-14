@@ -57,15 +57,26 @@ namespace Code.Combat
                 return;
             }
 
-            // 检测攻击者（反射调用，兼容不同游戏版本：方法不存在时返回null跳过衰减）
+            // 检测攻击者：0.51.x 中 attackedBy 是 internal 字段（getHit 时赋值），外部程序集只能反射
             BaseSimObject attackerObj = null;
             try
             {
-                var getAttackedBy = typeof(Actor).GetMethod("GetAttackedBy",
+                var attackedByField = typeof(Actor).GetField("attackedBy",
                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (getAttackedBy != null) attackerObj = getAttackedBy.Invoke(actor, null) as BaseSimObject;
+                if (attackedByField != null) attackerObj = attackedByField.GetValue(actor) as BaseSimObject;
             }
             catch { }
+            // 兼容其他版本：GetAttackedBy() 方法（存在时调用）
+            if (attackerObj == null)
+            {
+                try
+                {
+                    var getAttackedBy = typeof(Actor).GetMethod("GetAttackedBy",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (getAttackedBy != null) attackerObj = getAttackedBy.Invoke(actor, null) as BaseSimObject;
+                }
+                catch { }
+            }
             if (attackerObj == null)
             {
                 CultivationData.SetLastHp(actor, currentHp);
@@ -101,59 +112,26 @@ namespace Code.Combat
             CultivationData.SetLastHp(actor, GetActorHp(actor));
         }
 
-        // 缓存反射字段（只反射一次，避免重复开销）
-        private static System.Reflection.FieldInfo _hpField;
-        private static System.Reflection.FieldInfo _maxHpField;
-        private static bool _fieldsResolved = false;
-
-        private static void ResolveHpFields()
-        {
-            if (_fieldsResolved) return;
-            _hpField = typeof(ActorData).GetField("health");
-            if (_hpField == null)
-                _hpField = typeof(Actor).GetField("health");
-            _maxHpField = typeof(ActorData).GetField("max_health");
-            if (_maxHpField == null)
-                _maxHpField = typeof(Actor).GetField("max_health");
-            _fieldsResolved = true;
-        }
-
-        /// <summary>获取单位当前血量（缓存反射）</summary>
+        /// <summary>获取单位当前血量（直接调用公开API）</summary>
         private static float GetActorHp(Actor actor)
         {
             if (actor == null) return 0f;
-            ResolveHpFields();
-            if (_hpField != null)
-            {
-                object target = _hpField.DeclaringType == typeof(Actor) ? actor : (object)ActorDataAccessor.GetData(actor);
-                if (target == null) return 100f;
-                return Convert.ToSingle(_hpField.GetValue(target));
-            }
-            return 100f;
+            try { return actor.getHealth(); }
+            catch { return 0f; }
         }
 
-        /// <summary>治疗单位（回复血量，缓存反射）</summary>
+        /// <summary>治疗单位（直接调用公开API，回复血量不超上限）</summary>
         private static void HealActor(Actor actor, float amount)
         {
-            if (actor == null || amount <= 0) return;
-            ResolveHpFields();
-            if (_hpField != null)
+            if (actor == null || amount <= 0 || !actor.isAlive()) return;
+            try
             {
-                object target = _hpField.DeclaringType == typeof(Actor) ? actor : (object)ActorDataAccessor.GetData(actor);
-                if (target == null) return;
-                float current = Convert.ToSingle(_hpField.GetValue(target));
-                float maxHp = current + amount;
-                if (_maxHpField != null)
-                {
-                    object maxTarget = _maxHpField.DeclaringType == typeof(Actor) ? actor : (object)ActorDataAccessor.GetData(actor);
-                    if (maxTarget != null)
-                    {
-                        maxHp = Convert.ToSingle(_maxHpField.GetValue(maxTarget));
-                    }
-                }
-                float newHp = Mathf.Min(current + amount, maxHp);
-                _hpField.SetValue(target, newHp);
+                int current = actor.getHealth();
+                int maxHp = actor.getMaxHealth();
+                int newHp = Mathf.Min(current + (int)amount, maxHp);
+                actor.setHealth(newHp);
             }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] HealActor 异常: " + dsEx.Message); }
         }
 
     }

@@ -1,5 +1,12 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.11.2 原版API对齐修复（基于反编译源码逐项核验）
+
+- **修复**：模组反射字段名与 0.51.x 实际 API 不符导致的多处静默失效——血量全部改为公开 API（`getHealth`/`getMaxHealth`/`setHealth`），涉及跨阶伤害衰减、自愈、事件伤害、突破基因崩溃
+- **修复**：`UnitWindow.GetActor` 改为反射 `actor` 属性（0.51.x 无此方法）
+- **修复**：`Actor.GetAttackedBy` 改为反射 `attackedBy` 字段
+- **修复**：新亚种命名 `set_name`（不存在）改为 `setName` 反射
+
 ## v0.11.1 编译兼容修复
 
 - **修复**：手机版（0.51.4）游戏内编译失败——`UnitWindow.GetActor` / `Actor.GetAttackedBy` 在手机版不存在，改为反射调用（电脑版功能不变，手机版自动降级跳过）

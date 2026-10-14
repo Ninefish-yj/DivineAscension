@@ -1822,15 +1822,10 @@ float successRate = (nextTier >= 0 && nextTier < successRates.Length) ? successR
                                 object actorData = dataField.GetValue(actor);
                                 if (actorData != null)
                                 {
-                                    // 设置健康值为0
+                                    // 设置健康值为0（0.51.x 公开 API）
                                     try
                                     {
-                                        var healthField = actorData.GetType().GetField("health",
-                                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                        if (healthField != null)
-                                        {
-                                            healthField.SetValue(actorData, 0f);
-                                        }
+                                        actor.setHealth(0);
                                     }
                                     catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] DoEnlightenmentBreakthrough 异常: " + dsEx.Message); }
                                 }

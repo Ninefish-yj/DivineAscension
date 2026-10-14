@@ -523,6 +523,21 @@ namespace Code.UI
         private static Actor GetUnitActor(UnitWindow window)
         {
             if (window == null) return null;
+            // 0.51.x：actor 是 internal 属性（actor => SelectedUnit.unit）
+            try
+            {
+                var actorProp = typeof(UnitWindow).GetProperty("actor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (actorProp != null)
+                {
+                    var actor = actorProp.GetValue(window, null) as Actor;
+                    if (actor != null) return actor;
+                }
+            }
+            catch { }
+            // 兼容旧版本：actor 字段
             try
             {
                 var actorField = typeof(UnitWindow).GetField("actor",
@@ -536,6 +551,7 @@ namespace Code.UI
                 }
             }
             catch { }
+            // 兼容其他版本：GetActor() 方法
             try
             {
                 var getActor = typeof(UnitWindow).GetMethod("GetActor",

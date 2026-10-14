@@ -158,25 +158,12 @@ namespace Code.Realm
                 DSDebug.Verbose("[境界事件] 反射调用getHit失败: " + e.Message);
             }
             
-            // 回退：直接修改生命值字段
+            // 回退：直接扣除生命值（0.51.x 公开 API：getHealth/setHealth）
             try
             {
-                FieldInfo hpField = typeof(Actor).GetField("hp", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                if (hpField == null)
-                {
-                    hpField = typeof(Actor).GetField("currentHealth", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                }
-                if (hpField == null)
-                {
-                    hpField = typeof(Actor).GetField("health", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                }
-                
-                if (hpField != null)
-                {
-                    float currentHp = (float)hpField.GetValue(actor);
-                    hpField.SetValue(actor, currentHp - damage);
-                    return;
-                }
+                int currentHp = actor.getHealth();
+                actor.setHealth(currentHp - (int)damage);
+                return;
             }
             catch (Exception e)
             {

@@ -252,22 +252,14 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
         {
             try
             {
-                // 通过反射获取血量
-                var hpField = typeof(ActorData).GetField("health");
-                if (hpField == null)
-                    hpField = typeof(Actor).GetField("health");
-                if (hpField != null)
+                // 0.51.x 公开 API：getHealth/getMaxHealth/setHealth
+                float currentHp = actor.getHealth();
+                float maxHp = GetMaxHealth(actor);
+                if (maxHp > 0 && currentHp < maxHp)
                 {
-                    object target = hpField.DeclaringType == typeof(Actor) ? actor : (object)ActorDataAccessor.GetData(actor);
-                    if (target == null) return;
-                    float currentHp = Convert.ToSingle(hpField.GetValue(target));
-                    float maxHp = GetMaxHealth(actor);
-                    if (maxHp > 0 && currentHp < maxHp)
-                    {
-                        float healAmount = maxHp * ratio;
-                        float newHp = Mathf.Min(currentHp + healAmount, maxHp);
-                        hpField.SetValue(target, newHp);
-                    }
+                    float healAmount = maxHp * ratio;
+                    float newHp = Mathf.Min(currentHp + healAmount, maxHp);
+                    actor.setHealth((int)newHp);
                 }
             }
             catch { /* 忽略自愈失败 */ }
@@ -936,25 +928,13 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
         //  工具方法
         // ============================================================
 
-        /// <summary>获取单位最大血量（通过反射）</summary>
+        /// <summary>获取单位最大血量（0.51.x 公开 API）</summary>
         private static float GetMaxHealth(Actor actor)
         {
-            try
-            {
-                var maxHpField = typeof(ActorData).GetField("max_health");
-                if (maxHpField == null)
-                    maxHpField = typeof(Actor).GetField("max_health");
-                if (maxHpField != null)
-                {
-                    object target = maxHpField.DeclaringType == typeof(Actor) ? actor : (object)ActorDataAccessor.GetData(actor);
-                    if (target != null)
-                    {
-                        return Convert.ToSingle(maxHpField.GetValue(target));
-                    }
-                }
-            }
+            if (actor == null) return 0f;
+            try { return actor.getMaxHealth(); }
             catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] GetMaxHealth 异常: " + dsEx.Message); }
-            return 100f; // 默认值
+            return 0f;
         }
 
         /// <summary>获取境界修炼效率倍率（影响异能能量增长速度）</summary>
