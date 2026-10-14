@@ -7,6 +7,8 @@ using System.Text;
 using Code.Data;
 using Code.UI;
 using UnityEngine;
+using Code.Events;
+using Code.Traits;
 
 namespace Code.Sect
 {

@@ -10,6 +10,8 @@ using Code.Realm;
 using Code.Traits;
 using UnityEngine;
 using HarmonyLib;
+using Code.Dimension;
+using Code.Sect;
 
 namespace Code.Core
 {

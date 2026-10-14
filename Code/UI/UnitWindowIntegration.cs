@@ -8,6 +8,9 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using Code.Data;
 using Code.Core;
+using Code.Dimension;
+using Code.Realm;
+
 namespace Code.UI
 {
     /// <summary>

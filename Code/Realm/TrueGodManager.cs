@@ -7,6 +7,7 @@ using System.Reflection;
 using Code.Data;
 using Code.Core;
 using UnityEngine;
+using Code.Dimension;
 
 namespace Code.Realm
 {

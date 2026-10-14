@@ -7,6 +7,7 @@ using Code.Core;
 using Code.Data;
 using Code.Traits;
 using Code.UI;
+using Code.Combat;
 
 namespace Code.Realm
 {

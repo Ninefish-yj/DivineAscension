@@ -1,5 +1,10 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.14.1 修复手机端编译失败
+
+- **实机编译修复**：手机 NML 编译报 `UILocalization 不存在`（CS0103）——根因是模组内 `Code/UI/UILocalization.cs` 定义的类型，有 17 个文件缺 `using Code.UI` 等跨命名空间引用。全量静态检查补全所有缺失 using（CS0103 清零），并核对无类型缺失/重复定义/UI 命名空间歧义（CS0246/CS0101/CS0104 均无）。
+- **打包结构**：zip 顶层模组文件夹由 `DivineAscension` 改为 `基因修炼`，与显示名一致。
+
 ## v0.14.0 异能系统修复 + 协调效应真正生效
 
 - **虚拟武器修复**：能量刃投射物改用原版 `AssetManager.projectiles.add()` 真实注册（此前反射找的 upsert/getorcreate 在 ProjectileLibrary 中不存在，投射物资产从未注册）；发射改用反编译核实的 9 参真实签名（Vector3 位置 + 完整可选参数），消除"发射投射物参数不匹配"报错，远程攻击特效真正生效

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Code.Data;
 using Code.Realm;
 using UnityEngine;
+using Code.Traits;
 
 namespace Code.Core
 {
