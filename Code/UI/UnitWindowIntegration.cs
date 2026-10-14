@@ -516,6 +516,17 @@ namespace Code.UI
                     }
                 }
                 catch (System.Exception e) { DSDebug.Warning("[GeneCultivation] 异能按钮TipButton失败: " + e.Message); }
+                // 添加拖动脚本（与基因按钮一致：可拖动，位置独立保存——键名前缀不同，互不覆盖）
+                try
+                {
+                    var dragHandler = buttonObj.AddComponent<GeneButtonDragHandler>();
+                    if (dragHandler != null)
+                    {
+                        dragHandler.PrefsPrefix = "DS_PrototypeButton";
+                        dragHandler.DefaultPosition = new Vector2(buttonX, -buttonY);
+                    }
+                }
+                catch (System.Exception e) { DSDebug.Warning("[GeneCultivation] 异能按钮拖动脚本失败: " + e.Message); }
                 _prototypeButton = buttonObj;
                 DSDebug.Verbose("[GeneCultivation] 单位窗口异能树按钮已创建");
             }

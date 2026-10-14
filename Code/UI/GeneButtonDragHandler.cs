@@ -18,13 +18,12 @@ namespace Code.UI
         private bool _isDragging = false;
         private float _dragStartTime = 0f;
 
-        // PlayerPrefs键名
-        private const string PREFS_X = "DS_GeneButton_X";
-        private const string PREFS_Y = "DS_GeneButton_Y";
-        private const string PREFS_INITIALIZED = "DS_GeneButton_Initialized";
+        // PlayerPrefs键名（实例化：不同按钮用不同前缀，防止位置互相覆盖）
+        // 基因按钮保持默认前缀 "DS_GeneButton"（兼容旧存档已保存的位置）
+        public string PrefsPrefix = "DS_GeneButton";
 
-        // 默认位置
-        public static readonly Vector2 DefaultPosition = new Vector2(156f, -84f);
+        // 默认位置（实例化：基因按钮 156,-84；异能按钮 156,-44）
+        public Vector2 DefaultPosition = new Vector2(156f, -84f);
 
         private void Awake()
         {
@@ -105,14 +104,17 @@ namespace Code.UI
 
             try
             {
-                PlayerPrefs.SetFloat(PREFS_X, _rectTransform.anchoredPosition.x);
-                PlayerPrefs.SetFloat(PREFS_Y, _rectTransform.anchoredPosition.y);
-                PlayerPrefs.SetInt(PREFS_INITIALIZED, 1);
+                string keyX = PrefsPrefix + "_X";
+                string keyY = PrefsPrefix + "_Y";
+                string keyInit = PrefsPrefix + "_Initialized";
+                PlayerPrefs.SetFloat(keyX, _rectTransform.anchoredPosition.x);
+                PlayerPrefs.SetFloat(keyY, _rectTransform.anchoredPosition.y);
+                PlayerPrefs.SetInt(keyInit, 1);
                 PlayerPrefs.Save();
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[GeneCultivation] 保存基因按钮位置失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 保存按钮位置失败: " + e.Message);
             }
         }
 
@@ -123,10 +125,13 @@ namespace Code.UI
 
             try
             {
-                if (PlayerPrefs.GetInt(PREFS_INITIALIZED, 0) == 1)
+                string keyInit = PrefsPrefix + "_Initialized";
+                string keyX = PrefsPrefix + "_X";
+                string keyY = PrefsPrefix + "_Y";
+                if (PlayerPrefs.GetInt(keyInit, 0) == 1)
                 {
-                    float x = PlayerPrefs.GetFloat(PREFS_X, DefaultPosition.x);
-                    float y = PlayerPrefs.GetFloat(PREFS_Y, DefaultPosition.y);
+                    float x = PlayerPrefs.GetFloat(keyX, DefaultPosition.x);
+                    float y = PlayerPrefs.GetFloat(keyY, DefaultPosition.y);
                     _rectTransform.anchoredPosition = new Vector2(x, y);
                 }
                 else
@@ -136,7 +141,7 @@ namespace Code.UI
             }
             catch (System.Exception e)
             {
-                DSDebug.Warning("[GeneCultivation] 加载基因按钮位置失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 加载按钮位置失败: " + e.Message);
                 _rectTransform.anchoredPosition = DefaultPosition;
             }
         }
