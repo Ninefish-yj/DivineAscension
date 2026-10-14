@@ -240,7 +240,6 @@ namespace Code.UI
             var list = PrototypeRegistry.Elements;
             int count = list.Count;
             float slotW = (W - 80f) / count;
-            float leafActiveColor = proto != null ? DSUITheme.AccentGold : DSUITheme.SecondaryText;
 
             for (int i = 0; i < count; i++)
             {
