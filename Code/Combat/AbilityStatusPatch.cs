@@ -147,8 +147,8 @@ namespace Code.Combat
                     }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因减伤应用失败: " + dsEx.Message); }
 
-                    // 异能防守标签（v0.17.0）：护盾减伤 / 闪避免伤（读 ds_prototype 异能标签）
-                    try { Code.Realm.Prototype.PrototypeEffectEngine.OnDefend(__instance, ref damage); }
+                    // 异能防守标签（v0.17.0/0.18.0）：护盾减伤 / 闪避免伤 / 祝福再生回血 / 磁力震动声波反击（读 ds_prototype 异能标签）
+                    try { Code.Realm.Prototype.PrototypeEffectEngine.OnDefend(__instance, from, ref damage); }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能防守效果失败: " + dsEx.Message); }
                 }
 

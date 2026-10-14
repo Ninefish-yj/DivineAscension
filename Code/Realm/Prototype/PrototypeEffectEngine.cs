@@ -56,8 +56,9 @@ namespace Code.Realm.Prototype
 
         /// <summary>
         /// 防守标签入口（在 AbilityStatusPatch 防御减伤段调用）。
+        /// v0.18.0 扩展：传入攻击者，支持反击型防守标签（磁力/震动/声波麻痹攻击者）。
         /// </summary>
-        public static void OnDefend(Actor defender, ref float damage)
+        public static void OnDefend(Actor defender, Actor attacker, ref float damage)
         {
             if (defender == null || !defender.isAlive() || damage <= 0f) return;
             var proto = PrototypeRegistry.GetForActor(defender);
@@ -71,14 +72,48 @@ namespace Code.Realm.Prototype
                     float shieldReduction = Mathf.Min(MAX_SHIELD_REDUCTION, PrototypeTags.Get(PrototypeTag.Shield).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Shield) * 0.03f);
                     damage *= Mathf.Max(0.05f, 1f - shieldReduction);
                 }
-                // 闪避：概率完全免伤
-                if (proto.MainTag == PrototypeTag.Dodge || proto.SubTag == PrototypeTag.Dodge)
+                // 闪避组：Dodge/Illusion/Invisibility 概率完全免伤（强度递增）
+                if (proto.MainTag == PrototypeTag.Dodge || proto.SubTag == PrototypeTag.Dodge ||
+                    proto.MainTag == PrototypeTag.Illusion || proto.SubTag == PrototypeTag.Illusion ||
+                    proto.MainTag == PrototypeTag.Invisibility || proto.SubTag == PrototypeTag.Invisibility)
                 {
-                    float dodgeChance = Mathf.Min(MAX_DODGE_CHANCE, PrototypeTags.Get(PrototypeTag.Dodge).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Dodge) * 0.05f);
+                    PrototypeTag dodgeTag = proto.MainTag == PrototypeTag.Dodge || proto.MainTag == PrototypeTag.Illusion || proto.MainTag == PrototypeTag.Invisibility
+                        ? proto.MainTag : proto.SubTag;
+                    float dodgeChance = Mathf.Min(MAX_DODGE_CHANCE, PrototypeTags.Get(dodgeTag).Strength + GeneAffinityBridge.GetTagAffinity(defender, dodgeTag) * 0.05f);
                     if (UnityEngine.Random.value < dodgeChance)
                     {
                         damage = 0f;
                         DSDebug.Verbose("[GeneCultivation] " + defender.getName() + " 异能闪避！");
+                    }
+                }
+                // 防守回复组：Blessing/Regeneration 受击概率回血
+                if (proto.MainTag == PrototypeTag.Blessing || proto.SubTag == PrototypeTag.Blessing ||
+                    proto.MainTag == PrototypeTag.Regeneration || proto.SubTag == PrototypeTag.Regeneration)
+                {
+                    PrototypeTag healDefTag = proto.MainTag == PrototypeTag.Blessing || proto.MainTag == PrototypeTag.Regeneration
+                        ? proto.MainTag : proto.SubTag;
+                    var def = PrototypeTags.Get(healDefTag);
+                    float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, healDefTag) * 0.05f);
+                    if (UnityEngine.Random.value < chance)
+                    {
+                        float healAmount = damage * def.Strength;
+                        if (healAmount > 1f) TryHeal(defender, healAmount);
+                    }
+                }
+                // 反击组：Magnetism/Vibration/Sound 受击概率麻痹攻击者
+                if (attacker != null && attacker.isAlive() &&
+                    (proto.MainTag == PrototypeTag.Magnetism || proto.SubTag == PrototypeTag.Magnetism ||
+                     proto.MainTag == PrototypeTag.Vibration || proto.SubTag == PrototypeTag.Vibration ||
+                     proto.MainTag == PrototypeTag.Sound || proto.SubTag == PrototypeTag.Sound))
+                {
+                    PrototypeTag counterTag = proto.MainTag == PrototypeTag.Magnetism || proto.MainTag == PrototypeTag.Vibration || proto.MainTag == PrototypeTag.Sound
+                        ? proto.MainTag : proto.SubTag;
+                    var def = PrototypeTags.Get(counterTag);
+                    float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, counterTag) * 0.04f);
+                    if (UnityEngine.Random.value < chance)
+                    {
+                        try { DSStatusManager.SafeAddStatusEffect(attacker, "stunned", 2f); }
+                        catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能反击附加状态异常: " + dsEx.Message); }
                     }
                 }
             }
@@ -109,25 +144,10 @@ namespace Code.Realm.Prototype
                     TryAddStatus(attacker, target, "poisoned", tag, 6f, multiplier, 0.08f);
                     break;
                 case PrototypeTag.Lifesteal:
-                    {
-                        float chance = Mathf.Min(1f, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
-                        if (UnityEngine.Random.value < chance)
-                        {
-                            float lifestealRatio = Mathf.Min(MAX_LIFESTEAL, def.Strength + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.03f);
-                            float healAmount = damage * lifestealRatio;
-                            if (healAmount > 1f) TryHeal(attacker, healAmount);
-                        }
-                    }
+                    TryLifesteal(attacker, tag, damage);
                     break;
                 case PrototypeTag.Crit:
-                    {
-                        float critChance = Mathf.Min(MAX_CRIT_CHANCE, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
-                        if (UnityEngine.Random.value < critChance)
-                        {
-                            damage *= 2f;
-                            DSDebug.Verbose("[GeneCultivation] " + attacker.getName() + " 异能暴击！伤害×2");
-                        }
-                    }
+                    TryCrit(attacker, tag, ref damage);
                     break;
                 case PrototypeTag.Heal:
                     {
@@ -142,8 +162,75 @@ namespace Code.Realm.Prototype
                 case PrototypeTag.Chain:
                     TryChainSplash(attacker, target, damage, def.Strength);
                     break;
+                // ---- v0.18.0 新攻击标签（机制 = 已有标签的变体/组合）----
+                case PrototypeTag.Frostbite:
+                case PrototypeTag.TimeSlow:
+                    TryAddStatus(attacker, target, "frozen", tag, 6f, multiplier, 0.08f);
+                    break;
+                case PrototypeTag.Knockback:
+                case PrototypeTag.Gravity:
+                case PrototypeTag.Fear:
+                    TryAddStatus(attacker, target, "stunned", tag, 2.5f, multiplier, 0.06f);
+                    break;
+                case PrototypeTag.Frost:
+                    damage *= 1.05f;                        // 寒霜微伤：当次伤害 +5%
+                    TryAddStatus(attacker, target, "frozen", tag, 5f, multiplier, 0.08f);
+                    break;
+                case PrototypeTag.Berserk:
+                    damage *= 1f + def.Strength;            // 狂暴：当次伤害 +25%
+                    break;
+                case PrototypeTag.Drain:
+                case PrototypeTag.Blood:
+                    TryLifesteal(attacker, tag, damage);
+                    break;
+                case PrototypeTag.Soul:
+                    {
+                        float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
+                        if (UnityEngine.Random.value < chance)
+                        {
+                            float healAmount = damage * def.Strength;
+                            if (healAmount > 1f) TryHeal(attacker, healAmount);
+                        }
+                    }
+                    break;
+                case PrototypeTag.Curse:
+                    TryAddStatus(attacker, target, "poisoned", tag, 6f, multiplier, 0.08f);
+                    break;
+                case PrototypeTag.Plasma:
+                    TryAddStatus(attacker, target, "burning", tag, 10f, multiplier, 0.10f);
+                    break;
+                case PrototypeTag.Telekinesis:
+                    TryCrit(attacker, tag, ref damage);
+                    break;
                 default:
                     break;
+            }
+        }
+
+        /// <summary>吸血组：Lifesteal/Drain/Blood（吸血比例按标签强度，受上限约束）</summary>
+        private static void TryLifesteal(Actor attacker, PrototypeTag tag, float damage)
+        {
+            var def = PrototypeTags.Get(tag);
+            if (def == null) return;
+            float chance = Mathf.Min(1f, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
+            if (UnityEngine.Random.value < chance)
+            {
+                float lifestealRatio = Mathf.Min(MAX_LIFESTEAL, def.Strength + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.03f);
+                float healAmount = damage * lifestealRatio;
+                if (healAmount > 1f) TryHeal(attacker, healAmount);
+            }
+        }
+
+        /// <summary>暴击组：Crit/Telekinesis（双倍伤害，概率受亲和加成）</summary>
+        private static void TryCrit(Actor attacker, PrototypeTag tag, ref float damage)
+        {
+            var def = PrototypeTags.Get(tag);
+            if (def == null) return;
+            float critChance = Mathf.Min(MAX_CRIT_CHANCE, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
+            if (UnityEngine.Random.value < critChance)
+            {
+                damage *= 2f;
+                DSDebug.Verbose("[GeneCultivation] " + attacker.getName() + " 异能暴击！伤害×2");
             }
         }
 

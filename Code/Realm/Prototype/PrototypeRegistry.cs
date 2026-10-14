@@ -1,72 +1,95 @@
 // ============================================================
-// 元素系异能注册表（v0.17.0 新增系统）
-// 大众认知异能 = 大类（元素系）→ 小类（火/水/风…）→ 异能（火焰操控…）
-// 本文件 = 数据层：10 个元素异能定义（名称 + 主/副标签组合 + 染色体偏好 + 原版基因亲和偏好）
-// 效果机制全部由 PrototypeEffectEngine 按标签组合执行，异能本身零逻辑（数据驱动）。
+// 异能注册表（v0.18.0 全量架构）
+// 大众认知异能 = 大类（元素系/自然系/精神系…）→ 小类（火/水/风…）→ 异能（火焰操控…）
+// 底层机制 = 30 个效果标签组合（PrototypeTags），一次实现、全异能复用。
+// 数据按大类拆分在 PrototypeData_*.cs（单一职责：每文件一类数据），本文件负责聚合。
+// 旧档兼容：v0.17.0 的 10 个异能 id（fire/water/…）原样保留。
 // ============================================================
 
 using System.Collections.Generic;
+using System;
 
 namespace Code.Realm.Prototype
 {
     /// <summary>异能定义（数据驱动）</summary>
     public sealed class PrototypeDef
     {
-        public string Id;                // 异能ID（写入 custom_data_string["ds_prototype"]）
+        public string Id;                // 异能ID（写入 custom_data_string["ds_prototype"]，全局唯一）
         public string NameZh;            // 中文名（大众认知名）
-        public string DescZh;            // 效果描述
+        public string DescZh;            // 效果描述（真实机制：由标签组合表达的实战效果）
+        public string Category;          // 大类（元素系/自然系/精神系/时空系/光明系/黑暗系/生命系/死亡系/星辰系/机械系/血族系/神话系）
+        public string SubCategory;       // 小类（火/水/风…按大类内细分）
         public PrototypeTag MainTag;     // 主标签（觉醒时优先表现）
         public PrototypeTag SubTag;      // 副标签
         public int ChromosomePreference; // 染色体偏好（0力量1敏捷2体质3智力4感知5意志6异能7潜能）——桥A觉醒定相的加权依据
-        public string VanillaAffinity;   // 原版基因亲和偏好（桥C：原版基因关键词命中则加权重）
 
-        public PrototypeDef(string id, string nameZh, string descZh,
-            PrototypeTag mainTag, PrototypeTag subTag, int chromosomePref, string vanillaAffinity)
+        public PrototypeDef(string id, string nameZh, string descZh, string category, string subCategory,
+            PrototypeTag mainTag, PrototypeTag subTag, int chromosomePref)
         {
             Id = id; NameZh = nameZh; DescZh = descZh;
+            Category = category; SubCategory = subCategory;
             MainTag = mainTag; SubTag = subTag;
-            ChromosomePreference = chromosomePref; VanillaAffinity = vanillaAffinity;
+            ChromosomePreference = chromosomePref;
         }
     }
 
     /// <summary>
-    /// 异能注册表（单一职责：提供异能静态数据）
+    /// 异能注册表（单一职责：聚合全部异能数据 + 提供查询）
+    /// 数据源：PrototypeData_*.cs 12 个大类文件。
     /// </summary>
     public static class PrototypeRegistry
     {
-        /// <summary>元素系 10 异能（首期全量）</summary>
-        public static readonly List<PrototypeDef> Elements = new List<PrototypeDef>
-        {
-            new PrototypeDef("fire",    "火焰操控", "灼烧敌人，攻击波及周围（火元素基因表达）",
-                PrototypeTag.Burn, PrototypeTag.Chain, 6, "damage"),
-            new PrototypeDef("water",   "水流操控", "治疗自身，护盾减伤（水元素基因表达）",
-                PrototypeTag.Heal, PrototypeTag.Shield, 2, "health"),
-            new PrototypeDef("wind",    "疾风", "身法闪避，攻击减速目标（风元素基因表达）",
-                PrototypeTag.Dodge, PrototypeTag.Slow, 1, "speed"),
-            new PrototypeDef("lightning","雷电掌控", "攻击溅射连锁，概率麻痹眩晕（雷元素基因表达）",
-                PrototypeTag.Chain, PrototypeTag.Stun, 6, "warfare"),
-            new PrototypeDef("ice",     "寒冰操控", "减速冻结目标，附加霜冻持续伤害（冰元素基因表达）",
-                PrototypeTag.Slow, PrototypeTag.Burn, 4, "intelligence"),
-            new PrototypeDef("earth",   "大地之力", "护盾减伤，攻击波及周围（土元素基因表达）",
-                PrototypeTag.Shield, PrototypeTag.Chain, 2, "armor"),
-            new PrototypeDef("wood",    "生命操控", "治疗自身，攻击减速缠绕目标（木元素基因表达）",
-                PrototypeTag.Heal, PrototypeTag.Slow, 2, "health"),
-            new PrototypeDef("light",   "圣光", "治疗自身，护盾减伤（光元素基因表达）",
-                PrototypeTag.Heal, PrototypeTag.Shield, 3, "diplomacy"),
-            new PrototypeDef("dark",    "暗影", "攻击吸血，附加暗蚀持续伤害（暗元素基因表达）",
-                PrototypeTag.Lifesteal, PrototypeTag.Burn, 5, "warfare"),
-            new PrototypeDef("metal",   "金属操控", "攻击暴击破甲，护盾硬化（金属元素基因表达）",
-                PrototypeTag.Crit, PrototypeTag.Shield, 0, "damage")
-        };
+        /// <summary>全部异能（聚合，觉醒定相/树 UI 都从这里取）</summary>
+        public static readonly List<PrototypeDef> All = new List<PrototypeDef>();
+
+        /// <summary>兼容别名：旧代码引用的 Elements = 全量异能</summary>
+        public static IList<PrototypeDef> Elements => All;
+
+        /// <summary>分类索引：大类 → 小类 → 异能列表（供异能树层级浏览）</summary>
+        public static readonly Dictionary<string, Dictionary<string, List<PrototypeDef>>> Categories =
+            new Dictionary<string, Dictionary<string, List<PrototypeDef>>>();
 
         private static readonly Dictionary<string, PrototypeDef> _byId = new Dictionary<string, PrototypeDef>();
 
         static PrototypeRegistry()
         {
-            foreach (var def in Elements)
+            RegisterAll(PrototypeData_Elemental.List);
+            RegisterAll(PrototypeData_Nature.List);
+            RegisterAll(PrototypeData_Psychic.List);
+            RegisterAll(PrototypeData_SpaceTime.List);
+            RegisterAll(PrototypeData_Light.List);
+            RegisterAll(PrototypeData_Dark.List);
+            RegisterAll(PrototypeData_Life.List);
+            RegisterAll(PrototypeData_Death.List);
+            RegisterAll(PrototypeData_Celestial.List);
+            RegisterAll(PrototypeData_Machine.List);
+            RegisterAll(PrototypeData_Blood.List);
+            RegisterAll(PrototypeData_Myth.List);
+        }
+
+        private static void RegisterAll(List<PrototypeDef> list)
+        {
+            if (list == null) return;
+            foreach (var def in list)
             {
-                if (def != null && !string.IsNullOrEmpty(def.Id) && !_byId.ContainsKey(def.Id))
-                    _byId[def.Id] = def;
+                if (def == null || string.IsNullOrEmpty(def.Id)) continue;
+                if (_byId.ContainsKey(def.Id)) continue;   // 防重复（旧档兼容：重名以先注册为准）
+                _byId[def.Id] = def;
+                All.Add(def);
+                // 分类索引
+                if (string.IsNullOrEmpty(def.Category)) continue;
+                if (!Categories.TryGetValue(def.Category, out var subs))
+                {
+                    subs = new Dictionary<string, List<PrototypeDef>>();
+                    Categories[def.Category] = subs;
+                }
+                string sub = string.IsNullOrEmpty(def.SubCategory) ? "通用" : def.SubCategory;
+                if (!subs.TryGetValue(sub, out var subList))
+                {
+                    subList = new List<PrototypeDef>();
+                    subs[sub] = subList;
+                }
+                subList.Add(def);
             }
         }
 
@@ -96,6 +119,25 @@ namespace Code.Realm.Prototype
             var data = Code.Data.ActorDataAccessor.GetData(actor);
             if (data == null || data.custom_data_string == null) return false;
             return data.custom_data_string.TryGetValue("ds_prototype", out string id) && !string.IsNullOrEmpty(id);
+        }
+
+        /// <summary>大类名称列表（树 UI 第一层）</summary>
+        public static List<string> GetCategoryNames()
+        {
+            return new List<string>(Categories.Keys);
+        }
+
+        /// <summary>按大类取全部异能（树 UI 展开用）</summary>
+        public static List<PrototypeDef> GetByCategory(string category)
+        {
+            var result = new List<PrototypeDef>();
+            if (string.IsNullOrEmpty(category)) return result;
+            if (Categories.TryGetValue(category, out var subs))
+            {
+                foreach (var subList in subs.Values)
+                    result.AddRange(subList);
+            }
+            return result;
         }
     }
 }
