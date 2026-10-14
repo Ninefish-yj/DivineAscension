@@ -57,6 +57,12 @@ namespace Code.UI
         private GUIStyle _descStyle;
         private GUIStyle _infoStyle;
         private GUIStyle _buttonStyle;
+        private GUIStyle _closeBtnStyle;
+        private GUIStyle _detailNameStyle;
+        private GUIStyle _badgeStyle;
+        private GUIStyle[] _badgeStyles;   // 8~12 号五档缓存（禁止 OnGUI 内 new GUIStyle）
+        private bool _wasPaused;         // 打开前的暂停态（关闭时精确恢复）
+        private bool _pauseCaptured;
         #endregion
 
         #region 静态方法（接口兼容 v0.17.x）
@@ -75,6 +81,14 @@ namespace Code.UI
             if (!wasVisible)
             {
                 MouseOverlayBlocker.RequestBlock();
+                // 大窗规范：记录原暂停态并强制暂停，关闭时精确恢复
+                try
+                {
+                    Instance._wasPaused = Config.paused;
+                    Instance._pauseCaptured = true;
+                    Config.paused = true;
+                }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能树暂停捕获失败: " + dsEx.Message); }
                 Instance.ResetView();
             }
             Instance.InitTextures();
@@ -83,8 +97,17 @@ namespace Code.UI
 
         public static void Hide()
         {
-            if (Instance._visible) MouseOverlayBlocker.ReleaseBlock();
+            if (Instance._visible)
+            {
+                MouseOverlayBlocker.ReleaseBlock();
+                if (Instance._pauseCaptured)
+                {
+                    try { Config.paused = Instance._wasPaused; } catch { }
+                    Instance._pauseCaptured = false;
+                }
+            }
             Instance._visible = false;
+            Instance._selectedActor = null;   // 关窗不持有 Actor 引用（指南 7.2）
         }
 
         public static void Toggle(Actor actor)
@@ -119,6 +142,17 @@ namespace Code.UI
             if (_descStyle == null) _descStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, wordWrap = true };
             if (_infoStyle == null) _infoStyle = new GUIStyle(GUI.skin.label) { fontSize = 11 };
             if (_buttonStyle == null) _buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 12, fontStyle = FontStyle.Bold };
+            if (_closeBtnStyle == null) _closeBtnStyle = new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold };
+            if (_detailNameStyle == null) _detailNameStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
+            if (_badgeStyle == null)
+            {
+                _badgeStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
+                _badgeStyles = new GUIStyle[5];
+                for (int bi = 0; bi < _badgeStyles.Length; bi++)
+                {
+                    _badgeStyles[bi] = new GUIStyle(_badgeStyle) { fontSize = 8 + bi };
+                }
+            }
         }
 
         private static Texture2D MakeSolidTexture(int width, int height, Color color)
@@ -174,10 +208,37 @@ namespace Code.UI
         public void OnGUI()
         {
             if (!_visible) return;
-            if (_selectedActor == null || !_selectedActor.isAlive())
+            // 整窗异常隔离（指南 3.3/7.3）：绘制异常 → 自动关窗 + 撤遮罩 + 顶部提示，绝不每帧刷屏
+            try
+            {
+                DoOnGUI();
+            }
+            catch (System.Exception dsEx)
+            {
+                Code.Core.DSDebug.Error("[GeneCultivation] 异能树绘制异常，自动关闭: " + dsEx.Message);
+                SafeCloseWithTip();
+            }
+        }
+
+        /// <summary>异常安全关窗：撤遮罩 + 恢复暂停 + 顶部提示</summary>
+        private void SafeCloseWithTip()
+        {
+            try
             {
                 if (_visible) MouseOverlayBlocker.ReleaseBlock();
+                if (_pauseCaptured) { Config.paused = _wasPaused; _pauseCaptured = false; }
                 _visible = false;
+                _selectedActor = null;
+                try { WorldTip.showNow("异能树绘制异常，已自动关闭。", false, "top", 5f); } catch { }
+            }
+            catch { }
+        }
+
+        private void DoOnGUI()
+        {
+            if (_selectedActor == null || !_selectedActor.isAlive())
+            {
+                SafeCloseWithTip();
                 return;
             }
 
@@ -191,7 +252,9 @@ namespace Code.UI
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
             {
                 MouseOverlayBlocker.ReleaseBlock();
+                if (_pauseCaptured) { Config.paused = _wasPaused; _pauseCaptured = false; }
                 _visible = false;
+                _selectedActor = null;
                 e.Use();
                 return;
             }
@@ -209,10 +272,12 @@ namespace Code.UI
             // 关闭按钮
             Rect closeRect = new Rect(Screen.width - 48f, 12f, 32f, 32f);
             GUI.color = new Color(0.9f, 0.3f, 0.3f);
-            if (GUI.Button(closeRect, "×", new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold }))
+            if (GUI.Button(closeRect, "×", _closeBtnStyle))
             {
                 MouseOverlayBlocker.ReleaseBlock();
+                if (_pauseCaptured) { Config.paused = _wasPaused; _pauseCaptured = false; }
                 _visible = false;
+                _selectedActor = null;
                 return;
             }
             GUI.color = Color.white;
@@ -525,8 +590,7 @@ namespace Code.UI
                 // ---- 异能详情 ----
                 var def = shown.Def;
                 GUI.color = DSUITheme.AccentGold;
-                GUI.Label(new Rect(x, y, w - 150f, 26f), def.NameZh,
-                    new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold });
+                GUI.Label(new Rect(x, y, w - 150f, 26f), def.NameZh, _detailNameStyle);
                 GUI.color = Color.white;
                 DrawTagBadge(new Rect(x + w - 150f, y, 66f, 22f), def.MainTag, 1f);
                 DrawTagBadge(new Rect(x + w - 78f, y, 66f, 22f), def.SubTag, 1f);
@@ -576,8 +640,7 @@ namespace Code.UI
             {
                 // ---- 大类/小类/根 概览 ----
                 GUI.color = DSUITheme.AccentCyan;
-                GUI.Label(new Rect(x, y, w, 26f), shown.Name,
-                    new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold });
+                GUI.Label(new Rect(x, y, w, 26f), shown.Name, _detailNameStyle);
                 GUI.color = Color.white;
                 y += 32f;
                 int count = CountDescendants(shown);
@@ -645,7 +708,7 @@ namespace Code.UI
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = DSUITheme.TitleText;
             int fs = Mathf.Clamp(Mathf.RoundToInt(10 * Mathf.Max(0.8f, zoom)), 8, 12);
-            var st = new GUIStyle(GUI.skin.label) { fontSize = fs, alignment = TextAnchor.MiddleCenter };
+            GUIStyle st = _badgeStyles != null ? _badgeStyles[fs - 8] : _badgeStyle;
             GUI.Label(rect, PrototypeTags.GetName(tag), st);
             GUI.color = Color.white;
         }
