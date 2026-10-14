@@ -1571,5 +1571,8 @@
   "boost_divine_dmgred": "Divine: DMG Red.",
   "boost_divine_crit": "Divine: Crit",
   "boost_divine_lifesteal": "Divine: Lifesteal",
-  "boost_divine_heal": "Divine: Heal"
+  "boost_divine_heal": "Divine: Heal",
+  "unit_gene_tab": "Gene",
+  "unit_gene_tab_desc": "Current unit's gene cultivation overview: affinity, live boosts, vanilla sources",
+  "unit_gene_tab_title": "GENE PANEL"
 }

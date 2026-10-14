@@ -1569,5 +1569,8 @@
   "boost_divine_dmgred": "神创: 伤害减免",
   "boost_divine_crit": "神创: 暴击",
   "boost_divine_lifesteal": "神创: 吸血",
-  "boost_divine_heal": "神创: 治疗"
+  "boost_divine_heal": "神创: 治疗",
+  "unit_gene_tab": "基因",
+  "unit_gene_tab_desc": "当前单位的基因修炼总览：染色体亲和、实时加成、原版基因来源",
+  "unit_gene_tab_title": "基因面板 · 基因修炼总览"
 }
