@@ -92,6 +92,13 @@ namespace Code.UI
                 string realmText = BuildRealmText(actor, tier);
                 ShowStatRow(__instance, UILocalization.Get("unit_realm"), realmText,
                     null, MetaType.None, -1L, false, null, null, null, false);
+                // 行1.1：异能（v0.17.0）：觉醒定相的异能名（大众认知名，读 ds_prototype）
+                var dsProto = Code.Realm.Prototype.PrototypeRegistry.GetForActor(actor);
+                if (dsProto != null)
+                {
+                    ShowStatRow(__instance, UILocalization.Get("unit_prototype"), dsProto.NameZh,
+                        null, MetaType.None, -1L, false, null, null, null, false);
+                }
                 // 行1.2：登神级种族（11阶以上脱离原种族成为独立种族，种族名=前缀称号+之裔）
                 if (Code.Realm.TranscendentSpeciesSystem.IsTranscendent(actor))
                 {

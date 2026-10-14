@@ -947,6 +947,16 @@ namespace Code.Realm
                 CultivationData.UnlockElement(actor, "gene_cell_division");
                 CultivationData.SetAwakened(actor, true);
 
+                // 三系统联动·觉醒定相（v0.17.0 新增，不影响现有觉醒流程）：
+                // 桥A：读原版基因（亚种 nucleus 染色体，只读）同步染色体亲和/标签亲和 → custom_data
+                // 桥C：按亲和加权分配元素系异能（ds_prototype，终身锁定）
+                try
+                {
+                    Code.Realm.Prototype.GeneAffinityBridge.SyncAffinities(actor);
+                    Code.Realm.Prototype.GeneAffinityBridge.RollPrototype(actor);
+                }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 觉醒定相异常: " + dsEx.Message); }
+
                 // 觉醒之心：基因觉醒的标志特质（v0.15.0 起由觉醒流程授予，不再随 9 阶境界自动发放）
                 try
                 {
@@ -956,13 +966,33 @@ namespace Code.Realm
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AwakenMortal 觉醒之心授予异常: " + dsEx.Message); }
 
                 // 极低概率额外获得随机基因（天赋异禀，5%）
+                // v0.17.0 起按桥A染色体亲和加权：原版基因亲和高的染色体优先获得基因（遗传底材→觉醒倾向）
                 if (UnityEngine.Random.value <= 0.05f)
                 {
                     var bonusElements = ElementDef.AllElements.Where(e => e.Period <= 6 && e.Id != "gene_cell_division" && !CultivationData.IsElementUnlocked(actor, e.Id)).ToList();
                     if (bonusElements != null && bonusElements.Count > 0)
                     {
-                        int randomIndex = UnityEngine.Random.Range(0, bonusElements.Count);
-                        var bonusElement = bonusElements[randomIndex];
+                        int bonusIndex = 0;
+                        try
+                        {
+                            float totalWeight = 0f;
+                            float[] weights = new float[bonusElements.Count];
+                            for (int i = 0; i < bonusElements.Count; i++)
+                            {
+                                float w = 1f + Code.Realm.Prototype.GeneAffinityBridge.GetChromosomeAffinity(actor, bonusElements[i].Group);
+                                weights[i] = w;
+                                totalWeight += w;
+                            }
+                            float roll = UnityEngine.Random.value * totalWeight;
+                            float acc = 0f;
+                            for (int i = 0; i < bonusElements.Count; i++)
+                            {
+                                acc += weights[i];
+                                if (roll <= acc) { bonusIndex = i; break; }
+                            }
+                        }
+                        catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 天赋异禀加权异常，回退随机: " + dsEx.Message); bonusIndex = UnityEngine.Random.Range(0, bonusElements.Count); }
+                        var bonusElement = bonusElements[bonusIndex];
                         CultivationData.UnlockElement(actor, bonusElement.Id);
                         DSDebug.Verbose($"[GeneCultivation] AwakenMortal: 天赋异禀！额外获得基因={bonusElement.NameZh}({bonusElement.Id})");
                     }

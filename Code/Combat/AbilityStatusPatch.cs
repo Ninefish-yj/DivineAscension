@@ -120,6 +120,10 @@ namespace Code.Combat
                         }
                     }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 潜能暴走应用失败: " + dsEx.Message); }
+
+                    // 异能攻击标签（v0.17.0）：灼烧/减速/麻痹/毒蚀/溅射/吸血/暴击/治疗（读 ds_prototype 异能标签）
+                    try { Code.Realm.Prototype.PrototypeEffectEngine.OnAttack(from, __instance, ref damage); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能攻击效果失败: " + dsEx.Message); }
                 }
 
                 if (__instance != null && CultivationData.IsAscended(__instance))
@@ -142,6 +146,10 @@ namespace Code.Combat
                         if (geneDmgRed > 0f) damage *= Mathf.Max(0.05f, 1f - geneDmgRed);
                     }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因减伤应用失败: " + dsEx.Message); }
+
+                    // 异能防守标签（v0.17.0）：护盾减伤 / 闪避免伤（读 ds_prototype 异能标签）
+                    try { Code.Realm.Prototype.PrototypeEffectEngine.OnDefend(__instance, ref damage); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能防守效果失败: " + dsEx.Message); }
                 }
 
                 // 神创基因暴击率：独立判定（默认0=不暴击）

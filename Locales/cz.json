@@ -779,6 +779,7 @@
   "debug_actor_qi_100m": "+1亿",
   "stats_tier_mid": "中阶(4-6)",
   "unit_qi": "异能能量",
+  "unit_prototype": "异能",
   "ability_reflect": "能量反射",
   "dimension_overview": "【维度空间概览】",
   "debug_tab_global": "全局数据",

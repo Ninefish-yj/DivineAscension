@@ -759,6 +759,7 @@
   "god_birth_energy_2": "One thought gives birth to thunder, all laws return to my body.",
   "debug_actor_qi_100m": "+1e8",
   "unit_qi": "Ability Energy",
+  "unit_prototype": "Prototype",
   "ability_reflect": "Energy Reflection",
   "dimension_overview": "[Dimension Realm Overview]",
   "debug_tab_global": "Global",
