@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Code.Data;
 using Code.Core;
 using UnityEngine;
@@ -175,7 +176,7 @@ namespace Code.Realm
 				var godData = new TrueGodData
 				{
 					Name = godName,
-					Race = "Unknown",
+					Race = ReadAssetId(actor) ?? "Unknown",
 					RealmTier = tier,
 										UnlockedElements = CultivationData.GetUnlockedElements(actor),
 					ActiveCombos = CultivationData.GetActiveCombos(actor),
@@ -186,7 +187,7 @@ namespace Code.Realm
 					AscensionTime = DateTime.Now.Ticks,
 					OriginWorld = World.world?.name ?? "Unknown",
 					KillCount = 0,
-					YearsLived = 0
+					YearsLived = actor.getAge()
 				};
 
 				_globalData.TrueGods.Add(godData);
@@ -254,7 +255,8 @@ namespace Code.Realm
 		}
 
 		/// <summary>
-		/// 生成真神单位（简单版：找一个现有单位提升成真神）
+		/// 生成真神单位（按真神记录的原种族 asset_id 真·生成，修复"放置后不是原种族"）
+		/// 旧记录（Race=Unknown/空）回退：随机取当前世界一个种族的 asset_id
 		/// </summary>
 		public static Actor SpawnTrueGod(TrueGodData godData)
 		{
@@ -262,32 +264,102 @@ namespace Code.Realm
 
 			try
 			{
-				// 找一个随机单位提升成真神（简单实现，避免API问题）
-				foreach (var actor in World.world.units.units_only_alive)
+				// 1. 确定种族：优先真神记录的真实种族
+				string assetId = godData.Race;
+				if (string.IsNullOrEmpty(assetId) || assetId == "Unknown")
 				{
-					if (actor != null && actor.isAlive())
+					assetId = PickRandomRaceId();
+					if (string.IsNullOrEmpty(assetId)) return null;
+				}
+
+				// 2. 找生成位置（非液体地面 tile）
+				WorldTile tile = FindSpawnTile();
+				if (tile == null) return null;
+
+				// 3. 按原种族生成单位（pMiracleSpawn=true 奇迹生成、pAdultAge=true 成年体）
+				Actor god = World.world.units.spawnNewUnit(assetId, tile, false, true, 6f, null, false, true);
+				if (god == null || !god.isAlive()) return null;
+
+				// 4. 恢复真神身份与数据（名字/境界/能量/掌控/失控/已解锁元素）
+				god.setName(godData.Name);
+				CultivationData.SetRealmTier(god, 13);
+				CultivationData.SetEnergy(god, godData.Qi);
+				CultivationData.SetMastery(god, godData.Mastery);
+				CultivationData.SetTurbulence(god, godData.Turbulence);
+				if (godData.UnlockedElements != null)
+				{
+					foreach (string elementId in godData.UnlockedElements)
 					{
-						// 设置名字
-						actor.setName(godData.Name);
-
-						// 设置为13阶超神级
-						Code.Data.CultivationData.SetRealmTier(actor, 13);
-
-						// 同步真神数据
-						CultivationData.SetEnergy(actor, godData.Qi);
-						CultivationData.SetMastery(actor, godData.Mastery);
-						CultivationData.SetTurbulence(actor, godData.Turbulence);
-
-						return actor;
+						try { CultivationData.UnlockElement(god, elementId); } catch (Exception) { }
 					}
 				}
-				return null;
+
+				DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已按原种族 {assetId} 放置");
+				return god;
 			}
 			catch (Exception e)
 			{
 				DSDebug.Warning($"[TrueGodManager] 生成真神失败: {e.Message}");
 				return null;
 			}
+		}
+
+		/// <summary>读取单位真实种族 asset_id（ActorData.asset_id 为 public 属性，反编译 ActorData.cs:121）</summary>
+		private static string ReadAssetId(Actor actor)
+		{
+			try
+			{
+				if (actor == null) return null;
+				ActorData data = actor.getData() as ActorData;
+				if (data == null) return null;
+				return string.IsNullOrEmpty(data.asset_id) ? null : data.asset_id;
+			}
+			catch (Exception) { return null; }
+		}
+
+		/// <summary>从当前世界随机取一个种族的 asset_id（旧真神记录无种族时的回退）</summary>
+		private static string PickRandomRaceId()
+		{
+			try
+			{
+				if (World.world == null || World.world.units == null) return null;
+				List<Actor> alive = World.world.units.units_only_alive;
+				if (alive == null || alive.Count == 0) return null;
+				for (int i = 0; i < 20; i++)
+				{
+					Actor a = alive[UnityEngine.Random.Range(0, alive.Count)];
+					if (a == null) continue;
+					string id = ReadAssetId(a);
+					if (!string.IsNullOrEmpty(id)) return id;
+				}
+				return null;
+			}
+			catch (Exception) { return null; }
+		}
+
+		/// <summary>找一个非液体地面 tile（与 DimensionWorldManager.GetSpawnTile 同思路）</summary>
+		private static WorldTile FindSpawnTile()
+		{
+			try
+			{
+				if (MapBox.instance == null) return null;
+				FieldInfo field = typeof(MapBox).GetField("tiles_list",
+					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				WorldTile[] list = field != null ? field.GetValue(MapBox.instance) as WorldTile[] : null;
+				if (list == null || list.Length == 0) return null;
+
+				for (int i = 0; i < 50; i++)
+				{
+					WorldTile t = list[UnityEngine.Random.Range(0, list.Length)];
+					if (t != null && !t.is_liquid) return t;
+				}
+				for (int i = 0; i < list.Length; i++)
+				{
+					if (list[i] != null && !list[i].is_liquid) return list[i];
+				}
+				return null;
+			}
+			catch (Exception) { return null; }
 		}
 
 	}
