@@ -869,7 +869,7 @@
   "ability_premonition_desc": "Foresee near future",
   "dim_create_fail_energy": "Creation failed: insufficient space energy, requires 50000 space energy",
   "debug_performance": "Performance",
-  "feature_tier_2": "Gene Resonance: Ability energy and gene sequence form stable resonance cycle, automatically recover energy, can unlock more basic elements, elements begin to produce weak combination effects",
+  "feature_tier_2": "Gene Resonance: Ability energy and gene sequence form a stable resonance cycle, auto-recovering energy and unlocking more base genes. With 2+ genes on one chromosome, gene linkage resonance activates, boosting matching stats by linkage tier.",
   "trait_ds_tier_08_lawbearer": "Rulebearer",
   "judge_break_space_desc": "Space barrier shattered, dimension rifts bloom in domain, all map ability users nowhere to hide, the name of transcendent shocks all directions!",
   "dim_enter_macro": "{0} entered the macro dimension space! Cultivation speed increased by 100%, turbulence index quickly dissipates",
@@ -1529,7 +1529,7 @@
   "enableglobalhealthsuppression description": "我方异能者战斗中（10秒内受伤），拦截原版恢复特质/其他模组治疗buff/牧师加血，防止边打边回杀不死",
   "event_gene_collapse": "基因崩溃",
   "trait_ds_trait_awakened_heart": "Awakened Heart",
-  "trait_ds_trait_awakened_heart_desc": "Trait resonance: units at tier 9+ awaken the power within their genes, greatly increasing attack and health, moving faster, and raising energy cap.",
+  "trait_ds_trait_awakened_heart_desc": "Mark of gene awakening: granted upon awakening as an esper (Tier 1). The power within genes is lit, modestly boosting attack, health, speed, and energy cap.",
   "trait_ds_trait_gene_resonance": "Gene Resonance",
-  "trait_ds_trait_gene_resonance_desc": "Trait resonance: units at tier 12+ experience gene-chain resonance, with explosive growth in attack and health, qualitative defense and attack speed gains, and extended range."
+  "trait_ds_trait_gene_resonance_desc": "(Deprecated, no longer granted since v0.15.0) Legacy tier-12 stat trait: explosive attack/health. Real resonance bonuses now come from the gene linkage system."
 }

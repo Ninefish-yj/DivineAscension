@@ -104,7 +104,61 @@ namespace Code
 			// 3. 检查表达层级连锁
 			result.AddRange(CheckExpressionLinkages(actor, unlockedGenes));
 
+			// 连锁效果落地（v0.15.0）：把聚合后的百分比加成写入 custom_data_float["ds_link_{key}"]，
+			// 由 GeneEnergyAttributeApplier 在 updateStats 后应用到 stats——
+			// 此前连锁只生成描述文案（DynamicLinkage），属性从未真正生效。
+			ApplyLinkageBonuses(actor, result);
+
 			return result;
+		}
+
+		/// <summary>
+		/// 把连锁效果按类型聚合为百分比加成，写入 custom_data_float["ds_link_{key}"]。
+		/// GeneEnergyAttributeApplier 读取并按 (1+百分比) 乘到对应属性。
+		/// </summary>
+		private static void ApplyLinkageBonuses(Actor actor, List<DynamicLinkage> result)
+		{
+			try
+			{
+				if (actor == null || result == null || result.Count == 0) return;
+				ActorData data = ActorDataAccessor.GetData(actor);
+				if (data == null || data.custom_data_float == null) return;
+
+				// 按效果类型聚合百分比（同类型多连锁相加；如多条 SpeedBonus 累加）
+				var agg = new Dictionary<LinkageEffectType, float>();
+				foreach (var linkage in result)
+				{
+					float cur;
+					agg.TryGetValue(linkage.EffectType, out cur);
+					agg[linkage.EffectType] = cur + linkage.EffectValue;
+				}
+
+				foreach (var kv in agg)
+				{
+					string statKey = LinkageEffectToStatKey(kv.Key);
+					if (statKey != null)
+						data.custom_data_float["ds_link_" + statKey] = kv.Value;
+				}
+			}
+			catch (System.Exception dsEx) { DSDebug.Warning("[GeneCultivation] ApplyLinkageBonuses 异常: " + dsEx.Message); }
+		}
+
+		/// <summary>连锁效果类型 → 属性 key（写入 ds_link_{key}）。暂不落地的类型仍记录数值，供后续接入。</summary>
+		private static string LinkageEffectToStatKey(LinkageEffectType type)
+		{
+			switch (type)
+			{
+				case LinkageEffectType.DamageBonus:   return "damage";
+				case LinkageEffectType.HealthBonus:   return "health";
+				case LinkageEffectType.SpeedBonus:    return "speed";
+				case LinkageEffectType.DefenseBonus:  return "armor";
+				case LinkageEffectType.EnergyBonus:   return "mana";
+				case LinkageEffectType.CultivationBonus:  return "cultivation";   // 修炼加成：后续接入修炼结算（TODO）
+				case LinkageEffectType.SkillDamageBonus:  return "skill_damage";  // 技能伤害：后续接入（TODO）
+				case LinkageEffectType.AllAttributeBonus: return "all";           // 全属性：应用到全部主属性
+				case LinkageEffectType.SpecialAbility:    return "special";       // 特殊能力：后续接入（TODO）
+				default: return null;
+			}
 		}
 
 		/// <summary>

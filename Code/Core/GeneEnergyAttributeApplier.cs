@@ -139,6 +139,34 @@ namespace Code.Core
                     }
                     catch (System.Exception dsEx) { DSDebug.Verbose("[基因能量属性加成器] 协调效应应用失败: " + dsEx.Message); }
                 }
+
+                // 异能共鸣（基因连锁，v0.15.0 落地）：
+                // GeneLinkageSystem.ApplyLinkageBonuses 把连锁百分比加成写入 custom_data_float["ds_link_{key}"]，
+                // 这里按 (1+百分比) 乘到合成后的 stats（damage/health/speed/armor/mana）。
+                // 替代已废弃的 12 阶"基因共鸣"数值特质——异能共鸣从此由真实连锁机制驱动。
+                try
+                {
+                    ActorData data = ActorDataAccessor.GetData(actor);
+                    if (data != null && data.custom_data_float != null)
+                    {
+                        // 全属性连锁（ds_link_all）叠加到各主属性
+                        float allBonus = 0f;
+                        data.custom_data_float.TryGetValue("ds_link_all", out allBonus);
+
+                        string[] linkKeys = { "damage", "health", "speed", "armor", "mana" };
+                        foreach (string lk in linkKeys)
+                        {
+                            float linkBonus = 0f;
+                            data.custom_data_float.TryGetValue("ds_link_" + lk, out linkBonus);
+                            float total = linkBonus + allBonus;
+                            if (total > 0f)
+                            {
+                                stats[lk] = stats[lk] * (1f + total);
+                            }
+                        }
+                    }
+                }
+                catch (System.Exception dsEx) { DSDebug.Verbose("[基因能量属性加成器] 异能共鸣应用失败: " + dsEx.Message); }
             }
             catch (System.Exception e)
             {

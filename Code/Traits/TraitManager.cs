@@ -123,16 +123,22 @@ namespace Code.Traits
             RegisterRealmTrait(TIER_13_TRUEGOD, UILocalization.Get(TIER_13_TRUEGOD),  UILocalization.Get(TIER_13_TRUEGOD + "_desc"), 13);
 
             
-            // === 天赋觉醒联动（高阶自动挂载，形成跨阶共鸣）===
+            // === 异能觉醒标志特质（v0.15.0 重构）===
+            // 觉醒之心 = 基因觉醒的标志，由觉醒流程（RealmJudge.AwakenMortal）在 1 阶觉醒时授予，
+            // 不再随 9 阶境界自动发放。数值按 1 阶起点强度收敛（原 9 阶版本 +8000/+80000 等已废弃）。
             var awakenedStats = new BaseStats();
-            awakenedStats["damage"] = 8000; awakenedStats["health"] = 80000; awakenedStats["speed"] = 0.2f;
-            awakenedStats["armor"] = 200f; awakenedStats["mana"] = 100;
-            RegisterAwakeningTrait(TIER_AWAKENED_HEART, awakenedStats);  // 觉醒之心：9阶起自动觉醒
+            awakenedStats["damage"] = 300; awakenedStats["health"] = 3000; awakenedStats["speed"] = 0.05f;
+            awakenedStats["armor"] = 30f; awakenedStats["mana"] = 50;
+            RegisterAwakeningTrait(TIER_AWAKENED_HEART, awakenedStats);
 
+            // 基因共鸣数值特质（12阶自动发放版）已废弃（v0.15.0）：
+            // 异能共鸣的正体改为"基因连锁"（GeneLinkageSystem）——同染色体/跨染色体基因共鸣按连锁等级
+            // 真实加成对应属性（GeneEnergyAttributeApplier 应用），不再用数值特质粗暴叠加。
+            // 保留注册定义仅为兼容旧存档已持有单位（避免 trait 引用悬空），不再自动授予新单位。
             var resonanceStats = new BaseStats();
             resonanceStats["damage"] = 80000; resonanceStats["health"] = 800000; resonanceStats["armor"] = 2000f;
             resonanceStats["attack_speed"] = 15f; resonanceStats["range"] = 2f;
-            RegisterAwakeningTrait(TIER_GENE_RESONANCE, resonanceStats);  // 基因共鸣：12阶起基因链共鸣爆发
+            RegisterAwakeningTrait(TIER_GENE_RESONANCE, resonanceStats);
 
             // 纪元主宰专属唯一特质（只有当前纪元主宰才能拥有，主宰变更时自动转移）
             RegisterStatusTrait(ERA_DOMINATOR_TRAIT, UILocalization.Get(ERA_DOMINATOR_TRAIT), UILocalization.Get(ERA_DOMINATOR_TRAIT + "_desc"), false);
@@ -478,11 +484,10 @@ namespace Code.Traits
                 GrantImmortal(actor);
             }
 
-            // 天赋觉醒联动：9阶起觉醒之心，12阶起基因共鸣
-            if (tier >= 9 && !actor.hasTrait(TIER_AWAKENED_HEART))
-                actor.addTrait(TIER_AWAKENED_HEART, false);
-            if (tier >= 12 && !actor.hasTrait(TIER_GENE_RESONANCE))
-                actor.addTrait(TIER_GENE_RESONANCE, false);
+            // 天赋觉醒联动已废弃（v0.15.0）：
+            // 觉醒之心改由觉醒流程授予（RealmJudge.AwakenMortal，1阶觉醒即获得）；
+            // 异能共鸣由基因连锁（GeneLinkageSystem）真实机制替代——不再随境界自动发放。
+            // 旧档已持有者不受影响（trait 定义保留），新单位不再自动获得。
         }
 
         /// <summary>移除单位身上全部境界Trait</summary>
@@ -496,9 +501,9 @@ namespace Code.Traits
                     actor.removeTrait(traitId);
                 }
             }
-            // 同步移除觉醒联动天赋
-            if (actor.hasTrait(TIER_AWAKENED_HEART)) actor.removeTrait(TIER_AWAKENED_HEART);
+            // 移除已废弃的 12 阶"基因共鸣"数值特质（旧档遗留清理；新单位不再自动获得）
             if (actor.hasTrait(TIER_GENE_RESONANCE)) actor.removeTrait(TIER_GENE_RESONANCE);
+            // 觉醒之心是基因觉醒的标志（觉醒不可逆），不随境界降级移除（v0.15.0）
         }
 
         /// <summary>

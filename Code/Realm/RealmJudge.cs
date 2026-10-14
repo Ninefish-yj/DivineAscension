@@ -947,6 +947,14 @@ namespace Code.Realm
                 CultivationData.UnlockElement(actor, "gene_cell_division");
                 CultivationData.SetAwakened(actor, true);
 
+                // 觉醒之心：基因觉醒的标志特质（v0.15.0 起由觉醒流程授予，不再随 9 阶境界自动发放）
+                try
+                {
+                    if (!actor.hasTrait(TraitManager.TIER_AWAKENED_HEART))
+                        actor.addTrait(TraitManager.TIER_AWAKENED_HEART, false);
+                }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] AwakenMortal 觉醒之心授予异常: " + dsEx.Message); }
+
                 // 极低概率额外获得随机基因（天赋异禀，5%）
                 if (UnityEngine.Random.value <= 0.05f)
                 {

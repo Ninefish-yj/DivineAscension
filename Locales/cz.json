@@ -892,7 +892,7 @@
   "ability_premonition_desc": "预见短暂未来",
   "dim_create_fail_energy": "创造失败: 空间能量不足，需要50000空间能量",
   "debug_performance": "性能监控",
-  "feature_tier_2": "E级：异能能量与基因序列形成稳定E级循环，自动恢复能量，可解锁更多基础基因，基因开始产生微弱组合效果",
+  "feature_tier_2": "E级：异能能量与基因序列形成稳定E级循环，自动恢复能量，可解锁更多基础基因。同染色体基因≥2个将产生基因连锁共鸣，按连锁等级提升对应属性。",
   "stats_tier_low": "低阶(1-3)",
   "judge_break_space_desc": "空间壁垒破碎，维度裂隙在领域中绽放，全图异能者无所遁形，使徒级之名震慑四方！",
   "dim_enter_macro": "{0} 进入了宏观维度空间！修炼速度提升100%，失控指数快速消解",
@@ -1527,7 +1527,7 @@
   "judge_demote_desc": "{0} 在高位之争中失利，境界回退至{1}阶 {2}，让出席位。",
   "event_gene_collapse": "基因崩溃",
   "trait_ds_trait_awakened_heart": "觉醒之心",
-  "trait_ds_trait_awakened_heart_desc": "天赋觉醒联动：9阶以上单位自动觉醒基因深处的力量，攻击与生命大幅提升，行动更迅捷，能量上限提升。",
+  "trait_ds_trait_awakened_heart_desc": "基因觉醒的标志特质：觉醒异能时（第1阶）获得，象征基因深处的力量被点亮，小幅提升攻击、生命、速度与能量上限。",
   "trait_ds_trait_gene_resonance": "基因共鸣",
-  "trait_ds_trait_gene_resonance_desc": "天赋觉醒联动：12阶以上单位基因链产生共鸣，攻击与生命爆发式增长，防御与攻击速度质变，攻击范围延伸。"
+  "trait_ds_trait_gene_resonance_desc": "（已废弃，v0.15.0 起不再自动授予）旧版12阶数值特质：攻击与生命爆发式增长。现由基因连锁系统提供真实的异能共鸣加成。"
 }
