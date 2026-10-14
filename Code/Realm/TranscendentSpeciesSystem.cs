@@ -185,7 +185,7 @@ namespace Code.Realm
         }
 
         /// <summary>
-        /// 登神升华：突破11阶（登神级）时执行。
+        /// 登神升华：突破10阶（使徒级）起执行（SetRealmTier clamped>=10 触发）。
         /// 脱离原种族成为独立种族（身份标记），并授予不可去除的基因特质【完美生命】（归入原版突变分类）。
         /// 基因序列协调效应：扫描单位基因带来的属性，翻倍后由完美生命特质提供（替代方案）。
         /// 突变免疫已在4阶生效。
@@ -199,7 +199,7 @@ namespace Code.Realm
                 if (actor.hasTrait(TRAIT_SPECIES_TRANSCENDENT)) return; // 已升华，不重复
 
                 actor.addTrait(TRAIT_SPECIES_TRANSCENDENT, false);
-                // 【完美生命】主授予在11阶登神级：基因完美的标志（突变分类、不可去除、入突变箱池）
+                // 【完美生命】主授予在突破登神（10阶起）：基因完美的标志（突变分类、不可去除、入突变箱池）
                 if (!actor.hasTrait(TRAIT_PERFECT_LIFE))
                 {
                     actor.addTrait(TRAIT_PERFECT_LIFE, false);
@@ -240,52 +240,41 @@ namespace Code.Realm
                     return;
                 }
 
-                if (oldSpecies != null)
+                // 复制原亚种特质/基因/出生特质（尽力而为：失败不阻断切换到新亚种）
+                try
                 {
-                    // 复制原亚种特质（突变特质/出生特质），保留单位原有基因构成
-                    // 注意：_traits/_actor_birth_traits 是私有字段，运行时直接访问会抛 FieldAccessException
-                    // （编译引用 publicized 程序集能过，运行时原版拒绝），改用公开方法 getTraits()/getActorBirthTraits()
-                    foreach (SubspeciesTrait trait in oldSpecies.getTraits()) newSpecies.addTrait(trait);
-                    newSpecies.nucleus.cloneFrom(oldSpecies.nucleus);
-                    SubspeciesActorBirthTraits newBirthTraits = newSpecies.getActorBirthTraits();
-                    SubspeciesActorBirthTraits oldBirthTraits = oldSpecies.getActorBirthTraits();
-                    newBirthTraits.reset();
-                    foreach (ActorTrait bTrait in oldBirthTraits.getTraits()) newBirthTraits.addTrait(bTrait);
-                    // 从原亚种单位列表移除（不再属于原种族）
-                    oldSpecies.units.Remove(actor);
-                }
-
-                // 写新亚种名（反射，兼容运行时访问权限）
-                var nameField = newSpecies.GetType().GetField("name",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (nameField != null)
-                {
-                    nameField.SetValue(newSpecies, subspeciesName);
-                }
-                else
-                {
-                    // 0.51.x 正确 API：setName(string)（Subspecies 公开方法，沿继承链可查）
-                    var setNameMethod = newSpecies.GetType().GetMethod("setName",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                        null, new[] { typeof(string) }, null);
-                    if (setNameMethod != null)
+                    if (oldSpecies != null)
                     {
-                        setNameMethod.Invoke(newSpecies, new object[] { subspeciesName });
+                        // 注意：_traits/_actor_birth_traits 是私有字段，运行时直接访问会抛 FieldAccessException
+                        // （编译引用 publicized 程序集能过，运行时原版拒绝），改用公开方法 getTraits()/getActorBirthTraits()
+                        foreach (SubspeciesTrait trait in oldSpecies.getTraits()) newSpecies.addTrait(trait);
+                        newSpecies.nucleus.cloneFrom(oldSpecies.nucleus);
+                        SubspeciesActorBirthTraits newBirthTraits = newSpecies.getActorBirthTraits();
+                        SubspeciesActorBirthTraits oldBirthTraits = oldSpecies.getActorBirthTraits();
+                        newBirthTraits.reset();
+                        foreach (ActorTrait bTrait in oldBirthTraits.getTraits()) newBirthTraits.addTrait(bTrait);
+                        // 从原亚种单位列表移除（不再属于原种族）
+                        oldSpecies.units.Remove(actor);
                     }
                 }
-                var nameLocField = newSpecies.GetType().GetField("name_localized",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (nameLocField != null)
+                catch (Exception copyEx)
                 {
-                    var locText = nameLocField.GetValue(newSpecies);
-                    if (locText != null)
-                    {
-                        var textField = locText.GetType().GetField("text",
-                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (textField != null) textField.SetValue(locText, subspeciesName);
-                    }
+                    DSDebug.Warning($"[GeneCultivation] {actor.getName()} 复制原亚种基因/特质失败（继续切换到新亚种）: {copyEx.Message}");
                 }
 
+                // 写新亚种名：name 是 CoreSystemObject 的 public string 属性（底层 data.name），直接赋值。
+                // 此前反射找 "name" 字段/单参 setName 均失败（name 是属性不是字段；原版 setName(string,bool) 双参），
+                // 导致新亚种保留 generateName 生成的默认名（人类="Homo Sapiensum"），面板亚种名"看起来没变"。
+                try
+                {
+                    newSpecies.name = subspeciesName;
+                }
+                catch (Exception nameEx)
+                {
+                    DSDebug.Warning($"[GeneCultivation] {actor.getName()} 写入亚种名失败: {nameEx.Message}");
+                }
+
+                // 切换单位到新亚种（核心步骤，原版 public API；必须执行）
                 actor.setSubspecies(newSpecies);
                 DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 亚种名已改为：{subspeciesName}");
             }
