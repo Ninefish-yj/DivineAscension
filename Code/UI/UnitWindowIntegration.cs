@@ -446,6 +446,7 @@ namespace Code.UI
     public static class UnitWindowGeneButtonPatch
     {
         private static GameObject _geneButton;
+        private static GameObject _prototypeButton;
         [HarmonyPrefix]
         public static void Prefix(UnitWindow __instance)
         {
@@ -457,12 +458,70 @@ namespace Code.UI
                 {
                     CreateGeneButton(__instance);
                 }
+                if (_prototypeButton == null)
+                {
+                    CreatePrototypeButton(__instance);
+                }
                 // 根据单位是否活着显示/隐藏按钮（所有活着的单位都显示，包括凡人）
                 UpdateButtonVisibility(__instance);
             }
             catch (Exception e)
             {
                 DSDebug.Warning("[GeneCultivation] 单位窗口基因按钮Patch异常: " + e.Message);
+            }
+        }
+        private static void CreatePrototypeButton(UnitWindow window)
+        {
+            try
+            {
+                Transform background = window.transform.Find("Background");
+                if (background == null) return;
+                // 异能按钮位置（基因按钮 y=84 上方 40 → y=44）
+                float buttonX = 156f;
+                float buttonY = 44f;
+                float buttonSize = 32f;
+                Sprite iconSprite = null;
+                try { iconSprite = SpriteTextureLoader.getSprite("ui/Icons/skills/iconSkillDodge"); }
+                catch { }
+                if (iconSprite == null)
+                {
+                    try { iconSprite = SpriteTextureLoader.getSprite("ui/iconBook"); }
+                    catch { }
+                }
+                GameObject buttonObj = new GameObject("PrototypeButton", typeof(RectTransform), typeof(Image), typeof(Button));
+                buttonObj.transform.SetParent(background, false);
+                RectTransform rectTransform = buttonObj.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition = new Vector2(buttonX, -buttonY);
+                rectTransform.sizeDelta = new Vector2(buttonSize, buttonSize);
+                rectTransform.localScale = Vector3.one;
+                Image image = buttonObj.GetComponent<Image>();
+                if (iconSprite != null) image.sprite = iconSprite;
+                else image.color = new Color(0.5f, 0.5f, 0.5f, 0.8f);
+                Button button = buttonObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    var unitActor = UnitWindowIntegration.GetUnitActor(window);
+                    if (unitActor != null && unitActor.isAlive())
+                    {
+                        PrototypeWindow.Show(unitActor);
+                    }
+                });
+                try
+                {
+                    var tipButton = buttonObj.AddComponent<TipButton>();
+                    if (tipButton != null)
+                    {
+                        string tipText = UILocalization.CurrentLanguage == "en" ? "Prototype Tree" : UILocalization.Get("unit_prototype");
+                        tipButton.textOnClick = tipText;
+                    }
+                }
+                catch (System.Exception e) { DSDebug.Warning("[GeneCultivation] 异能按钮TipButton失败: " + e.Message); }
+                _prototypeButton = buttonObj;
+                DSDebug.Verbose("[GeneCultivation] 单位窗口异能树按钮已创建");
+            }
+            catch (Exception e)
+            {
+                DSDebug.Warning("[GeneCultivation] 创建异能按钮失败: " + e.Message);
             }
         }
         private static void CreateGeneButton(UnitWindow window)
@@ -559,18 +618,17 @@ namespace Code.UI
         {
             try
             {
-                if (_geneButton == null) return;
-                // 所有活着的单位都显示基因图谱按钮（包括凡人）
                 bool shouldShow = false;
                 if (UnitWindowIntegration.GetUnitActor(window) != null && UnitWindowIntegration.GetUnitActor(window).isAlive())
                 {
                     shouldShow = true;
                 }
-                _geneButton.SetActive(shouldShow);
+                if (_geneButton != null) _geneButton.SetActive(shouldShow);
+                if (_prototypeButton != null) _prototypeButton.SetActive(shouldShow);
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[GeneCultivation] 更新基因按钮可见性失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 更新按钮可见性失败: " + e.Message);
             }
         }
    }

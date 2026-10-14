@@ -270,6 +270,9 @@ public class AbilityCodexPanel : MonoBehaviour
 
 		// 绘制基因图谱窗口（独立于异能图鉴面板）
 		GeneGraphWindow.Instance.OnGUI();
+
+		// 绘制异能树窗口（v0.17.2：三系统联动的异能可视化展示）
+		try { PrototypeWindow.Instance.OnGUI(); } catch { }
 	}
 
 	private void DrawWindowContent()
