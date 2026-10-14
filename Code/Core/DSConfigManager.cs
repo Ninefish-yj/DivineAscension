@@ -36,6 +36,12 @@ namespace Code.Core
         // === 生命恢复全局总闸（开关：是否在战斗中拦截一切外部治疗）===
         public static bool EnableGlobalHealthSuppression = true;
 
+        // === 境界压制（v0.18.3：getHit 当场结算跨境界真伤/减免）===
+        public static bool EnableRealmSuppression = true;
+
+        // === 能量抵伤（v0.18.3：受伤扣血时消耗异能能量抵伤）===
+        public static bool EnableEnergyAbsorb = true;
+
         // === 全局播报总闸（开关：是否弹出屏幕中央大通知）===
         public static bool EnableGlobalNotifications = true;
 

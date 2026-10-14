@@ -534,7 +534,11 @@ namespace Code.Core
             EnergyTurbulenceCalculator.ApplyTurbulencePenalties(actor);
 
             // 步骤8：战斗位格防护（跨阶伤害衰减回溯）
-            Combat.CombatRank.ApplyCombatRankProtection(actor);
+            // v0.18.3：即时境界压制接管后，回溯式只在关闭即时压制时兜底，避免双重结算
+            if (!DSConfigManager.EnableRealmSuppression)
+            {
+                Combat.CombatRank.ApplyCombatRankProtection(actor);
+            }
 
             // 步骤9：状态持续时间递减（深度觉醒等）
             SettleStatusDurations(actor);

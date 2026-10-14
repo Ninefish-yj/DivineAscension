@@ -772,6 +772,10 @@ namespace Code.UI
 			{
 				VanillaGenePanel.DrawRealmBridgeSection(_selectedActor, elem.Group);
 				GUILayout.Space(6f);
+
+				// === 基因属性加成总览（v0.18.3：显示当前单位全部基因真实加成） ===
+				GeneBoostSummary.Draw(_selectedActor);
+				GUILayout.Space(6f);
 			}
 
 			// === 效果概览（基因效果数值，贴底显示） ===
