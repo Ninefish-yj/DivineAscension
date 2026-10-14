@@ -577,7 +577,7 @@ namespace Code.Realm
             return string.Format(UILocalization.Get("judge_era_chaos_format"), era);
         }
 
-        ：全属性降低50%，能量恢复降低，持续20年，期间无法再次挑战主宰</summary>
+        /// <summary>挑战失败进入虚弱期：全属性降低50%，能量恢复降低，持续20年，期间无法再次挑战主宰</summary>
         private static void ExileChallenger(Actor actor)
         {
             try

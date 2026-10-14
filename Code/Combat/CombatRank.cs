@@ -57,8 +57,15 @@ namespace Code.Combat
                 return;
             }
 
-            // 检测攻击者
-            BaseSimObject attackerObj = actor.GetAttackedBy();
+            // 检测攻击者（反射调用，兼容不同游戏版本：方法不存在时返回null跳过衰减）
+            BaseSimObject attackerObj = null;
+            try
+            {
+                var getAttackedBy = typeof(Actor).GetMethod("GetAttackedBy",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (getAttackedBy != null) attackerObj = getAttackedBy.Invoke(actor, null) as BaseSimObject;
+            }
+            catch { }
             if (attackerObj == null)
             {
                 CultivationData.SetLastHp(actor, currentHp);

@@ -34,7 +34,7 @@ namespace Code.UI
                     }
                 }
                 catch { }
-                if (actor == null) actor = __instance.GetActor();
+                if (actor == null) actor = GetUnitActor(__instance);
                 if (actor == null || !actor.isAlive())
                 {
                     return;
@@ -396,7 +396,7 @@ namespace Code.UI
         {
             try
             {
-                if (__instance?.GetActor() == null) return;
+                if (GetUnitActor(__instance) == null) return;
                 // 每次OnEnable都检查按钮是否存在，如果不存在就重新创建
                 if (_geneButton == null)
                 {
@@ -463,9 +463,10 @@ namespace Code.UI
                 Button button = buttonObj.GetComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    if (window.GetActor() != null && window.GetActor().isAlive())
+                    var unitActor = GetUnitActor(window);
+                    if (unitActor != null && unitActor.isAlive())
                     {
-                        GeneGraphWindow.Show(window.GetActor());
+                        GeneGraphWindow.Show(unitActor);
                     }
                 });
                 // 添加提示组件（只设置textOnClick一个字段，避免多行提示）
@@ -506,7 +507,7 @@ namespace Code.UI
                 if (_geneButton == null) return;
                 // 所有活着的单位都显示基因图谱按钮（包括凡人）
                 bool shouldShow = false;
-                if (window.GetActor() != null && window.GetActor().isAlive())
+                if (GetUnitActor(window) != null && GetUnitActor(window).isAlive())
                 {
                     shouldShow = true;
                 }
@@ -516,6 +517,35 @@ namespace Code.UI
             {
                 DSDebug.Warning("[GeneCultivation] 更新基因按钮可见性失败: " + e.Message);
             }
+        }
+
+        /// <summary>获取单位窗口对应的Actor（兼容不同游戏版本：优先反射字段，失败反射方法）</summary>
+        private static Actor GetUnitActor(UnitWindow window)
+        {
+            if (window == null) return null;
+            try
+            {
+                var actorField = typeof(UnitWindow).GetField("actor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (actorField != null)
+                {
+                    var actor = actorField.GetValue(window) as Actor;
+                    if (actor != null) return actor;
+                }
+            }
+            catch { }
+            try
+            {
+                var getActor = typeof(UnitWindow).GetMethod("GetActor",
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+                if (getActor != null) return getActor.Invoke(window, null) as Actor;
+            }
+            catch { }
+            return null;
         }
     }
 }
