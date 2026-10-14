@@ -1,21 +1,21 @@
 {
-    "name": "基因修炼",
-    "author": "阿鱼要吃书",
-    "version": "v0.18.1",
-    "GUID": "GeneCultivation",
-    "description": "WorldBox 0.51 现代异能修炼模组",
-    "homepage": "https://github.com/Ninefish-yj/GeneCultivation",
-    "repository": "https://github.com/Ninefish-yj/GeneCultivation.git",
-    "tags": [
-        "修炼",
-        "异能",
-        "基因",
-        "境界",
-        "登神"
-    ],
-    "dependencies": [],
-    "optionalDependencies": [],
-    "requirements": {
-        "gameVersion": "0.51"
-    }
+  "name": "基因修炼",
+  "author": "阿鱼要吃书",
+  "version": "0.18.2",
+  "GUID": "GeneCultivation",
+  "description": "WorldBox 0.51 现代异能修炼模组",
+  "homepage": "https://github.com/Ninefish-yj/GeneCultivation",
+  "repository": "https://github.com/Ninefish-yj/GeneCultivation.git",
+  "tags": [
+    "修炼",
+    "异能",
+    "基因",
+    "境界",
+    "登神"
+  ],
+  "dependencies": [],
+  "optionalDependencies": [],
+  "requirements": {
+    "gameVersion": "0.51"
+  }
 }
