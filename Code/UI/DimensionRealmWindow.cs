@@ -49,6 +49,13 @@ namespace Code.UI
         private Texture2D _inhabitantBgTex;
         private Texture2D _selectedInhabitantBgTex;
         private Texture2D _starTex;
+
+        // 样式懒加载缓存（指南铁律：OnGUI 内禁止每帧 new GUIStyle；带纹理/透明背景的必须窗口级缓存，禁止共享池）
+        private GUIStyle _executeBtnStyle;
+        private GUIStyle _toggleInBtnStyle;
+        private GUIStyle _toggleOutBtnStyle;
+        private GUIStyle _closeBtnStyle;
+        private GUIStyle _spaceBoundStyle;
         #endregion
 
         #region 静态方法
@@ -350,39 +357,48 @@ namespace Code.UI
 
             // 标题
             GUI.DrawTexture(new Rect(x, y, width, 40f), _titleBgTex);
+            GUI.color = new Color(0.7f, 0.85f, 1f);
             GUI.Label(new Rect(x + 15, y, width - 30, 40f), UILocalization.Get("dimension_overview"),
-                new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = new Color(0.7f, 0.85f, 1f) } });
+                DSGUIStylePool.Label(16, FontStyle.Bold, false, TextAnchor.MiddleLeft));
+            GUI.color = Color.white;
 
             float contentY = y + 55f;
             float contentX = x + 15f;
             float contentWidth = width - 30f;
 
             // 空间信息
+            GUI.color = Color.white;
             GUI.Label(new Rect(contentX, contentY, contentWidth, 22f),
                 string.Format(UILocalization.Get("dim_window_level"), DimensionRealmManager.GetRealmLevel()),
-                new GUIStyle(GUI.skin.label) { fontSize = 13, normal = { textColor = Color.white } });
+                DSGUIStylePool.Label(13));
             contentY += 26f;
 
+            GUI.color = new Color(0.7f, 0.9f, 1f);
             GUI.Label(new Rect(contentX, contentY, contentWidth, 22f),
                 string.Format(UILocalization.Get("dim_window_energy"), DimensionRealmManager.GetRealmEnergy()),
-                new GUIStyle(GUI.skin.label) { fontSize = 13, normal = { textColor = new Color(0.7f, 0.9f, 1f) } });
+                DSGUIStylePool.Label(13));
+            GUI.color = Color.white;
             contentY += 26f;
 
             GUI.Label(new Rect(contentX, contentY, contentWidth, 22f),
                 string.Format(UILocalization.Get("dim_window_size"), DimensionRealmManager.GetRealmSize()),
-                new GUIStyle(GUI.skin.label) { fontSize = 13, normal = { textColor = Color.white } });
+                DSGUIStylePool.Label(13));
             contentY += 26f;
 
             string ownerName = DimensionRealmManager.GetOwnerName();
+            GUI.color = new Color(1f, 0.85f, 0.5f);
             GUI.Label(new Rect(contentX, contentY, contentWidth, 22f),
                 string.Format(UILocalization.Get("dim_window_owner"), (string.IsNullOrEmpty(ownerName) ? UILocalization.Get("dim_window_owner_none") : ownerName)),
-                new GUIStyle(GUI.skin.label) { fontSize = 13, normal = { textColor = new Color(1f, 0.85f, 0.5f) } });
+                DSGUIStylePool.Label(13));
+            GUI.color = Color.white;
             contentY += 30f;
 
             // 单位列表标题
+            GUI.color = new Color(0.8f, 0.9f, 1f);
             GUI.Label(new Rect(contentX, contentY, contentWidth, 22f),
                 string.Format(UILocalization.Get("dim_window_inhabitants"), DimensionRealmManager.GetInhabitantCount()),
-                new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.8f, 0.9f, 1f) } });
+                DSGUIStylePool.Label(14, FontStyle.Bold));
+            GUI.color = Color.white;
             contentY += 28f;
 
             // 滚动区域：可进入单位 + 空间内单位
@@ -399,9 +415,11 @@ namespace Code.UI
             // 可进入单位列表
             if (eligibleActors.Count > 0)
             {
+                GUI.color = new Color(0.6f, 0.9f, 0.7f);
                 GUI.Label(new Rect(0f, listY, contentWidth - 20f, 22f),
                     string.Format(UILocalization.Get("dim_window_eligible"), eligibleActors.Count),
-                    new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.6f, 0.9f, 0.7f) } });
+                    DSGUIStylePool.Label(12, FontStyle.Bold));
+                GUI.color = Color.white;
                 listY += 28f;
 
                 foreach (var actor in eligibleActors)
@@ -413,12 +431,16 @@ namespace Code.UI
 
                     string nameText = actor.getName();
                     int tier = CultivationData.GetRealmTier(actor);
+                    GUI.color = isSelected ? Color.white : new Color(0.85f, 0.9f, 1f);
                     GUI.Label(new Rect(10f, listY + 5f, contentWidth - 40f, 20f), nameText,
-                        new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, normal = { textColor = isSelected ? Color.white : new Color(0.85f, 0.9f, 1f) } });
+                        DSGUIStylePool.Label(13, FontStyle.Bold));
+                    GUI.color = Color.white;
 
+                    GUI.color = new Color(0.6f, 0.85f, 0.7f);
                     GUI.Label(new Rect(10f, listY + 26f, contentWidth - 40f, 18f),
                         string.Format(UILocalization.Get("dim_window_eligible_info"), tier),
-                        new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.6f, 0.85f, 0.7f) } });
+                        DSGUIStylePool.Label(11));
+                    GUI.color = Color.white;
 
                     if (GUI.Button(new Rect(0, listY, contentWidth - 20f, 52f), "", GUIStyle.none))
                     {
@@ -433,9 +455,11 @@ namespace Code.UI
             // 空间内单位列表
             if (DimensionRealmManager.GetInhabitantCount() > 0)
             {
+                GUI.color = new Color(0.7f, 0.85f, 1f);
                 GUI.Label(new Rect(0f, listY, contentWidth - 20f, 22f),
                     UILocalization.Get("dim_window_in_space_label"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.7f, 0.85f, 1f) } });
+                    DSGUIStylePool.Label(12, FontStyle.Bold));
+                GUI.color = Color.white;
                 listY += 28f;
 
                 foreach (var inhabitant in DimensionRealmManager.GetAllInhabitants())
@@ -447,12 +471,16 @@ namespace Code.UI
 
                     string nameText = inhabitant.ActorName;
                     if (inhabitant.IsOwner) nameText += " ";
+                    GUI.color = isSelected ? Color.white : new Color(0.85f, 0.9f, 1f);
                     GUI.Label(new Rect(10f, listY + 5f, contentWidth - 40f, 20f), nameText,
-                        new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, normal = { textColor = isSelected ? Color.white : new Color(0.85f, 0.9f, 1f) } });
+                        DSGUIStylePool.Label(13, FontStyle.Bold));
+                    GUI.color = Color.white;
 
+                    GUI.color = new Color(0.7f, 0.75f, 0.85f);
                     GUI.Label(new Rect(10f, listY + 26f, contentWidth - 40f, 18f),
                         string.Format(UILocalization.Get("dim_window_inhabitant_info"), inhabitant.RealmTier, inhabitant.Energy),
-                        new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.7f, 0.75f, 0.85f) } });
+                        DSGUIStylePool.Label(11));
+                    GUI.color = Color.white;
 
                     if (GUI.Button(new Rect(0, listY, contentWidth - 20f, 52f), "", GUIStyle.none))
                     {
@@ -481,8 +509,10 @@ namespace Code.UI
 
             // 标题
             GUI.DrawTexture(new Rect(x, y, width, 40f), _titleBgTex);
+            GUI.color = new Color(0.7f, 0.85f, 1f);
             GUI.Label(new Rect(x + 15, y, width - 30, 40f), UILocalization.Get("dimension_functions"),
-                new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = new Color(0.7f, 0.85f, 1f) } });
+                DSGUIStylePool.Label(16, FontStyle.Bold, false, TextAnchor.MiddleLeft));
+            GUI.color = Color.white;
 
             float contentY = y + 55f;
             float contentX = x + 15f;
@@ -571,26 +601,40 @@ namespace Code.UI
             GUI.DrawTexture(new Rect(x, y, width, cardHeight), cardBg);
 
             // 标题
+            GUI.color = isActive ? new Color(0.7f, 1f, 0.8f) : new Color(0.8f, 0.9f, 1f);
             GUI.Label(new Rect(x + 10f, y + 8f, width - 20f, 22f), title,
-                new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, normal = { textColor = isActive ? new Color(0.7f, 1f, 0.8f) : new Color(0.8f, 0.9f, 1f) } });
+                DSGUIStylePool.Label(13, FontStyle.Bold));
+            GUI.color = Color.white;
 
             // 描述
+            GUI.color = new Color(0.7f, 0.75f, 0.85f);
             GUI.Label(new Rect(x + 10f, y + 30f, width - 120f, 50f), desc,
-                new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.7f, 0.75f, 0.85f) }, wordWrap = true });
+                DSGUIStylePool.Label(11, FontStyle.Normal, true));
+            GUI.color = Color.white;
 
             // 按钮（如果有点击事件）
             if (onClick != null)
             {
-                if (GUI.Button(new Rect(x + width - 100f, y + 28f, 90f, 30f), UILocalization.Get("dim_window_execute"),
-                    new GUIStyle(GUI.skin.button) { fontSize = 12, normal = { textColor = Color.white, background = _buttonBgTex }, hover = { background = _buttonHoverTex } }))
+                if (_executeBtnStyle == null)
+                {
+                    _executeBtnStyle = new GUIStyle(GUI.skin.button)
+                    {
+                        fontSize = 12,
+                        normal = { textColor = Color.white, background = _buttonBgTex },
+                        hover = { background = _buttonHoverTex }
+                    };
+                }
+                if (GUI.Button(new Rect(x + width - 100f, y + 28f, 90f, 30f), UILocalization.Get("dim_window_execute"), _executeBtnStyle))
                 {
                     onClick?.Invoke();
                 }
             }
             else if (isActive)
             {
+                GUI.color = new Color(0.6f, 1f, 0.7f);
                 GUI.Label(new Rect(x + width - 100f, y + 28f, 90f, 30f), UILocalization.Get("dim_window_activated"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.6f, 1f, 0.7f) } });
+                    DSGUIStylePool.Label(12, FontStyle.Bold, false, TextAnchor.MiddleCenter));
+                GUI.color = Color.white;
             }
 
             return y + cardHeight + spacing;
@@ -611,23 +655,31 @@ namespace Code.UI
             // 当前选中单位信息
             if (_selectedActor != null)
             {
+                GUI.color = Color.white;
                 GUI.Label(new Rect(x + 20f, y + 10f, 300f, 20f),
                     string.Format(UILocalization.Get("dim_window_current_unit"), _selectedActor.getName(), CultivationData.GetRealmTier(_selectedActor)),
-                    new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } });
+                    DSGUIStylePool.Label(14, FontStyle.Bold));
+                GUI.color = Color.white;
 
                 bool inSpace = DimensionRealmManager.IsInDimension(_selectedActor);
+                GUI.color = inSpace ? new Color(0.6f, 1f, 0.7f) : new Color(0.8f, 0.8f, 0.8f);
                 GUI.Label(new Rect(x + 20f, y + 32f, 300f, 18f),
                     inSpace ? UILocalization.Get("dim_window_status_in_space") : UILocalization.Get("dim_window_status_in_world"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 12, normal = { textColor = inSpace ? new Color(0.6f, 1f, 0.7f) : new Color(0.8f, 0.8f, 0.8f) } });
+                    DSGUIStylePool.Label(12));
+                GUI.color = Color.white;
             }
             else
             {
+                GUI.color = new Color(0.8f, 0.85f, 0.95f);
                 GUI.Label(new Rect(x + 20f, y + 10f, 400f, 20f),
                     UILocalization.Get("dim_window_no_selection"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.8f, 0.85f, 0.95f) } });
+                    DSGUIStylePool.Label(14, FontStyle.Bold));
+                GUI.color = Color.white;
+                GUI.color = new Color(0.6f, 0.65f, 0.75f);
                 GUI.Label(new Rect(x + 20f, y + 32f, 400f, 18f),
                     UILocalization.Get("dim_window_hint"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 12, normal = { textColor = new Color(0.6f, 0.65f, 0.75f) } });
+                    DSGUIStylePool.Label(12));
+                GUI.color = Color.white;
             }
 
             // 进入/退出按钮
@@ -659,8 +711,26 @@ namespace Code.UI
 
             if (inDimension || hasSelection)
             {
-                if (GUI.Button(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), btnText,
-                    new GUIStyle(GUI.skin.button) { fontSize = 15, fontStyle = FontStyle.Bold, normal = { textColor = Color.white, background = btnTex }, hover = { background = _buttonHoverTex } }))
+                // 按钮纹理随状态切换：样式懒加载（带纹理，禁止共享池）
+                if (_toggleInBtnStyle == null)
+                {
+                    _toggleInBtnStyle = new GUIStyle(GUI.skin.button)
+                    {
+                        fontSize = 15,
+                        fontStyle = FontStyle.Bold,
+                        normal = { textColor = Color.white, background = _buttonBgTex },
+                        hover = { background = _buttonHoverTex }
+                    };
+                    _toggleOutBtnStyle = new GUIStyle(GUI.skin.button)
+                    {
+                        fontSize = 15,
+                        fontStyle = FontStyle.Bold,
+                        normal = { textColor = Color.white, background = _activeButtonTex },
+                        hover = { background = _buttonHoverTex }
+                    };
+                }
+                GUIStyle toggleStyle = inDimension ? _toggleOutBtnStyle : _toggleInBtnStyle;
+                if (GUI.Button(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), btnText, toggleStyle))
                 {
                     // 世界级切换：空间地图 → 返回主世界；主地图 → 进入维度空间
                     DimensionRealmManager.ToggleDimension(_selectedActor);
@@ -670,13 +740,24 @@ namespace Code.UI
             {
                 // 禁用状态显示
                 GUI.DrawTexture(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), _buttonBgTex);
+                GUI.color = new Color(0.5f, 0.55f, 0.65f);
                 GUI.Label(new Rect(btnX, btnY, btnWidth, BUTTON_HEIGHT), btnText,
-                    new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.5f, 0.55f, 0.65f) } });
+                    DSGUIStylePool.Label(15, FontStyle.Bold, false, TextAnchor.MiddleCenter));
+                GUI.color = Color.white;
             }
 
             // 关闭按钮
-            if (GUI.Button(new Rect(Screen.width - 50f, y + 10f, 35f, 35f), "×",
-                new GUIStyle(GUI.skin.button) { fontSize = 20, fontStyle = FontStyle.Bold, normal = { textColor = Color.white, background = _buttonBgTex }, hover = { background = _buttonHoverTex } }))
+            if (_closeBtnStyle == null)
+            {
+                _closeBtnStyle = new GUIStyle(GUI.skin.button)
+                {
+                    fontSize = 20,
+                    fontStyle = FontStyle.Bold,
+                    normal = { textColor = Color.white, background = _buttonBgTex },
+                    hover = { background = _buttonHoverTex }
+                };
+            }
+            if (GUI.Button(new Rect(Screen.width - 50f, y + 10f, 35f, 35f), "×", _closeBtnStyle))
             {
                 Hide();
             }
@@ -692,9 +773,13 @@ namespace Code.UI
             float centerWidth = Screen.width - LEFT_PANEL_WIDTH - RIGHT_PANEL_WIDTH - 60f;
             float centerHeight = Screen.height - BOTTOM_PANEL_HEIGHT - 100f;
 
-            // 绘制空间边界
-            GUI.Box(new Rect(centerX, centerY, centerWidth, centerHeight), "",
-                new GUIStyle(GUI.skin.box) { normal = { background = null } });
+            // 绘制空间边界（透明 box：窗口级缓存，禁止共享池污染）
+            if (_spaceBoundStyle == null)
+            {
+                _spaceBoundStyle = new GUIStyle(GUI.skin.box);
+                _spaceBoundStyle.normal.background = null;
+            }
+            GUI.Box(new Rect(centerX, centerY, centerWidth, centerHeight), "", _spaceBoundStyle);
 
             // 绘制空间内的单位（像素小人）
             foreach (var inhabitant in DimensionRealmManager.GetAllInhabitants())
@@ -714,8 +799,10 @@ namespace Code.UI
                 DrawPixelUnit(screenX, screenY, unitSize, unitColor, inhabitant.IsOwner);
 
                 // 单位名字
+                GUI.color = Color.white;
                 GUI.Label(new Rect(screenX - 50f, screenY + unitSize + 2f, 100f, 18f), inhabitant.ActorName,
-                    new GUIStyle(GUI.skin.label) { fontSize = 11, alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white } });
+                    DSGUIStylePool.Label(11, FontStyle.Normal, false, TextAnchor.MiddleCenter));
+                GUI.color = Color.white;
 
                 // 点击选中
                 if (GUI.Button(new Rect(screenX - unitSize / 2f, screenY - unitSize / 2f, unitSize, unitSize + 20f), "", GUIStyle.none))
@@ -728,9 +815,11 @@ namespace Code.UI
             // 如果空间内没有单位，显示提示
             if (DimensionRealmManager.GetInhabitantCount() == 0)
             {
+                GUI.color = new Color(0.7f, 0.8f, 0.9f);
                 GUI.Label(new Rect(centerX, centerY + centerHeight / 2f - 20f, centerWidth, 40f),
                     UILocalization.Get("dim_window_no_units"),
-                    new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.7f, 0.8f, 0.9f) } });
+                    DSGUIStylePool.Label(16, FontStyle.Normal, false, TextAnchor.MiddleCenter));
+                GUI.color = Color.white;
             }
         }
 

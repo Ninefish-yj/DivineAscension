@@ -48,6 +48,9 @@ namespace Code.UI
 		private Texture2D _categoryBgTex;
 		private Texture2D _detailBgTex;
 		private Texture2D _awakenBtnTex;
+		// 样式懒加载缓存（指南铁律：OnGUI 内禁止每帧 new GUIStyle）
+		private GUIStyle _panelStyle;
+		private GUIStyle _detailStyle;
 		// 神创基因编辑输入框（13个自定义数值，默认"0"）
 		private string _divineAtkText = "0";
 		private string _divineDefText = "0";
@@ -113,6 +116,18 @@ namespace Code.UI
 			if (_categoryBgTex == null) _categoryBgTex = MakeSolidTexture(2, 2, new Color(0.20f, 0.21f, 0.26f, 0.95f));
 			if (_detailBgTex == null) _detailBgTex = MakeSolidTexture(2, 2, new Color(0.13f, 0.14f, 0.17f, 0.95f));
 			if (_awakenBtnTex == null) _awakenBtnTex = MakeSolidTexture(2, 2, new Color(0.45f, 0.50f, 0.62f, 0.9f));
+			if (_panelStyle == null)
+			{
+				_panelStyle = new GUIStyle(GUI.skin.box);
+				_panelStyle.normal.background = _leftPanelBgTex;
+				_panelStyle.padding = new RectOffset(10, 10, 8, 8);
+			}
+			if (_detailStyle == null)
+			{
+				_detailStyle = new GUIStyle(GUI.skin.box);
+				_detailStyle.normal.background = _detailBgTex;
+				_detailStyle.padding = new RectOffset(10, 10, 6, 6);
+			}
 		}
 
 		private void CenterWindow()
@@ -181,12 +196,12 @@ namespace Code.UI
 			GUI.DrawTexture(titleRect, _titleBgTex);
 			GUI.color = DSUITheme.TitleText;
 			GUI.Label(new Rect(titleRect.x + 12, titleRect.y + 8, titleRect.width - 60, 24),
-				GetTitleText(), new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold });
+				GetTitleText(), DSGUIStylePool.Label(15, FontStyle.Bold));
 			GUI.color = Color.white;
 
 			// 关闭按钮
 			GUI.color = new Color(0.9f, 0.3f, 0.3f);
-			if (GUI.Button(closeRect, "×", new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold }))
+			if (GUI.Button(closeRect, "×", DSGUIStylePool.Button(18, FontStyle.Bold)))
 			{
 				MouseOverlayBlocker.ReleaseBlock();
 				_visible = false;
@@ -241,28 +256,37 @@ namespace Code.UI
 		#region 左侧个人信息面板
 		private void DrawLeftPanel()
 		{
-			GUIStyle panelStyle = new GUIStyle(GUI.skin.box);
-			panelStyle.normal.background = _leftPanelBgTex;
-			panelStyle.padding = new RectOffset(10, 10, 8, 8);
-			GUILayout.BeginVertical(panelStyle, (GUILayoutOption[])(object)new GUILayoutOption[2] { GUILayout.Width(LEFT_PANEL_WIDTH), GUILayout.ExpandHeight(true) });
+			GUILayout.BeginVertical(_panelStyle, (GUILayoutOption[])(object)new GUILayoutOption[2] { GUILayout.Width(LEFT_PANEL_WIDTH), GUILayout.ExpandHeight(true) });
 
 			// === 单位基本信息 ===
-			GUILayout.Label(_selectedActor.name ?? "Unknown", new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, normal = { textColor = DSUITheme.TitleText } });
+			GUI.color = DSUITheme.TitleText;
+			GUILayout.Label(_selectedActor.name ?? "Unknown", DSGUIStylePool.Label(13, FontStyle.Bold));
+			GUI.color = Color.white;
 			GUILayout.Space(4f);
 
 			int realm = TraitManager.GetCurrentRealmTier(_selectedActor);
                 string realmName = realm > 0 ? Code.UI.UnitWindowIntegration.GetTierName(realm) : UILocalization.Get("graph_mortal");
-			GUILayout.Label(UILocalization.Get("graph_tier_label") + realmName, new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.7f, 0.9f, 1f) } });
-			GUILayout.Label(UILocalization.Get("graph_energy_label") + FormatNumber(CultivationData.GetEnergy(_selectedActor)), new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(1f, 0.85f, 0.6f) } });
+			GUI.color = new Color(0.7f, 0.9f, 1f);
+			GUILayout.Label(UILocalization.Get("graph_tier_label") + realmName, DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
+			GUI.color = new Color(1f, 0.85f, 0.6f);
+			GUILayout.Label(UILocalization.Get("graph_energy_label") + FormatNumber(CultivationData.GetEnergy(_selectedActor)), DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
 			float enlightExp = CultivationData.GetEnlightenmentExp(_selectedActor);
-			GUILayout.Label(UILocalization.Get("graph_deep_awakening") + FormatNumber(enlightExp) + UILocalization.Get("graph_god_requirement"), new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.7f, 0.55f, 1f) } });
+			GUI.color = new Color(0.7f, 0.55f, 1f);
+			GUILayout.Label(UILocalization.Get("graph_deep_awakening") + FormatNumber(enlightExp) + UILocalization.Get("graph_god_requirement"), DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
 
 			var unlockedElements = CultivationData.GetUnlockedElements(_selectedActor);
 			int unlockedCount = unlockedElements != null ? unlockedElements.Count : 0;
-			GUILayout.Label(UILocalization.Get("graph_unlocked_elements") + unlockedCount + "/56", new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.8f, 1f, 0.7f) } });
+			GUI.color = new Color(0.8f, 1f, 0.7f);
+			GUILayout.Label(UILocalization.Get("graph_unlocked_elements") + unlockedCount + "/56", DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
 
 			float corruption = CultivationData.GetTurbulence(_selectedActor);
-			GUILayout.Label(UILocalization.Get("graph_turbulence_label") + corruption.ToString("F0"), new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = corruption > 70 ? new Color(1f, 0.4f, 0.4f) : new Color(0.8f, 0.8f, 0.6f) } });
+			GUI.color = corruption > 70 ? new Color(1f, 0.4f, 0.4f) : new Color(0.8f, 0.8f, 0.6f);
+			GUILayout.Label(UILocalization.Get("graph_turbulence_label") + corruption.ToString("F0"), DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
 
 			// 组织称号（仅显示在基因图谱面板，不写入名字）
 			string dsSectId = CultivationData.GetSectId(_selectedActor);
@@ -283,7 +307,9 @@ namespace Code.UI
 				{
 					dsSectText += string.Format(UILocalization.Get("sect_cult_boost"), Mathf.RoundToInt(cultBoost * 100f));
 				}
-				GUILayout.Label(UILocalization.Get("graph_sect") + dsSectText, new GUIStyle(GUI.skin.label) { fontSize = 11, normal = { textColor = new Color(0.6f, 0.95f, 0.9f) } });
+				GUI.color = new Color(0.6f, 0.95f, 0.9f);
+				GUILayout.Label(UILocalization.Get("graph_sect") + dsSectText, DSGUIStylePool.Label(11));
+				GUI.color = Color.white;
 			}
 			GUILayout.Space(6f);
 
@@ -296,34 +322,34 @@ namespace Code.UI
 			bool isAwakened = CultivationData.IsAwakened(_selectedActor);
 			if (isAwakened)
 			{
-				GUIStyle awakStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-				awakStyle.normal.textColor = DSUITheme.SuccessGreen;
-				GUILayout.Label(UILocalization.Get("graph_gene_awakened"), awakStyle, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(36f) });
+				GUI.color = DSUITheme.SuccessGreen;
+				GUILayout.Label(UILocalization.Get("graph_gene_awakened"), DSGUIStylePool.Label(13, FontStyle.Bold, false, TextAnchor.MiddleCenter), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(36f) });
+				GUI.color = Color.white;
 			}
 			else
 			{
 				GUI.color = new Color(0.8f, 0.5f, 1f, 0.8f);
-				if (GUILayout.Button(UILocalization.Get("graph_gene_awakening"), new GUIStyle(GUI.skin.button) { fontSize = 14, fontStyle = FontStyle.Bold }, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(36f) }))
+				if (GUILayout.Button(UILocalization.Get("graph_gene_awakening"), DSGUIStylePool.Button(14, FontStyle.Bold), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(36f) }))
 				{
 					PerformGeneAwakening();
 				}
 				GUI.color = Color.white;
 			}
 
-			GUILayout.Label(isAwakened ? UILocalization.Get("graph_awakening_desc1") : UILocalization.Get("graph_awakening_desc2"), new GUIStyle(GUI.skin.label) { fontSize = 9, wordWrap = true });
+			GUILayout.Label(isAwakened ? UILocalization.Get("graph_awakening_desc1") : UILocalization.Get("graph_awakening_desc2"), DSGUIStylePool.Label(9, FontStyle.Normal, true));
 
 			// === 玩家操作按钮 ===
 			GUI.color = new Color(0.4f, 0.7f, 1f, 0.7f);
-			if (GUILayout.Button(UILocalization.Get("graph_unlock_random"), new GUIStyle(GUI.skin.button) { fontSize = 11 })) UnlockRandomElement();
+			if (GUILayout.Button(UILocalization.Get("graph_unlock_random"), DSGUIStylePool.Button(11))) UnlockRandomElement();
 			GUI.color = Color.white;
 
 			bool canAscend = realm > 0 && realm < 13;
 			GUI.color = canAscend ? new Color(1f, 0.7f, 0.4f, 0.7f) : new Color(0.4f, 0.4f, 0.4f, 0.5f);
-			if (GUILayout.Button(UILocalization.Get("graph_try_advance"), new GUIStyle(GUI.skin.button) { fontSize = 11 })) { if (canAscend) TryAscend(); }
+			if (GUILayout.Button(UILocalization.Get("graph_try_advance"), DSGUIStylePool.Button(11))) { if (canAscend) TryAscend(); }
 			GUI.color = Color.white;
 
 			GUI.color = new Color(0.8f, 0.4f, 0.4f, 0.6f);
-			if (GUILayout.Button(UILocalization.Get("graph_reset_elements"), new GUIStyle(GUI.skin.button) { fontSize = 11 })) ResetElements();
+			if (GUILayout.Button(UILocalization.Get("graph_reset_elements"), DSGUIStylePool.Button(11))) ResetElements();
 			GUI.color = Color.white;
 
 			// === 图谱进度（所有节点解锁比例） ===
@@ -335,12 +361,16 @@ namespace Code.UI
 				string progText = UILocalization.CurrentLanguage == "en"
 					? string.Format("Graph progress: {0}/{1} ({2:F0}%)", unlockedHere, allNodes.Values.Count, progPct * 100f)
 					: string.Format(UILocalization.Get("graph_progress"), unlockedHere, allNodes.Values.Count, progPct * 100f);
-				GUILayout.Label(progText, new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = new Color(0.7f, 0.85f, 0.7f) } });
+				GUI.color = new Color(0.7f, 0.85f, 0.7f);
+				GUILayout.Label(progText, DSGUIStylePool.Label(10));
+				GUI.color = Color.white;
 			}
 
 			// === 晋升条件提示 ===
 			GUILayout.Space(4f);
-			GUILayout.Label(GetAscensionHint(realm, unlockedCount), new GUIStyle(GUI.skin.label) { fontSize = 10, fontStyle = FontStyle.Italic, wordWrap = true, normal = { textColor = new Color(0.85f, 0.75f, 0.95f) } });
+			GUI.color = new Color(0.85f, 0.75f, 0.95f);
+			GUILayout.Label(GetAscensionHint(realm, unlockedCount), DSGUIStylePool.Label(10, FontStyle.Italic, true));
+			GUI.color = Color.white;
 
 			GUILayout.EndVertical();
 		}
@@ -488,7 +518,10 @@ namespace Code.UI
 
 				if (isSelected)
 				{
-					GUI.DrawTexture(elementRect, MakeSolidTexture(2, 2, new Color(categoryColor.r * 0.5f, categoryColor.g * 0.5f, categoryColor.b * 0.5f, 0.95f)));
+					// 复用共享白纹理 + GUI.color，禁止每帧 MakeSolidTexture（指南 7.1）
+					GUI.color = new Color(categoryColor.r * 0.5f, categoryColor.g * 0.5f, categoryColor.b * 0.5f, 0.95f);
+					GUI.DrawTexture(elementRect, Texture2D.whiteTexture);
+					GUI.color = Color.white;
 				}
 				else if (isUnlocked)
 				{
@@ -500,30 +533,30 @@ namespace Code.UI
 				}
 
 				GUI.color = isUnlocked ? categoryColor : new Color(categoryColor.r * 0.4f, categoryColor.g * 0.4f, categoryColor.b * 0.4f, 0.6f);
-				GUI.Label(new Rect(elementRect.x + 6, elementRect.y + 6, 32, 32), elem.Symbol, new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter });
+				GUI.Label(new Rect(elementRect.x + 6, elementRect.y + 6, 32, 32), elem.Symbol, DSGUIStylePool.Label(20, FontStyle.Bold, false, TextAnchor.MiddleCenter));
 				GUI.color = Color.white;
 
 				GUI.color = isUnlocked ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
 				string nameText = elem.NameZh + " / " + elem.NameEn;
 				if (nameText.Length > 16) nameText = nameText.Substring(0, 16) + "...";
-				GUI.Label(new Rect(elementRect.x + 42, elementRect.y + 4, elementRect.width - 100, 18), nameText, new GUIStyle(GUI.skin.label) { fontSize = 11, fontStyle = FontStyle.Bold });
+				GUI.Label(new Rect(elementRect.x + 42, elementRect.y + 4, elementRect.width - 100, 18), nameText, DSGUIStylePool.Label(11, FontStyle.Bold));
 
 				string desc = UILocalization.CurrentLanguage == "en" ? elem.DescEn : elem.DescZh;
 				if (desc.Length > 30) desc = desc.Substring(0, 30) + "...";
 				GUI.color = isUnlocked ? new Color(0.8f, 0.8f, 0.8f) : new Color(0.5f, 0.5f, 0.5f, 0.7f);
-				GUI.Label(new Rect(elementRect.x + 42, elementRect.y + 22, elementRect.width - 100, 16), desc, new GUIStyle(GUI.skin.label) { fontSize = 9 });
+				GUI.Label(new Rect(elementRect.x + 42, elementRect.y + 22, elementRect.width - 100, 16), desc, DSGUIStylePool.Label(9));
 				GUI.color = Color.white;
 
 				Rect statusRect = new Rect(elementRect.xMax - 55, elementRect.y + 12, 50, 18);
 				if (isUnlocked)
 				{
 					GUI.color = new Color(0.5f, 1f, 0.5f);
-					GUI.Label(statusRect, UILocalization.Get("graph_unlocked"), new GUIStyle(GUI.skin.label) { fontSize = 9, fontStyle = FontStyle.Bold });
+					GUI.Label(statusRect, UILocalization.Get("graph_unlocked"), DSGUIStylePool.Label(9, FontStyle.Bold));
 				}
 				else
 				{
 					GUI.color = new Color(0.6f, 0.6f, 0.6f);
-					GUI.Label(statusRect, UILocalization.Get("graph_locked"), new GUIStyle(GUI.skin.label) { fontSize = 9 });
+					GUI.Label(statusRect, UILocalization.Get("graph_locked"), DSGUIStylePool.Label(9));
 				}
 				GUI.color = Color.white;
 
@@ -540,16 +573,13 @@ namespace Code.UI
 		#region 绘制基因详情
 		private void DrawElementDetail(float height)
 		{
-			GUIStyle detailStyle = new GUIStyle(GUI.skin.box);
-			detailStyle.normal.background = _detailBgTex;
-			detailStyle.padding = new RectOffset(10, 10, 6, 6);
-			GUILayout.BeginVertical(detailStyle, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(height) });
+			GUILayout.BeginVertical(_detailStyle, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(height) });
 
 			if (_selectedElementIndex < 0 || _selectedElementIndex >= ElementDef.AllElements.Count)
 			{
-				GUIStyle hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 11, alignment = TextAnchor.MiddleCenter };
-				hintStyle.normal.textColor = new Color(0.6f, 0.6f, 0.6f);
-				GUILayout.Label(UILocalization.CurrentLanguage == "en" ? "Click an element in the list to view details" : UILocalization.Get("graph_click_hint"), hintStyle, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandHeight(true) });
+				GUI.color = new Color(0.6f, 0.6f, 0.6f);
+				GUILayout.Label(UILocalization.CurrentLanguage == "en" ? "Click an element in the list to view details" : UILocalization.Get("graph_click_hint"), DSGUIStylePool.Label(11, FontStyle.Normal, false, TextAnchor.MiddleCenter), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandHeight(true) });
+				GUI.color = Color.white;
 				GUILayout.EndVertical();
 				return;
 			}
@@ -559,10 +589,14 @@ namespace Code.UI
 			// 神创基因（第57号，索引56）
 			if (_selectedElementIndex == 56)
 			{
-				GUILayout.Label(UILocalization.Get("divine_gene_title"), new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.95f, 0.85f, 0.5f) } });
-				GUILayout.Label(UILocalization.Get("divine_gene_desc"), new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) } });
+				GUI.color = new Color(0.95f, 0.85f, 0.5f);
+				GUILayout.Label(UILocalization.Get("divine_gene_title"), DSGUIStylePool.Label(16, FontStyle.Bold));
+				GUI.color = Color.white;
+				GUI.color = new Color(0.7f, 0.7f, 0.7f);
+				GUILayout.Label(UILocalization.Get("divine_gene_desc"), DSGUIStylePool.Label(10));
+				GUI.color = Color.white;
 				GUILayout.Space(15f);
-				GUILayout.Label(UILocalization.Get("divine_gene_edit_title"), new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold });
+				GUILayout.Label(UILocalization.Get("divine_gene_edit_title"), DSGUIStylePool.Label(12, FontStyle.Bold));
 				GUILayout.Space(10f);
 
 				// 首次进入时从存档加载当前数值到输入框
@@ -637,7 +671,7 @@ namespace Code.UI
 				GUILayout.EndHorizontal();
 				GUILayout.Space(15f);
 				GUI.color = new Color(0.3f, 0.6f, 0.9f, 0.8f);
-				if (GUILayout.Button(UILocalization.Get("divine_gene_save"), new GUIStyle(GUI.skin.button) { fontSize = 12, fixedHeight = 30f }))
+				if (GUILayout.Button(UILocalization.Get("divine_gene_save"), DSGUIStylePool.Button(12), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(30f) }))
 				{
 					// 用我们自己的CultivationData存储（读取13个输入框，非法输入按0处理）
 					if (_selectedActor != null)
@@ -655,22 +689,29 @@ namespace Code.UI
 			string categoryName = _selectedElementIndex == 56 ? "神明" : GetGroupName(elem.Group);
 
 			GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-			GUILayout.Label(elem.Symbol, new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = categoryColor } }, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(50f) });
+			GUI.color = categoryColor;
+			GUILayout.Label(elem.Symbol, DSGUIStylePool.Label(32, FontStyle.Bold, false, TextAnchor.MiddleCenter), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(50f) });
+			GUI.color = Color.white;
 			GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
-			GUILayout.Label(elem.NameZh + " / " + elem.NameEn, new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold });
-			string catName = _selectedElementIndex == 56 ? "神明" : categoryName;
-			GUILayout.Label("【" + catName + "】 ID: " + elem.Id, new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) } });
+			GUILayout.Label(elem.NameZh + " / " + elem.NameEn, DSGUIStylePool.Label(14, FontStyle.Bold));
+			GUI.color = new Color(0.7f, 0.7f, 0.7f);
+			GUILayout.Label("【" + categoryName + "】 ID: " + elem.Id, DSGUIStylePool.Label(10));
+			GUI.color = Color.white;
 			GUILayout.EndVertical();
 			GUILayout.BeginVertical((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(130f) });
 			if (isUnlocked)
 			{
-				GUILayout.Label(UILocalization.Get("graph_unlocked"), new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.5f, 1f, 0.5f) } });
+				GUI.color = new Color(0.5f, 1f, 0.5f);
+				GUILayout.Label(UILocalization.Get("graph_unlocked"), DSGUIStylePool.Label(12, FontStyle.Bold));
+				GUI.color = Color.white;
 			}
 			else
 			{
-				GUILayout.Label(UILocalization.Get("graph_locked"), new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.8f, 0.6f, 0.6f) } });
+				GUI.color = new Color(0.8f, 0.6f, 0.6f);
+				GUILayout.Label(UILocalization.Get("graph_locked"), DSGUIStylePool.Label(12, FontStyle.Bold));
+				GUI.color = Color.white;
 				GUI.color = new Color(0.4f, 0.7f, 1f, 0.7f);
-				if (GUILayout.Button(UILocalization.Get("graph_unlock_this"), new GUIStyle(GUI.skin.button) { fontSize = 10 }))
+				if (GUILayout.Button(UILocalization.Get("graph_unlock_this"), DSGUIStylePool.Button(10)))
 				{
 					CultivationData.UnlockElement(_selectedActor, elem.Id);
 					GeneLinkageSystem.CheckAllLinkages(_selectedActor);
@@ -681,16 +722,22 @@ namespace Code.UI
 			GUILayout.EndHorizontal();
 
 			string desc = UILocalization.CurrentLanguage == "en" ? elem.DescEn : elem.DescZh;
-			GUILayout.Label(desc, new GUIStyle(GUI.skin.label) { fontSize = 10, wordWrap = true, normal = { textColor = new Color(0.85f, 0.85f, 0.85f) } });
+			GUI.color = new Color(0.85f, 0.85f, 0.85f);
+			GUILayout.Label(desc, DSGUIStylePool.Label(10, FontStyle.Normal, true));
+			GUI.color = Color.white;
 
 			var combos = GeneLinkageSystem.GetLinkageHintsForGene(elem.Id);
 			if (combos != null && combos.Count > 0)
 			{
-				GUILayout.Label(UILocalization.Get("graph_related_combos") + combos.Count, new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = new Color(0.9f, 0.8f, 0.6f) } });
+				GUI.color = new Color(0.9f, 0.8f, 0.6f);
+				GUILayout.Label(UILocalization.Get("graph_related_combos") + combos.Count, DSGUIStylePool.Label(10));
+				GUI.color = Color.white;
 				for (int i = 0; i < Math.Min(3, combos.Count); i++)
 				{
 					string comboName = combos[i];
-					GUILayout.Label(" " + comboName, new GUIStyle(GUI.skin.label) { fontSize = 9, normal = { textColor = new Color(0.75f, 0.85f, 1f) } });
+					GUI.color = new Color(0.75f, 0.85f, 1f);
+				GUILayout.Label(" " + comboName, DSGUIStylePool.Label(9));
+				GUI.color = Color.white;
 				}
 			}
 			GUILayout.EndVertical();
@@ -710,13 +757,15 @@ namespace Code.UI
 					new Color(0.9f, 0.3f, 0.3f)
 				};
 				string levelName = UILocalization.CurrentLanguage == "en" ? levelNamesEn[exprLevel] : levelNames[exprLevel];
-				GUILayout.Label("表达层级: " + levelName, new GUIStyle(GUI.skin.label) { fontSize = 10, fontStyle = FontStyle.Bold, normal = { textColor = levelColors[exprLevel] } });
+				GUI.color = levelColors[exprLevel];
+				GUILayout.Label("表达层级: " + levelName, DSGUIStylePool.Label(10, FontStyle.Bold));
+				GUI.color = Color.white;
 			}
 
 			// === 效果概览（基因效果数值，贴底显示） ===
 			GUILayout.FlexibleSpace();
-GUILayout.Label(UILocalization.CurrentLanguage == "en" ? "EFFECT OVERVIEW" : UILocalization.Get("graph_effect_overview"), new GUIStyle(GUI.skin.label) { fontSize = 10, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.75f, 0.8f, 0.9f) } });
-GUILayout.Label(GetElementEffectText(elem), new GUIStyle(GUI.skin.label) { fontSize = 10, wordWrap = true, normal = { textColor = new Color(0.85f, 0.9f, 0.8f) } });
+GUILayout.Label(UILocalization.CurrentLanguage == "en" ? "EFFECT OVERVIEW" : UILocalization.Get("graph_effect_overview"), DSGUIStylePool.Label(10, FontStyle.Bold));
+GUILayout.Label(GetElementEffectText(elem), DSGUIStylePool.Label(10, FontStyle.Normal, true));
 		}
 		#endregion
 

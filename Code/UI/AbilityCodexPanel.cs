@@ -84,6 +84,8 @@ public class AbilityCodexPanel : MonoBehaviour
 
 
 	private int _currentFontSize;
+	// 样式懒加载缓存（指南铁律：OnGUI 内禁止每帧 new GUIStyle）
+	private GUIStyle _periodicDetailStyle;
 
 	// 自绘窗口拖动状态（基因图谱同款）
 	private bool _isDragging;
@@ -203,10 +205,10 @@ public class AbilityCodexPanel : MonoBehaviour
 			GUI.DrawTexture(_windowRect, DSUITheme.WindowBgTexture);
 			GUI.DrawTexture(titleRect, DSUITheme.TitleBarBgTexture);
 			GUI.color = DSUITheme.TitleText;
-			GUI.Label(new Rect(titleRect.x + 12f, titleRect.y + 7f, titleRect.width - 60f, 22f), UILocalization.Get("panel_title"), new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold });
+			GUI.Label(new Rect(titleRect.x + 12f, titleRect.y + 7f, titleRect.width - 60f, 22f), UILocalization.Get("panel_title"), DSGUIStylePool.Label(16, FontStyle.Bold));
 			GUI.color = Color.white;
 			GUI.color = new Color(0.9f, 0.3f, 0.3f);
-			if (GUI.Button(closeRect, "×", new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold }))
+			if (GUI.Button(closeRect, "×", DSGUIStylePool.Button(18, FontStyle.Bold)))
 			{
 				_visible = false;
 				Event.current.Use();
@@ -379,13 +381,11 @@ public class AbilityCodexPanel : MonoBehaviour
 				GUI.color = Color.white;
 			}
 
-			// 文字
-			GUIStyle ts = new GUIStyle(GUI.skin.label);
-			ts.fontSize = _currentFontSize;
-			ts.alignment = TextAnchor.MiddleCenter;
-			ts.fontStyle = isActive ? FontStyle.Bold : FontStyle.Normal;
-			ts.normal.textColor = isActive ? DSUITheme.TitleText : DSUITheme.BodyText;
+			// 文字（样式来自池，颜色用 GUI.color）
+			GUIStyle ts = DSGUIStylePool.Label(_currentFontSize, isActive ? FontStyle.Bold : FontStyle.Normal, false, TextAnchor.MiddleCenter);
+			GUI.color = isActive ? DSUITheme.TitleText : DSUITheme.BodyText;
 			GUI.Label(tabRect, UILocalization.Get(TabKeys[i]), ts);
+			GUI.color = Color.white;
 
 			// 点击检测（左键按下即切换）
 			if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && tabRect.Contains(Event.current.mousePosition))
@@ -606,29 +606,16 @@ public class AbilityCodexPanel : MonoBehaviour
 		GUI.color = Color.white;
 		Rect val2 = val;
 		string text = tier.ToString();
-		GUIStyle val3 = new GUIStyle(GUI.skin.label)
-		{
-			alignment = (TextAnchor)4,
-			fontSize = 18,
-			fontStyle = (FontStyle)1
-		};
-		val3.normal.textColor = Color.white;
-		GUI.Label(val2, text, val3);
+		GUI.color = Color.white;
+		GUI.Label(val2, text, DSGUIStylePool.Label(18, (FontStyle)1, false, (TextAnchor)4));
+		GUI.color = Color.white;
 		Rect val4 = new Rect((rect).x + 68f, (rect).y + 32f, num - 78f, 28f);
 		GUI.color = (Color)(flag2 ? tierColor : new Color(0.5f, 0.5f, 0.5f));
-		GUI.Label(val4, tierName, new GUIStyle(GUI.skin.label)
-		{
-			fontSize = 16,
-			fontStyle = (FontStyle)1,
-			alignment = (TextAnchor)3
-		});
+		GUI.Label(val4, tierName, DSGUIStylePool.Label(16, (FontStyle)1, false, (TextAnchor)3));
+		GUI.color = Color.white;
 		Rect val5 = new Rect((rect).x + 68f, (rect).y + 66f, num - 78f, 24f);
 		GUI.color = new Color(0.6f, 0.6f, 0.6f);
-		GUI.Label(val5, string.Format(UILocalization.Get("realm_tier_fmt"), tier), new GUIStyle(GUI.skin.label)
-		{
-			fontSize = 12,
-			alignment = (TextAnchor)3
-		});
+		GUI.Label(val5, string.Format(UILocalization.Get("realm_tier_fmt"), tier), DSGUIStylePool.Label(12, FontStyle.Normal, false, (TextAnchor)3));
 		GUI.color = Color.white;
 		if ((int)Event.current.type == 0 && (rect).Contains(Event.current.mousePosition))
 		{
@@ -739,7 +726,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		// 谱系表页无左栏：列宽按内容区实际宽度计算（族名列56 + 左右边距40）
 			float cellW = Mathf.Max(80f, ((_windowRect).width - 64f - 40f) / 7f);
 			float cellH = 52f;
-		GUIStyle headerS = new GUIStyle(GUI.skin.label) { fontSize = 10, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+		GUIStyle headerS = DSGUIStylePool.Label(10, FontStyle.Bold, false, TextAnchor.MiddleCenter);
 		// 表头行（与数据行同用 GetRect 机制，保证列对齐，不被布局扩展错位）
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
 		GUILayout.Label("", (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(64f) });
@@ -748,18 +735,20 @@ public class AbilityCodexPanel : MonoBehaviour
 			string[] periodNames = en ? new string[] { "Basic", "Advanced", "Master", "Super", "Rule", "Supreme", "Origin" } : new string[] { "基础表达", "进阶表达", "掌控表达", "超常表达", "规则表达", "至高表达", "本源表达" };
 				string ph = periodNames[p - 1];
 				if (p == 7) ph = en ? "Unknown" : "未知";
-			headerS.normal.textColor = (p == 7) ? new Color(0.85f, 0.5f, 0.5f) : new Color(0.7f, 0.8f, 0.9f);
+			GUI.color = (p == 7) ? new Color(0.85f, 0.5f, 0.5f) : new Color(0.7f, 0.8f, 0.9f);
 			Rect hr = GUILayoutUtility.GetRect(cellW, 20f);
 			GUI.Label(hr, ph, headerS);
+			GUI.color = Color.white;
 		}
 		GUILayout.EndHorizontal();
 		GUILayout.Space(2f);
 		for (int g = 0; g < 8; g++)
 		{
 			GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-			GUIStyle gs = new GUIStyle(GUI.skin.label) { fontSize = 11, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
-			gs.normal.textColor = (g >= 4) ? new Color(0.7f, 0.55f, 0.95f) : new Color(0.55f, 0.8f, 1f);
+			GUIStyle gs = DSGUIStylePool.Label(11, FontStyle.Bold, true, TextAnchor.MiddleCenter);
+			GUI.color = (g >= 4) ? new Color(0.7f, 0.55f, 0.95f) : new Color(0.55f, 0.8f, 1f);
 			GUILayout.Label(groupNames[g], gs, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(64f) });
+			GUI.color = Color.white;
 			for (int p = 1; p <= 7; p++)
 			{
 				int number = (p - 1) * 8 + g + 1;
@@ -776,9 +765,9 @@ public class AbilityCodexPanel : MonoBehaviour
 		GUI.color = divineSel ? new Color(0.6f, 0.5f, 0.2f, 1f) : new Color(0.2f, 0.18f, 0.1f, 0.9f);
 		GUI.DrawTexture(divineRect, Texture2D.whiteTexture);
 		GUI.color = Color.white;
-		GUIStyle divineS = new GUIStyle(GUI.skin.label) { fontSize = 11, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-		divineS.normal.textColor = divineSel ? new Color(1f, 0.95f, 0.6f) : new Color(0.95f, 0.85f, 0.5f);
-		GUI.Label(new Rect(divineRect.x, divineRect.y, divineRect.width, divineRect.height), "✦ 神创基因（可自定义） ✦", divineS);
+		GUI.color = divineSel ? new Color(1f, 0.95f, 0.6f) : new Color(0.95f, 0.85f, 0.5f);
+		GUI.Label(new Rect(divineRect.x, divineRect.y, divineRect.width, divineRect.height), "✦ 神创基因（可自定义） ✦", DSGUIStylePool.Label(11, FontStyle.Bold, false, TextAnchor.MiddleCenter));
+		GUI.color = Color.white;
 		if (GUI.Button(divineRect, "", GUIStyle.none)) _selectedPeriodicNumber = 57;
 	}
 
@@ -798,14 +787,14 @@ public class AbilityCodexPanel : MonoBehaviour
 		GUI.color = bg;
 		GUI.DrawTexture(r, Texture2D.whiteTexture);
 		GUI.color = prev;
-		GUIStyle numS = new GUIStyle(GUI.skin.label) { fontSize = 8, alignment = TextAnchor.UpperLeft };
-		numS.normal.textColor = known ? new Color(0.75f, 0.78f, 0.85f) : new Color(0.7f, 0.5f, 0.5f);
-		GUI.Label(new Rect(r.x + 3f, r.y + 1f, 20f, 11f), number.ToString(), numS);
-			GUIStyle symS = new GUIStyle(GUI.skin.label) { fontSize = 10, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
-		symS.normal.textColor = known ? Color.white : new Color(0.6f, 0.55f, 0.55f);
+		GUI.color = known ? new Color(0.75f, 0.78f, 0.85f) : new Color(0.7f, 0.5f, 0.5f);
+		GUI.Label(new Rect(r.x + 3f, r.y + 1f, 20f, 11f), number.ToString(), DSGUIStylePool.Label(8, FontStyle.Normal, false, TextAnchor.UpperLeft));
+		GUI.color = Color.white;
+		GUI.color = known ? Color.white : new Color(0.6f, 0.55f, 0.55f);
 			string displayName = e != null ? (en ? e.NameEn : e.NameZh) : "?";
 			if (displayName.Length > 4) displayName = displayName.Substring(0, 4);
-			GUI.Label(new Rect(r.x + 2f, r.y + 12f, cellW - 4f, cellH - 14f), displayName, symS);
+			GUI.Label(new Rect(r.x + 2f, r.y + 12f, cellW - 4f, cellH - 14f), displayName, DSGUIStylePool.Label(10, FontStyle.Bold, true, TextAnchor.MiddleCenter));
+		GUI.color = Color.white;
 		if (GUI.Button(r, "", GUIStyle.none)) _selectedPeriodicNumber = number;
 	}
 
@@ -813,21 +802,30 @@ public class AbilityCodexPanel : MonoBehaviour
 	{
 		ElementDef.ElementInfo e = FindElementByNumber(_selectedPeriodicNumber);
 		bool en = UILocalization.CurrentLanguage == "en";
-		GUIStyle ds = new GUIStyle(GUI.skin.box);
-		ds.padding = new RectOffset(10, 10, 6, 6);
-		GUILayout.BeginVertical(ds, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.MinHeight(110f) });
+		if (_periodicDetailStyle == null)
+		{
+			_periodicDetailStyle = new GUIStyle(GUI.skin.box);
+			_periodicDetailStyle.padding = new RectOffset(10, 10, 6, 6);
+		}
+		GUILayout.BeginVertical(_periodicDetailStyle, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.MinHeight(110f) });
 		GUILayout.FlexibleSpace(); // 详情内容整体下移
 		if (e == null)
 		{
 			if (_selectedPeriodicNumber == 57)
 			{
-				GUILayout.Label(UILocalization.Get("divine_gene_title"), new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold, normal = { textColor = new Color(0.95f, 0.85f, 0.5f) } });
-				GUILayout.Label(UILocalization.Get("divine_gene_desc"), new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) } });
+				GUI.color = new Color(0.95f, 0.85f, 0.5f);
+				GUILayout.Label(UILocalization.Get("divine_gene_title"), DSGUIStylePool.Label(16, FontStyle.Bold));
+				GUI.color = Color.white;
+				GUI.color = new Color(0.7f, 0.7f, 0.7f);
+				GUILayout.Label(UILocalization.Get("divine_gene_desc"), DSGUIStylePool.Label(10));
+				GUI.color = Color.white;
 			}
 			else
 			{
-				GUILayout.Label(_selectedPeriodicNumber > 56 ? "57+" : _selectedPeriodicNumber.ToString(), new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold });
-				GUILayout.Label(en ? "Unknown element reserved for future periods." : UILocalization.Get("codex_reserved"), new GUIStyle(GUI.skin.label) { fontSize = 11, wordWrap = true, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) } });
+				GUILayout.Label(_selectedPeriodicNumber > 56 ? "57+" : _selectedPeriodicNumber.ToString(), DSGUIStylePool.Label(14, FontStyle.Bold));
+				GUI.color = new Color(0.7f, 0.7f, 0.7f);
+				GUILayout.Label(en ? "Unknown element reserved for future periods." : UILocalization.Get("codex_reserved"), DSGUIStylePool.Label(11, FontStyle.Normal, true));
+				GUI.color = Color.white;
 			}
 		}
 		else
@@ -835,30 +833,37 @@ public class AbilityCodexPanel : MonoBehaviour
 			bool known = _selectedPeriodicNumber <= 48;
 			string[] groupNames = en ? _periodicGroupEn : _periodicGroupZh;
 			GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-			GUIStyle bigS = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-			bigS.normal.textColor = known ? new Color(1f, 0.85f, 0.5f) : new Color(0.7f, 0.6f, 0.6f);
-			GUILayout.Label("[" + _selectedPeriodicNumber + "] " + e.Symbol, bigS, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(90f) });
+			GUI.color = known ? new Color(1f, 0.85f, 0.5f) : new Color(0.7f, 0.6f, 0.6f);
+			GUILayout.Label("[" + _selectedPeriodicNumber + "] " + e.Symbol, DSGUIStylePool.Label(24, FontStyle.Bold, false, TextAnchor.MiddleCenter), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(90f) });
+			GUI.color = Color.white;
 			GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
-			GUIStyle nameS = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold };
-			GUILayout.Label(e.NameZh + " / " + e.NameEn, nameS);
-			GUIStyle metaS = new GUIStyle(GUI.skin.label) { fontSize = 11 };
-			metaS.normal.textColor = new Color(0.75f, 0.78f, 0.85f);
-			GUILayout.Label(en ? ("Chromosome: " + groupNames[e.Group] + "  ·  Level: " + e.Period) : ("染色体: " + (_selectedPeriodicNumber == 57 ? "神明" : groupNames[e.Group]) + "  ·  表达层级: " + e.Period), metaS);
+			GUILayout.Label(e.NameZh + " / " + e.NameEn, DSGUIStylePool.Label(15, FontStyle.Bold));
+			GUI.color = new Color(0.75f, 0.78f, 0.85f);
+			GUILayout.Label(en ? ("Chromosome: " + groupNames[e.Group] + "  ·  Level: " + e.Period) : ("染色体: " + (_selectedPeriodicNumber == 57 ? "神明" : groupNames[e.Group]) + "  ·  表达层级: " + e.Period), DSGUIStylePool.Label(11));
+			GUI.color = Color.white;
 			GUILayout.EndVertical();
 			GUILayout.FlexibleSpace();
-			GUIStyle statS = new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold };
-			if (!known) { statS.normal.textColor = new Color(0.9f, 0.55f, 0.55f); GUILayout.Label(en ? "UNKNOWN" : UILocalization.Get("codex_unknown"), statS); }
-			else { statS.normal.textColor = new Color(0.6f, 0.8f, 1f); GUILayout.Label(en ? "KNOWN" : UILocalization.Get("codex_known"), statS); }
+			if (!known)
+			{
+				GUI.color = new Color(0.9f, 0.55f, 0.55f);
+				GUILayout.Label(en ? "UNKNOWN" : UILocalization.Get("codex_unknown"), DSGUIStylePool.Label(12, FontStyle.Bold));
+			}
+			else
+			{
+				GUI.color = new Color(0.6f, 0.8f, 1f);
+				GUILayout.Label(en ? "KNOWN" : UILocalization.Get("codex_known"), DSGUIStylePool.Label(12, FontStyle.Bold));
+			}
+			GUI.color = Color.white;
 			GUILayout.EndHorizontal();
-			GUIStyle descS = new GUIStyle(GUI.skin.label) { fontSize = 11, wordWrap = true };
-			descS.normal.textColor = new Color(0.9f, 0.9f, 0.9f);
-			GUILayout.Label(en ? e.DescEn : e.DescZh, descS);
+			GUI.color = new Color(0.9f, 0.9f, 0.9f);
+			GUILayout.Label(en ? e.DescEn : e.DescZh, DSGUIStylePool.Label(11, FontStyle.Normal, true));
+			GUI.color = Color.white;
 			// 基因突变系统：不再显示任务解锁条件，基因通过随机突变获得
 			if (!known)
 			{
-				GUIStyle unkS = new GUIStyle(GUI.skin.label) { fontSize = 10, wordWrap = true };
-				unkS.normal.textColor = new Color(0.7f, 0.6f, 0.6f);
-				GUILayout.Label(UILocalization.Get("gene_not_unlocked_hint"), unkS);
+				GUI.color = new Color(0.7f, 0.6f, 0.6f);
+				GUILayout.Label(UILocalization.Get("gene_not_unlocked_hint"), DSGUIStylePool.Label(10, FontStyle.Normal, true));
+				GUI.color = Color.white;
 			}
 		}
 		GUILayout.EndVertical();
@@ -1108,7 +1113,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		// === 分隔线 + 境界建筑建造区 ===
 		GUILayout.Space(SpacingMedium);
 		DrawSeparator();
-		GUILayout.Label("\U0001f3d7\ufe0f 境界建筑", new GUIStyle(GUI.skin.label) { fontSize = _currentFontSize, fontStyle = FontStyle.Bold });
+		GUILayout.Label("\U0001f3d7\ufe0f 境界建筑", DSGUIStylePool.Label(_currentFontSize, FontStyle.Bold));
 
 		try
 		{
@@ -1401,7 +1406,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		}
 		GUILayout.Space(12f);
 		DrawSeparator();
-		GUIStyle disasterS = new GUIStyle(GUI.skin.label) { fontSize = 12, wordWrap = true };
+		GUIStyle disasterS = DSGUIStylePool.Label(12, FontStyle.Normal, true);
 		GUILayout.Label(UILocalization.Get("disaster_1"), disasterS);
 		GUILayout.Label(UILocalization.Get("disaster_2"), disasterS);
 		GUILayout.Label(UILocalization.Get("disaster_3"), disasterS);

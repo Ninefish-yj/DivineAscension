@@ -1,9 +1,68 @@
 ﻿// ============================================================
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Code.UI
 {
+    /// <summary>
+    /// GUI样式池（指南铁律：OnGUI 内禁止 new GUIStyle，懒加载缓存一次）。
+    /// 按 (fontSize|fontStyle|wordWrap|alignment) 分档缓存共享样式。
+    /// 注意：样式不带 textColor（颜色一律用 GUI.color 设置），避免共享样式颜色污染。
+    /// 仅允许在 OnGUI / Draw 绘制路径内调用（new GUIStyle 读 GUI.skin）。
+    /// </summary>
+    public static class DSGUIStylePool
+    {
+        private static readonly Dictionary<string, GUIStyle> _labelPool = new Dictionary<string, GUIStyle>();
+        private static readonly Dictionary<string, GUIStyle> _buttonPool = new Dictionary<string, GUIStyle>();
+        private static GUIStyle _box;
+        private static bool _boxCached;
+
+        public static GUIStyle Label(int fontSize, FontStyle fontStyle = FontStyle.Normal,
+            bool wordWrap = false, TextAnchor alignment = TextAnchor.UpperLeft)
+        {
+            string key = fontSize + "|" + (int)fontStyle + "|" + (wordWrap ? 1 : 0) + "|" + (int)alignment;
+            GUIStyle style;
+            if (!_labelPool.TryGetValue(key, out style))
+            {
+                style = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = fontSize,
+                    fontStyle = fontStyle,
+                    wordWrap = wordWrap,
+                    alignment = alignment
+                };
+                _labelPool[key] = style;
+            }
+            return style;
+        }
+
+        public static GUIStyle Button(int fontSize, FontStyle fontStyle = FontStyle.Normal)
+        {
+            string key = fontSize + "|" + (int)fontStyle;
+            GUIStyle style;
+            if (!_buttonPool.TryGetValue(key, out style))
+            {
+                style = new GUIStyle(GUI.skin.button) { fontSize = fontSize, fontStyle = fontStyle };
+                _buttonPool[key] = style;
+            }
+            return style;
+        }
+
+        /// <summary>box 样式（皮肤默认，不改任何属性）</summary>
+        public static GUIStyle Box()
+        {
+            GUIStyle style;
+            if (!_boxCached)
+            {
+                style = new GUIStyle(GUI.skin.box);
+                _boxCached = true;
+                _box = style;
+            }
+            return _box;
+        }
+    }
+
     /// <summary>
     /// GUI辅助工具类
     /// 提供统一的彩色标签、标题、分隔线等绘制方法
@@ -22,11 +81,7 @@ namespace Code.UI
         {
             Color originalColor = GUI.color;
             GUI.color = color;
-            GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.fontSize = fontSize;
-            style.fontStyle = fontStyle;
-            style.wordWrap = true;
-            GUILayout.Label(text, style, options);
+            GUILayout.Label(text, DSGUIStylePool.Label(fontSize, fontStyle, true), options);
             GUI.color = originalColor;
         }
 
@@ -39,11 +94,7 @@ namespace Code.UI
         {
             Color originalColor = GUI.color;
             GUI.color = DSUITheme.TitleText; // 柔和米白
-            GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.fontSize = fontSize;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.MiddleCenter;
-            GUILayout.Label(text, style, GUILayout.ExpandWidth(true));
+            GUILayout.Label(text, DSGUIStylePool.Label(fontSize, FontStyle.Bold, false, TextAnchor.MiddleCenter), GUILayout.ExpandWidth(true));
             GUI.color = originalColor;
         }
 
