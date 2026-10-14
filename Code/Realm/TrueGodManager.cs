@@ -36,6 +36,8 @@ namespace Code.Realm
 			public string OriginWorld;    // 起源世界名称
 			public int KillCount;         // 击杀数
 			public int YearsLived;        // 存活年数
+			public List<ChromosomeData> Genome; // 基因序列快照（nucleus 染色体；ChromosomeData 为原版 [Serializable] 类，Newtonsoft.Json 可直接序列化）
+			public List<string> Traits;   // 特质快照（ActorData.saved_traits；含登神特质/修炼特质/完美生命）
 		}
 
 		/// <summary>
@@ -187,7 +189,10 @@ namespace Code.Realm
 					AscensionTime = DateTime.Now.Ticks,
 					OriginWorld = World.world?.name ?? "Unknown",
 					KillCount = 0,
-					YearsLived = actor.getAge()
+					YearsLived = actor.getAge(),
+						// 基因/特质快照（放置=真·复刻：登神单位亚种为专属亚种，nucleus 即原单位基因）
+						Genome = actor.subspecies?.nucleus != null ? actor.subspecies.nucleus.getListForSave() : null,
+						Traits = ReadSavedTraits(actor)
 				};
 
 				_globalData.TrueGods.Add(godData);
@@ -282,6 +287,10 @@ namespace Code.Realm
 
 				// 4. 恢复真神身份与数据（名字/境界/能量/掌控/失控/已解锁元素）
 				god.setName(godData.Name);
+
+				// 真·复刻：先重建基因序列（专属亚种），再登神升华（升华会基于恢复后的基因做协调效应）
+				RestoreGenome(god, godData.Genome);
+
 				CultivationData.SetRealmTier(god, 13);
 				CultivationData.SetEnergy(god, godData.Qi);
 				CultivationData.SetMastery(god, godData.Mastery);
@@ -294,7 +303,10 @@ namespace Code.Realm
 					}
 				}
 
-				DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已按原种族 {assetId} 放置");
+				// 真·复刻：恢复特质快照（登神特质/修炼特质/完美生命）
+				RestoreTraits(god, godData.Traits);
+
+				DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已按原种族 {assetId} 放置（基因+特质已复刻）");
 				return god;
 			}
 			catch (Exception e)
@@ -302,6 +314,87 @@ namespace Code.Realm
 				DSDebug.Warning($"[TrueGodManager] 生成真神失败: {e.Message}");
 				return null;
 			}
+		}
+
+		/// <summary>放置=真·复刻：按快照重建基因序列（专属亚种，不污染共享亚种；super/void 反射恢复）</summary>
+		private static void RestoreGenome(Actor god, List<ChromosomeData> genome)
+		{
+			try
+			{
+				if (god == null || genome == null || genome.Count == 0) return;
+
+				// 创建专属亚种承载基因（登神单位基因是单位独有，不能写入共享亚种）
+				Subspecies sp = World.world.subspecies.newSpecies(god.asset, god.current_tile);
+				if (sp == null) return;
+
+				// 清空默认染色体，按快照逐条重建（Chromosome public 构造 + genes 公开列表 + Nucleus.addChromosome/setDirty）
+				sp.nucleus.reset();
+				foreach (ChromosomeData cd in genome)
+				{
+					string chrType = string.IsNullOrEmpty(cd.chromosome_type) ? "chromosome_medium" : cd.chromosome_type;
+					Chromosome chr = new Chromosome(chrType, false);
+					foreach (string geneId in cd.loci)
+					{
+						GeneAsset gene = AssetManager.gene_library.get(geneId);
+						if (gene != null) chr.genes.Add(gene);
+					}
+					// 恢复放大器位/空位（反射写 private readonly 列表内容；失败不影响普通基因）
+					try
+					{
+						var ampField = typeof(Chromosome).GetField("_loci_amplifiers",
+							System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+						if (ampField != null && cd.super_loci != null && cd.super_loci.Count > 0)
+						{
+							((List<int>)ampField.GetValue(chr)).AddRange(cd.super_loci);
+						}
+					}
+					catch (Exception) { }
+					try
+					{
+						var emptyField = typeof(Chromosome).GetField("_loci_empty",
+							System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+						if (emptyField != null && cd.void_loci != null && cd.void_loci.Count > 0)
+						{
+							((List<int>)emptyField.GetValue(chr)).AddRange(cd.void_loci);
+						}
+					}
+					catch (Exception) { }
+					sp.nucleus.addChromosome(chr);
+				}
+				sp.nucleus.setDirty();
+
+				// 切换到专属亚种（原版 public API，与登神升华/维度空间同一套单位亚种切换）
+				god.setSubspecies(sp);
+				DSDebug.Verbose($"[TrueGodManager] 真神 {god.getName()} 基因序列已复刻（{genome.Count} 条染色体）");
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[TrueGodManager] 恢复基因序列失败: {e.Message}");
+			}
+		}
+
+		/// <summary>恢复特质快照（addTrait 底层不拦 can_be_given；失败逐个跳过）</summary>
+		private static void RestoreTraits(Actor god, List<string> traits)
+		{
+			if (god == null || traits == null) return;
+			foreach (string traitId in traits)
+			{
+				if (string.IsNullOrEmpty(traitId)) continue;
+				try { god.addTrait(traitId, false); }
+				catch (Exception) { }
+			}
+		}
+
+		/// <summary>读取单位特质快照（ActorData.saved_traits 为 public List<string>，反编译 ActorData.cs:30）</summary>
+		private static List<string> ReadSavedTraits(Actor actor)
+		{
+			try
+			{
+				ActorData data = actor.getData() as ActorData;
+				if (data == null || data.saved_traits == null) return null;
+				return new List<string>(data.saved_traits);
+			}
+			catch (Exception) { return null; }
 		}
 
 		/// <summary>读取单位真实种族 asset_id（ActorData.asset_id 为 public 属性，反编译 ActorData.cs:121）</summary>
