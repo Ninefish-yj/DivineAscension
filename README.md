@@ -1,5 +1,9 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.14.2 文件夹名统一 GeneCultivation
+
+- zip 顶层模组文件夹名统一为 `GeneCultivation`（与 mod.json GUID、GitHub 仓库完全一致），技术标识彻底告别旧代号 DivineAscension；游戏内显示名仍为「基因修炼」
+
 ## v0.14.1 修复手机端编译失败
 
 - **实机编译修复**：手机 NML 编译报 `UILocalization 不存在`（CS0103）——根因是模组内 `Code/UI/UILocalization.cs` 定义的类型，有 17 个文件缺 `using Code.UI` 等跨命名空间引用。全量静态检查补全所有缺失 using（CS0103 清零），并核对无类型缺失/重复定义/UI 命名空间歧义（CS0246/CS0101/CS0104 均无）。
