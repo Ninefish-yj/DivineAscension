@@ -760,7 +760,8 @@ namespace Code.Realm
                 trueGodEra.path_icon = "otherAssets/iconAgeTrueGod";
                 trueGodEra.path_background = "otherAssets/ageTrueGodBackground";
                 trueGodEra.title_color = Toolbox.makeColor("#6B8EFF");
-                trueGodEra.rate = 2;
+                // 注意：WorldAgeAsset.rate 原版 0.51.4 无任何消费处（死字段），不设置。
+                // "修炼速度提升"类效果不做承诺——超神纪元实际效果 = 登神单位协调效应（基因属性翻倍）+ 植被生长加成 + 神圣粒子特效。
                 trueGodEra.overlay_darkness = false;
                 trueGodEra.era_effect_overlay_alpha = 0.3f;
                 trueGodEra.cloud_interval = 5f; // 云生成间隔从1.5秒改为5秒，减少乌云密度
@@ -773,7 +774,7 @@ namespace Code.Realm
                     new WorldAgeAction(TrySpawnDivineParticles));
                 AssetManager.era_library.add(trueGodEra);
                 _trueGodEraRegistered = true;
-                DSDebug.Verbose("[GeneCultivation] 超神纪元已注册到era_library（id=age_ds_transcendent，紫蓝冷色调，1.5倍速，神圣粒子特效）");
+                DSDebug.Verbose("[GeneCultivation] 超神纪元已注册到era_library（id=age_ds_transcendent，紫蓝冷色调，神圣粒子特效）");
             }
             catch (Exception e)
             {

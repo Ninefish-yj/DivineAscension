@@ -1,5 +1,10 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.14.3 超神纪元描述风格统一
+
+- 超神纪元描述改为原版叙事风格（去效果清单化），与实际效果一致：登神者脱离原种族、协调效应（基因属性翻倍）、植被生长加成、神圣粒子
+- 删除从未注册的 age_ds_truegod 死文案；移除无效字段 WorldAgeAsset.rate（原版 0.51.4 无消费）及"1.5倍速"错误注释
+
 ## v0.14.2 文件夹名统一 GeneCultivation
 
 - zip 顶层模组文件夹名统一为 `GeneCultivation`（与 mod.json GUID、GitHub 仓库完全一致），技术标识彻底告别旧代号 DivineAscension；游戏内显示名仍为「基因修炼」
