@@ -1,5 +1,9 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.11.5 修复跨类裸调用（编译级正解）
+
+- **修复**：`UnitWindowGeneButtonPatch` 类内 3 处 `GetUnitActor(...)` **裸调用**改为 `UnitWindowIntegration.GetUnitActor(...)`——C# 中裸调用不会跨类解析到其他类的静态方法，与访问级别无关（此为 CS0103 真正根因）
+
 ## v0.11.4 修复跨类调用
 
 - **修复**：`GetUnitActor` 访问级别 private → internal（被同文件 `UnitWindowGeneButtonPatch` 类调用时 CS0103 的根因）；经全仓库启发式扫描确认无其他跨类私有调用

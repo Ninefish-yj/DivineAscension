@@ -441,7 +441,7 @@ namespace Code.UI
         {
             try
             {
-                if (GetUnitActor(__instance) == null) return;
+                if (UnitWindowIntegration.GetUnitActor(__instance) == null) return;
                 // 每次OnEnable都检查按钮是否存在，如果不存在就重新创建
                 if (_geneButton == null)
                 {
@@ -508,7 +508,7 @@ namespace Code.UI
                 Button button = buttonObj.GetComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    var unitActor = GetUnitActor(window);
+                    var unitActor = UnitWindowIntegration.GetUnitActor(window);
                     if (unitActor != null && unitActor.isAlive())
                     {
                         GeneGraphWindow.Show(unitActor);
@@ -552,7 +552,7 @@ namespace Code.UI
                 if (_geneButton == null) return;
                 // 所有活着的单位都显示基因图谱按钮（包括凡人）
                 bool shouldShow = false;
-                if (GetUnitActor(window) != null && GetUnitActor(window).isAlive())
+                if (UnitWindowIntegration.GetUnitActor(window) != null && UnitWindowIntegration.GetUnitActor(window).isAlive())
                 {
                     shouldShow = true;
                 }
