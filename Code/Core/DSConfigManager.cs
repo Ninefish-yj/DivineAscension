@@ -299,6 +299,44 @@ namespace Code.Core
             set => GeneCultivationConfig.EnableMonolithEffect = value;
         }
 
+        // === v0.18.7 补齐门面桥接（GeneCultivationConfig 字段 → DSConfigManager 属性）===
+
+        public static bool EnableRealmSuppression
+        {
+            get => GeneCultivationConfig.EnableRealmSuppression;
+            set => GeneCultivationConfig.EnableRealmSuppression = value;
+        }
+
+        public static bool EnableEnergyAbsorb
+        {
+            get => GeneCultivationConfig.EnableEnergyAbsorb;
+            set => GeneCultivationConfig.EnableEnergyAbsorb = value;
+        }
+
+        public static bool EnableVerboseLog
+        {
+            get => GeneCultivationConfig.EnableVerboseLog;
+            set => GeneCultivationConfig.EnableVerboseLog = value;
+        }
+
+        public static float CultivationRateMultiplier
+        {
+            get => GeneCultivationConfig.CultivationRateMultiplier;
+            set => GeneCultivationConfig.CultivationRateMultiplier = value;
+        }
+
+        public static float MortalAwakenChance
+        {
+            get => GeneCultivationConfig.MortalAwakenChance;
+            set => GeneCultivationConfig.MortalAwakenChance = value;
+        }
+
+        public static float TurbulenceDecayRate
+        {
+            get => GeneCultivationConfig.TurbulenceDecayRate;
+            set => GeneCultivationConfig.TurbulenceDecayRate = value;
+        }
+
         // === UI设置 ===
 
         public static string CurrentLanguage = "cz";
