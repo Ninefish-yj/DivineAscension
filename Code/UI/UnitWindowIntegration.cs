@@ -17,7 +17,7 @@ namespace Code.UI
     public static class UnitWindowIntegration
     {
         /// <summary>获取单位窗口对应的Actor（兼容不同游戏版本：优先反射字段，失败反射方法）</summary>
-        private static Actor GetUnitActor(UnitWindow window)
+        internal static Actor GetUnitActor(UnitWindow window)
         {
             if (window == null) return null;
             // 0.51.x：actor 是 internal 属性（actor => SelectedUnit.unit）

@@ -1,5 +1,9 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.11.4 修复跨类调用
+
+- **修复**：`GetUnitActor` 访问级别 private → internal（被同文件 `UnitWindowGeneButtonPatch` 类调用时 CS0103 的根因）；经全仓库启发式扫描确认无其他跨类私有调用
+
 ## v0.11.3 部署加固
 
 - **修复**：`GetUnitActor` 方法定义上移至类顶部（消除手机端 NML 编译报 CS0103 的可能因素）；若手机此前部署过旧包，请**删除手机 Mods 目录下的旧模组文件夹**后重新解压本包
