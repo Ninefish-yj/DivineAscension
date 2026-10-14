@@ -1,5 +1,11 @@
 # 基因修炼 (GeneCultivation)
 
+## v0.14.0 异能系统修复 + 协调效应真正生效
+
+- **虚拟武器修复**：能量刃投射物改用原版 `AssetManager.projectiles.add()` 真实注册（此前反射找的 upsert/getorcreate 在 ProjectileLibrary 中不存在，投射物资产从未注册）；发射改用反编译核实的 9 参真实签名（Vector3 位置 + 完整可选参数），消除"发射投射物参数不匹配"报错，远程攻击特效真正生效
+- **协调效应真正生效**：登神时扫描基因/特质属性（BaseStats 为字典式，改用原版 `get()` 读取——此前用属性反射恒取 0），把"翻倍增量"写入 custom_data_float，`GeneEnergyAttributeApplier` 在 updateStats 后真正加到 stats——属性翻倍不再只是 UI 文案（并修正"增量×2 又相加"导致的三倍 bug）
+- **本地化补全**：新增 `age_ds_transcendent_title/description`（超神纪元），消除 tooltip 报错
+
 ## v0.13.2 圣所放置=真·复刻原单位
 
 - **基因+特质快照**：真神跨存档记录现在保存完整基因序列（nucleus 染色体，含放大器位/空位）与特质快照（登神特质/修炼特质/完美生命）；圣所放置时按原种族生成后重建基因序列（专属亚种，不污染共享亚种）、恢复全部特质——放置出来的不再是"空壳超神"，而是与原单位基因构成一致的真神

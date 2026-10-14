@@ -68,85 +68,35 @@ namespace Code.Combat
 
             try
             {
-                Type projectileAssetType = Type.GetType("Code.Game.ProjectileAsset, Assembly-CSharp");
-                if (projectileAssetType == null)
-                {
-                    DSDebug.Verbose("[虚拟武器] 未找到ProjectileAsset类型，使用延迟特效模拟远程攻击");
-                    return;
-                }
+                // 直接用原版资产库注册能量刃投射物（ProjectileAsset 全 public 字段；AssetManager.projectiles 为 ProjectileLibrary）
+                // 此前反射找 ProjectileLibrary.upsert/getorcreate 均不存在（该库只有 init），投射物资产从未真正注册，
+                // 导致发射时引用空资产——远程特效实际从未生效。改用 AssetLibrary.add 注册。
+                ProjectileAsset asset = new ProjectileAsset();
+                asset.id = ENERGY_BLADE_PROJECTILE_ID;
+                asset.texture = "ds_energy_blade";
+                asset.animation_speed = 12f;
+                asset.speed = 25f;
+                asset.speed_random = 3f;
+                asset.scale_start = 0.04f;
+                asset.scale_target = 0.12f;
+                asset.draw_light_area = true;
+                asset.draw_light_size = 0.12f;
+                asset.trail_effect_enabled = true;
+                asset.trail_effect_id = "fx_sparkle";
+                asset.trail_effect_scale = 0.08f;
+                asset.trail_effect_timer = 0.05f;
+                asset.end_effect = "fx_explosion";
+                asset.end_effect_scale = 0.15f;
+                asset.trigger_on_collision = true;
+                asset.look_at_target = true;
+                AssetManager.projectiles.add(asset);
 
-                // 查找UpsertProjectile方法
-                var upsertMethod = typeof(ProjectileLibrary).GetMethod("upsert", 
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                if (upsertMethod == null)
-                {
-                    // 尝试其他方法名
-                    foreach (var m in typeof(ProjectileLibrary).GetMethods(
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
-                    {
-                        if (m.Name.ToLower().Contains("upsert") || m.Name.ToLower().Contains("getorcreate"))
-                        {
-                            upsertMethod = m;
-                            break;
-                        }
-                    }
-                }
-
-                if (upsertMethod == null)
-                {
-                    DSDebug.Verbose("[虚拟武器] 未找到UpsertProjectile方法，使用延迟特效模拟远程攻击");
-                    return;
-                }
-
-                // 创建能量刃投射物（基于fireball）
-                var projectile = upsertMethod.Invoke(null, new object[] { ENERGY_BLADE_PROJECTILE_ID, "fireball" });
-                if (projectile == null)
-                {
-                    DSDebug.Verbose("[虚拟武器] 创建能量刃投射物失败，使用延迟特效模拟远程攻击");
-                    return;
-                }
-
-                // 设置投射物属性（参考红袍法师的火球）
-                SetPropertyIfExists(projectile, "texture", "ds_energy_blade");
-                SetPropertyIfExists(projectile, "animation_speed", 12f);
-                SetPropertyIfExists(projectile, "speed", 25f);
-                SetPropertyIfExists(projectile, "speed_random", 3f);
-                SetPropertyIfExists(projectile, "scale_start", 0.04f);
-                SetPropertyIfExists(projectile, "scale_target", 0.12f);
-                SetPropertyIfExists(projectile, "draw_light_area", true);
-                SetPropertyIfExists(projectile, "draw_light_size", 0.12f);
-                SetPropertyIfExists(projectile, "trail_effect_enabled", true);
-                SetPropertyIfExists(projectile, "trail_effect_id", "fx_sparkle");
-                SetPropertyIfExists(projectile, "trail_effect_scale", 0.08f);
-                SetPropertyIfExists(projectile, "trail_effect_timer", 0.05f);
-                SetPropertyIfExists(projectile, "end_effect", "fx_explosion");
-                SetPropertyIfExists(projectile, "end_effect_scale", 0.15f);
-                SetPropertyIfExists(projectile, "trigger_on_collision", true);
-                SetPropertyIfExists(projectile, "look_at_target", true);
-
-                DSDebug.Verbose("[虚拟武器] 能量刃投射物初始化成功");
+                DSDebug.Verbose("[虚拟武器] 能量刃投射物注册成功");
             }
             catch (Exception e)
             {
                 DSDebug.Verbose($"[虚拟武器] 能量刃投射物初始化失败: {e.Message}，使用延迟特效模拟远程攻击");
             }
-        }
-
-        /// <summary>
-        /// 设置对象的属性（如果存在）
-        /// </summary>
-        private static void SetPropertyIfExists(object obj, string propertyName, object value)
-        {
-            try
-            {
-                var prop = obj.GetType().GetProperty(propertyName, 
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (prop != null && prop.CanWrite)
-                {
-                    prop.SetValue(obj, value);
-                }
-            }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] SetPropertyIfExists 异常: " + dsEx.Message); }
         }
 
         /// <summary>
@@ -255,54 +205,33 @@ namespace Code.Combat
                 Vector2 launchPos = attacker.current_position;
                 Vector2 targetPos = target.current_position;
 
-                // 使用反射调用World.world.projectiles.spawn方法
+                // 真实签名（反编译 ProjectileManager.cs:90）：
+                //   spawn(BaseSimObject pInitiator, BaseSimObject pTargetObject, string pAssetID,
+                //        Vector3 pLaunchPosition, Vector3 pTargetPosition, float pTargetZ=0f,
+                //        float pStartPosZ=0.25f, Action pKillAction=null, Kingdom pForcedKingdom=null)
+                // 反射 Invoke 必须提供全部参数（含可选参数），且位置参数为 Vector3。
+                // 此前按参数个数猜参数并传 Vector2，导致 TargetParameterCount/类型不匹配（"发射投射物参数不匹配"）。
                 var projectiles = World.world.projectiles;
-                var spawnMethod = projectiles.GetType().GetMethod("spawn", 
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                
-                if (spawnMethod == null)
-                {
-                    // 尝试查找其他方法名
-                    foreach (var m in projectiles.GetType().GetMethods(
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
-                    {
-                        if (m.Name.ToLower().Contains("spawn") || m.Name.ToLower().Contains("fire") || 
-                            m.Name.ToLower().Contains("launch"))
-                        {
-                            spawnMethod = m;
-                            break;
-                        }
-                    }
-                }
-
+                var spawnMethod = typeof(ProjectileManager).GetMethod("spawn",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+                    null,
+                    new[] { typeof(BaseSimObject), typeof(BaseSimObject), typeof(string), typeof(Vector3), typeof(Vector3), typeof(float), typeof(float), typeof(Action), typeof(Kingdom) },
+                    null);
                 if (spawnMethod == null) return false;
 
-                // 尝试调用spawn方法（参数：caster, target, projectileId, launchPos, targetPos）
-                var parameters = spawnMethod.GetParameters();
-                if (parameters.Length >= 5)
-                {
-                    spawnMethod.Invoke(projectiles, new object[] { 
-                        attacker, target, ENERGY_BLADE_PROJECTILE_ID, launchPos, targetPos 
-                    });
-                    return true;
-                }
-                else if (parameters.Length >= 3)
-                {
-                    // 简化版本：caster, target, projectileId
-                    spawnMethod.Invoke(projectiles, new object[] { 
-                        attacker, target, ENERGY_BLADE_PROJECTILE_ID 
-                    });
-                    return true;
-                }
-
-                return false;
+                Vector3 launchPos3 = new Vector3(launchPos.x, launchPos.y, 0f);
+                Vector3 targetPos3 = new Vector3(targetPos.x, targetPos.y, 0f);
+                spawnMethod.Invoke(projectiles, new object[] {
+                    attacker, target, ENERGY_BLADE_PROJECTILE_ID, launchPos3, targetPos3, 0f, 0.25f, null, null
+                });
+                return true;
             }
             catch (Exception e)
             {
                 // 只输出一次，避免刷屏
                 if (!_projectileErrorLogged)
                 {
-                    DSDebug.Warning($"[虚拟武器] 发射投射物参数不匹配: {e.Message}（后续不再重复输出）");
+                    DSDebug.Warning($"[虚拟武器] 发射投射物失败: {e.Message}（后续不再重复输出）");
                     _projectileErrorLogged = true;
                 }
                 return false;

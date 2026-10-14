@@ -17,6 +17,12 @@ namespace Code.Core
         // 攻速最终上限：40（=0.025 秒攻击冷却），防止高阶叠状态后攻速失控
         public const float MAX_ATTACK_SPEED = 40f;
 
+        // 登神协调效应（基因翻倍）作用的属性 key——须与原版 stats 合成 key 一致（反编译 Actor.cs 核实）
+        private static readonly string[] STAT_BOOST_KEYS = new string[]
+        {
+            "health", "damage", "speed", "mana", "stamina", "intelligence", "armor", "warfare"
+        };
+
         // 缓存 stats 字段信息（BaseSimObject.stats 是 internal readonly BaseStats），避免重复反射
         private static FieldInfo _statsField;
         private static bool _fieldsInitialized;
@@ -110,6 +116,28 @@ namespace Code.Core
                 if (speedBonus > 0f)
                 {
                     stats["speed"] = stats["speed"] * (1f + Mathf.Min(0.3f, speedBonus * 0.05f));
+                }
+
+                // 登神协调效应（基因序列完美配对，基因属性翻倍）：
+                // ScanAndApplyGeneticBoost 在登神时把翻倍数值写入 custom_data_float["ds_boost_{key}"]，
+                // 这里真正加到合成后的 stats——此前只有 UI 文案（ds_genetic_boost 字符串），属性从未生效。
+                if (actor.hasTrait("ds_species_transcendent"))
+                {
+                    try
+                    {
+                        ActorData data = ActorDataAccessor.GetData(actor);
+                        if (data != null && data.custom_data_float != null)
+                        {
+                            foreach (string bk in STAT_BOOST_KEYS)
+                            {
+                                if (data.custom_data_float.TryGetValue("ds_boost_" + bk, out float bv) && bv > 0f)
+                                {
+                                    stats[bk] += bv;
+                                }
+                            }
+                        }
+                    }
+                    catch (System.Exception dsEx) { DSDebug.Verbose("[基因能量属性加成器] 协调效应应用失败: " + dsEx.Message); }
                 }
             }
             catch (System.Exception e)

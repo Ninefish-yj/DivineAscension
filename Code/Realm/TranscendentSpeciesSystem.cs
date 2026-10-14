@@ -187,7 +187,8 @@ namespace Code.Realm
         /// <summary>
         /// 登神升华：突破10阶（使徒级）起执行（SetRealmTier clamped>=10 触发）。
         /// 脱离原种族成为独立种族（身份标记），并授予不可去除的基因特质【完美生命】（归入原版突变分类）。
-        /// 基因序列协调效应：扫描单位基因带来的属性，翻倍后由完美生命特质提供（替代方案）。
+        /// 基因序列协调效应：扫描单位基因/特质属性，把"翻倍增量"写入 custom_data_float（ds_boost_*），
+        /// 由 GeneEnergyAttributeApplier 在 updateStats 后真正加到合成后的 stats（属性翻倍生效）。
         /// 突变免疫已在4阶生效。
         /// </summary>
         public static void ApplyTranscendence(Actor actor)
@@ -211,7 +212,7 @@ namespace Code.Realm
                 string subspeciesName = string.Format(UILocalization.Get("species_descendant"), baseName);
                 DetachSubspecies(actor, subspeciesName);
 
-                //  基因序列协调效应（替代方案）：扫描单位基因带来的属性，翻倍后由完美生命特质提供
+                //  基因序列协调效应：扫描单位基因/特质属性，写入翻倍增量（由 GeneEnergyAttributeApplier 真正应用）
                 string geneticBoost = ScanAndApplyGeneticBoost(actor);
 
                 DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破登神级！脱离原种族成为独立种族（亚种名：{subspeciesName}），授予【完美生命】基因特质（突变分类、不可去除）。基因序列协调效应：{geneticBoost}");
@@ -285,9 +286,9 @@ namespace Code.Realm
         }
 
         /// <summary>
-        /// 基因序列协调效应（替代方案）：扫描单位基因和特质带来的属性加成，
-        /// 计算总属性后翻倍，存储到custom_data，并返回属性摘要字符串。
-        /// 使用反射安全访问BaseStats（不是字典，是有固定属性的类）。
+        /// 基因序列协调效应：扫描单位基因和特质带来的属性加成（BaseStats 为字典式，
+        /// 用原版 get() 读取），把"翻倍增量"（=1 份基因/特质属性）写入 custom_data_float["ds_boost_{key}"]，
+        /// 供 GeneEnergyAttributeApplier 加到合成后的 stats；同时生成 UI 摘要字符串。
         /// </summary>
         private static string ScanAndApplyGeneticBoost(Actor actor)
         {
@@ -296,26 +297,17 @@ namespace Code.Realm
                 var totalStats = new System.Collections.Generic.Dictionary<string, float>();
                 string[] statKeys = { "health", "damage", "speed", "mana", "stamina", "intelligence", "armor", "warfare" };
 
-                //  辅助方法：用反射从BaseStats获取属性值（BaseStats不是字典，是固定属性类）
+                // 辅助方法：从 BaseStats 读取属性值
+                // 反编译 BaseStats.cs:20/89：BaseStats 是字典式（索引器 this[string] + get(string)），
+                // 没有 health/damage 等固定属性——此前用 GetProperty/GetField 反射必然取不到（恒 0），
+                // 协调效应扫描数值一直是 0（UI 文案与属性均空）。改用原版 get()。
                 System.Func<object, string, float> getStatValue = (stats, key) =>
                 {
                     try
                     {
                         if (stats == null) return 0f;
-                        var prop = stats.GetType().GetProperty(key,
-                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (prop != null)
-                        {
-                            object val = prop.GetValue(stats);
-                            if (val != null) return System.Convert.ToSingle(val);
-                        }
-                        var field = stats.GetType().GetField(key,
-                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (field != null)
-                        {
-                            object val = field.GetValue(stats);
-                            if (val != null) return System.Convert.ToSingle(val);
-                        }
+                        BaseStats bs = stats as BaseStats;
+                        if (bs != null) return bs.get(key);
                     }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
                     return 0f;
@@ -394,11 +386,14 @@ namespace Code.Realm
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
 
-                // 计算翻倍后的属性（基因序列协调效应 = 基因属性×2）
+                // 计算协调效应增量（基因序列协调效应 = 基因/特质属性翻倍）
+                // 注意：应用处（GeneEnergyAttributeApplier）是把本增量"加到"最终 stats——
+                // 最终 stats 已含 1 份基因/特质属性，再加 1 份增量 = 翻倍（2 份）。
+                // 若这里存 ×2 总值，应用后会变成 3 倍（"三倍 bug"），故存 1 份增量。
                 var boostStats = new System.Collections.Generic.Dictionary<string, float>();
                 foreach (var kv in totalStats)
                 {
-                    boostStats[kv.Key] = kv.Value * 2f; // 翻倍
+                    boostStats[kv.Key] = kv.Value; // 翻倍增量 = 1 份基因/特质属性
                 }
 
                 // 构建属性摘要字符串
@@ -416,13 +411,23 @@ namespace Code.Realm
                 }
                 sb.Append(UILocalization.Get("species_gene_scan_suffix"));
 
-                // 存储到 custom_data，供UI显示
+                // 存储到 custom_data，供UI显示 + 协调效应数值快照（真正生效：GeneEnergyAttributeApplier 按 ds_boost_{key} 加到 stats）
                 try
                 {
                     CultivationData.EnsureCustomDataInitialized(actor);
                     if (ActorDataAccessor.GetData(actor).custom_data_string != null)
                     {
                         ActorDataAccessor.GetData(actor).custom_data_string["ds_genetic_boost"] = sb.ToString();
+                    }
+                    if (ActorDataAccessor.GetData(actor).custom_data_float != null)
+                    {
+                        foreach (string key in statKeys)
+                        {
+                            if (boostStats.ContainsKey(key) && boostStats[key] > 0f)
+                            {
+                                ActorDataAccessor.GetData(actor).custom_data_float["ds_boost_" + key] = boostStats[key];
+                            }
+                        }
                     }
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ScanAndApplyGeneticBoost 异常: " + dsEx.Message); }
