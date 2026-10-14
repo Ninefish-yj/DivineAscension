@@ -171,6 +171,38 @@ namespace Code.Core
                 if (divineEnRec > 0f) gain *= (1f + divineEnRec);
             } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 异常: " + dsEx.Message); }
 
+            //  基因个体效果·修炼效率与能量恢复（v0.16.0）：CultivationBonus/EnergyRegenBonus 基因×表达倍率聚合
+            try
+            {
+                float geneCult = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(actor, Code.Realm.GeneEffectType.CultivationBonus, 0.5f);
+                if (geneCult > 0f) gain *= (1f + geneCult);
+                float geneEnRec = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(actor, Code.Realm.GeneEffectType.EnergyRegenBonus, 0.5f);
+                if (geneEnRec > 0f) gain *= (1f + geneEnRec);
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 基因效果异常: " + dsEx.Message); }
+
+            //  连锁·修炼效率加成（v0.16.0）：智力染色体连锁（CultivationBonus 类型）真正落地到年度能量获取
+            try
+            {
+                var actorData = Code.Data.ActorDataAccessor.GetData(actor);
+                if (actorData != null && actorData.custom_data_float != null &&
+                    actorData.custom_data_float.TryGetValue("ds_link_cultivation", out float linkCult) && linkCult > 0f)
+                {
+                    gain *= (1f + linkCult);
+                }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 连锁修炼异常: " + dsEx.Message); }
+
+            //  元素组合共鸣·能量恢复（v0.16.0）：已激活组合（=已激活连锁）数量×2%能量恢复，上限+50%。
+            //  组合数据由 GeneLinkageSystem.CheckAllLinkages 写入 ds_combos_active（此前恒为空）。
+            try
+            {
+                int comboCount = CultivationData.GetGeneLinkageCount(actor);
+                if (comboCount > 0)
+                {
+                    float comboBonus = Mathf.Min(0.5f, comboCount * 0.02f);
+                    if (comboBonus > 0f) gain *= (1f + comboBonus);
+                }
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualQi 组合共鸣异常: " + dsEx.Message); }
+
             // ---- 异能能量消耗 ----
             float cost = 0f;
 
@@ -280,6 +312,13 @@ namespace Code.Core
                 float divineStab = Code.Core.GeneEnergyCalculator.GetDivineStabBonus(actor);
                 if (divineStab > 0f) gain *= Mathf.Max(0f, 1f - divineStab);
             } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualTurbulence 异常: " + dsEx.Message); }
+
+            //  基因个体效果·失控减少（v0.16.0）：CorruptionReduction 基因×表达倍率聚合（固定值，直接减失控增长）
+            try
+            {
+                float geneStab = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(actor, Code.Realm.GeneEffectType.CorruptionReduction, 30f);
+                if (geneStab > 0f) gain = Mathf.Max(0f, gain - geneStab);
+            } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] SettleAnnualTurbulence 基因失控减少异常: " + dsEx.Message); }
 
             // ---- 衰减 ----
             float decay = CultivationConfig.TurbulenceDecayRate;

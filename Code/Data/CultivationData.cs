@@ -627,6 +627,26 @@ namespace Code.Data
             return result;
         }
 
+        /// <summary>
+        /// 写入已激活组合ID（v0.16.0）：由 GeneLinkageSystem.CheckAllLinkages 在年度刷新时同步。
+        /// 此前 ds_combos_active 恒为空串——元素组合是纯死数据（只有初始化+读取，无写入）。
+        /// </summary>
+        public static void SetActiveCombos(Actor actor, List<string> combos)
+        {
+            if (actor == null || ActorDataAccessor.GetData(actor) == null) return;
+            EnsureCustomDataInitialized(actor);
+            var data = ActorDataAccessor.GetData(actor);
+            if (data.custom_data_string == null) return;
+            if (combos == null || combos.Count == 0)
+            {
+                data.custom_data_string[K_ACTIVE_COMBOS] = "";
+            }
+            else
+            {
+                data.custom_data_string[K_ACTIVE_COMBOS] = string.Join(",", combos);
+            }
+        }
+
         // 自定义int数据访问器
         private static int GetCustomInt(Actor actor, string key)
         {

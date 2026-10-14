@@ -92,6 +92,34 @@ namespace Code.Combat
                     // 神创基因攻击加成：独立百分比乘（不受/30稀释）
                     float divineAtk = GeneEnergyCalculator.GetDivineDamageBonus(from);
                     if (divineAtk > 0f) damage *= (1f + divineAtk);
+
+                    // 基因个体效果·暴击（v0.16.0）：CriticalChance 基因×表达倍率聚合为暴击率，命中翻倍伤害
+                    try
+                    {
+                        float critChance = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(from, Code.Realm.GeneEffectType.CriticalChance, 0.5f);
+                        if (critChance > 0f && UnityEngine.Random.value < critChance) damage *= 2f;
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 暴击应用失败: " + dsEx.Message); }
+
+                    // 基因个体效果·潜能暴走（SpecialAbility 基因，v0.16.0）：
+                    // 每激活1个潜能基因，濒死（生命<30%）暴走伤害+10%（上限+50%）——特殊能力的真实落点
+                    try
+                    {
+                        int specialGenes = Code.Realm.GeneExpressionSystem.CountGenesOfType(from, Code.Realm.GeneEffectType.SpecialAbility);
+                        // 连锁·特殊能力（v0.16.0）：激活任意特殊能力连锁视为额外1个潜能基因（ds_link_special 此前无消费方）
+                        var fromData2 = ActorDataAccessor.GetData(from);
+                        if (fromData2 != null && fromData2.custom_data_float != null &&
+                            fromData2.custom_data_float.TryGetValue("ds_link_special", out float linkSpecial) && linkSpecial > 0f)
+                        {
+                            specialGenes += 1;
+                        }
+                        if (specialGenes > 0 && from.data.health < from.getMaxHealth() * 0.3f)
+                        {
+                            float berserk = Mathf.Min(0.5f, specialGenes * 0.10f);
+                            damage *= (1f + berserk);
+                        }
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 潜能暴走应用失败: " + dsEx.Message); }
                 }
 
                 if (__instance != null && CultivationData.IsAscended(__instance))
@@ -107,6 +135,13 @@ namespace Code.Combat
                     // 神创基因伤害减免：独立乘
                     float divineDmgRed = GeneEnergyCalculator.GetDivineDmgRedBonus(__instance);
                     if (divineDmgRed > 0f) damage *= Mathf.Max(0.05f, 1f - divineDmgRed);
+                    // 基因个体效果·伤害减免（v0.16.0）：DamageReduction 基因×表达倍率聚合减伤（上限50%）
+                    try
+                    {
+                        float geneDmgRed = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(__instance, Code.Realm.GeneEffectType.DamageReduction, 0.5f);
+                        if (geneDmgRed > 0f) damage *= Mathf.Max(0.05f, 1f - geneDmgRed);
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因减伤应用失败: " + dsEx.Message); }
                 }
 
                 // 神创基因暴击率：独立判定（默认0=不暴击）
@@ -124,9 +159,14 @@ namespace Code.Combat
                 if (from != null && CultivationData.IsAscended(from))
                 {
                     float divineLifesteal = GeneEnergyCalculator.GetDivineLifestealBonus(from);
-                    if (divineLifesteal > 0f)
+                    // 基因个体效果·吸血（v0.16.0）：Lifesteal 基因×表达倍率聚合，与神创吸血叠加
+                    float geneLifesteal = 0f;
+                    try { geneLifesteal = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(from, Code.Realm.GeneEffectType.Lifesteal, 0.5f); }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因吸血聚合失败: " + dsEx.Message); }
+                    float lifesteal = divineLifesteal + geneLifesteal;
+                    if (lifesteal > 0f)
                     {
-                        float healAmount = damage * divineLifesteal;
+                        float healAmount = damage * lifesteal;
                         if (healAmount > 1f)
                         {
                             try

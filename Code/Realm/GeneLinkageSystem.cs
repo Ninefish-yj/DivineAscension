@@ -109,6 +109,22 @@ namespace Code
 			// 此前连锁只生成描述文案（DynamicLinkage），属性从未真正生效。
 			ApplyLinkageBonuses(actor, result);
 
+			// 元素组合落地（v0.16.0）：激活的组合 = 已激活的连锁。写入 ds_combos_active（此前恒为空串，
+			// 组合数据只有初始化+读取、无写入）。消费方：年度能量结算按组合数给"组合共鸣"能量恢复。
+			try
+			{
+				var comboIds = new List<string>();
+				foreach (var linkage in result)
+				{
+					if (linkage != null && !string.IsNullOrEmpty(linkage.Id))
+					{
+						comboIds.Add(linkage.Id);
+					}
+				}
+				CultivationData.SetActiveCombos(actor, comboIds);
+			}
+			catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] CheckAllLinkages 写组合异常: " + dsEx.Message); }
+
 			return result;
 		}
 

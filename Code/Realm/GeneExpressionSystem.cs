@@ -275,7 +275,58 @@ namespace Code.Realm
 				return 0f;
 			}
 		}
+
+		/// <summary>
+		/// 基因个体效果聚合（v0.16.0）：遍历已解锁基因，按 EffectType × 表达层级倍率求和并限幅。
+		/// 56 个基因各自的 EffectValue（如"攻击+2.5%"）由此真正生效——此前仅用于图谱描述展示。
+		/// 表达倍率：沉默0 / 低0.25 / 中0.5 / 高1.0 / 过1.5 / 突变2.0（EffectMultipliers）
+		/// </summary>
+		/// <param name="cap">加成上限（百分比小数，默认0.5=+50%）</param>
+		public static float GetIndividualEffectSum(Actor actor, GeneEffectType type, float cap = 0.5f)
+		{
+			if (actor == null || !CultivationData.IsAscended(actor)) return 0f;
+			try
+			{
+				var unlockedGenes = CultivationData.GetUnlockedElements(actor);
+				if (unlockedGenes == null || unlockedGenes.Count == 0) return 0f;
+
+				float total = 0f;
+				foreach (var geneId in unlockedGenes)
+				{
+					var info = ElementDef.GetById(geneId);
+					if (info == null || info.EffectType != type) continue;
+					int exprLevel = CultivationData.GetGeneExpressionLevel(actor, geneId);
+					if (exprLevel < 0 || exprLevel >= EffectMultipliers.Length) exprLevel = 1;
+					total += info.EffectValue * EffectMultipliers[exprLevel];
+				}
+				return Mathf.Min(cap, total);
+			}
+			catch { return 0f; }
+		}
+
+		/// <summary>
+		/// 统计某类基因的激活数量（v0.16.0）：用于"特殊能力"等按个数生效的效果。
+		/// SpecialAbility 基因的 EffectValue 是能力强度而非百分比，故按激活数量计。
+		/// </summary>
+		public static int CountGenesOfType(Actor actor, GeneEffectType type, int minExprLevel = 1)
+		{
+			if (actor == null || !CultivationData.IsAscended(actor)) return 0;
+			try
+			{
+				var unlockedGenes = CultivationData.GetUnlockedElements(actor);
+				if (unlockedGenes == null || unlockedGenes.Count == 0) return 0;
+
+				int count = 0;
+				foreach (var geneId in unlockedGenes)
+				{
+					var info = ElementDef.GetById(geneId);
+					if (info == null || info.EffectType != type) continue;
+					if (CultivationData.GetGeneExpressionLevel(actor, geneId) >= minExprLevel) count++;
+				}
+				return count;
+			}
+			catch { return 0; }
+		}
 	}
 }
-
 

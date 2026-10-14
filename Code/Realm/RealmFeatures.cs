@@ -258,6 +258,13 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
                 if (maxHp > 0 && currentHp < maxHp)
                 {
                     float healAmount = maxHp * ratio;
+                    // 基因个体效果·治疗加成（v0.16.0）：HealBonus 基因×表达倍率聚合
+                    try
+                    {
+                        float healBonus = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(actor, Code.Realm.GeneEffectType.HealBonus, 0.5f);
+                        if (healBonus > 0f) healAmount *= (1f + healBonus);
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因治疗加成失败: " + dsEx.Message); }
                     float newHp = Mathf.Min(currentHp + healAmount, maxHp);
                     actor.setHealth((int)newHp);
                 }

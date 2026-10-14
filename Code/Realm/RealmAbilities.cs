@@ -225,6 +225,13 @@ namespace Code.Realm
             // 神创基因技能冷却缩减：独立百分比降低冷却
             float divineCd = Code.Core.GeneEnergyCalculator.GetDivineCdBonus(actor);
             float effectiveCooldown = ability.Cooldown * (1f - divineCd);
+            // 基因个体效果·冷却缩减（v0.16.0）：CooldownReduction 基因×表达倍率聚合（上限50%）
+            try
+            {
+                float geneCd = Code.Realm.GeneExpressionSystem.GetIndividualEffectSum(actor, Code.Realm.GeneEffectType.CooldownReduction, 0.5f);
+                if (geneCd > 0f) effectiveCooldown *= (1f - geneCd);
+            }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 基因冷却缩减失败: " + dsEx.Message); }
             return currentTime - lastUseTime < effectiveCooldown;
         }
 

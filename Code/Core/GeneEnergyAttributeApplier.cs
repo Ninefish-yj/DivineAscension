@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using Code.Data;
+using Code.Realm;
 using HarmonyLib;
 using UnityEngine;
 
@@ -167,6 +168,24 @@ namespace Code.Core
                     }
                 }
                 catch (System.Exception dsEx) { DSDebug.Verbose("[基因能量属性加成器] 异能共鸣应用失败: " + dsEx.Message); }
+
+                // 基因个体效果（v0.16.0）：56 个基因各自的 EffectValue × 表达倍率聚合后应用。
+                // AttackBonus→伤害、DefenseBonus→护甲、SpeedBonus→速度、HealthBonus→生命、EnergyMaxBonus→能量上限（各限+50%）。
+                // 此前这些数值只出现在图谱描述里，从未真正改变属性。
+                try
+                {
+                    float geneAtk = GeneExpressionSystem.GetIndividualEffectSum(actor, GeneEffectType.AttackBonus);
+                    if (geneAtk > 0f) stats["damage"] = stats["damage"] * (1f + geneAtk);
+                    float geneDef = GeneExpressionSystem.GetIndividualEffectSum(actor, GeneEffectType.DefenseBonus);
+                    if (geneDef > 0f) stats["armor"] = stats["armor"] * (1f + geneDef);
+                    float geneSpd = GeneExpressionSystem.GetIndividualEffectSum(actor, GeneEffectType.SpeedBonus);
+                    if (geneSpd > 0f) stats["speed"] = stats["speed"] * (1f + geneSpd);
+                    float geneHp = GeneExpressionSystem.GetIndividualEffectSum(actor, GeneEffectType.HealthBonus);
+                    if (geneHp > 0f) stats["health"] = stats["health"] * (1f + geneHp);
+                    float geneEn = GeneExpressionSystem.GetIndividualEffectSum(actor, GeneEffectType.EnergyMaxBonus);
+                    if (geneEn > 0f) stats["mana"] = stats["mana"] * (1f + geneEn);
+                }
+                catch (System.Exception dsEx) { DSDebug.Verbose("[基因能量属性加成器] 基因个体效果应用失败: " + dsEx.Message); }
             }
             catch (System.Exception e)
             {
