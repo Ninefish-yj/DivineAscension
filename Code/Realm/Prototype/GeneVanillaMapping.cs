@@ -11,6 +11,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using Code.Core;
 
 namespace Code.Realm.Prototype
 {

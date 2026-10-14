@@ -401,7 +401,7 @@ namespace Code.UI
             }
 
             // 拖动平移（左键在空白处 / 中键 / 右键）
-            if (e.type == EventType.MouseDown && (e.button == 2 || e.button == 1 || (e.button == 0 && !HitTestNode(e.mousePosition))))
+            if (e.type == EventType.MouseDown && (e.button == 2 || e.button == 1 || (e.button == 0 && HitTestNode(e.mousePosition) == null)))
             {
                 _draging = true;
                 _dragStart = e.mousePosition;
