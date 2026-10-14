@@ -212,6 +212,14 @@ namespace Code.Traits
                 AssetManager.trait_groups.add(sectGroup);
                 DSDebug.Verbose("特质分组创建成功: ds_sect_group (异能组织)");
 
+                // 觉醒联动组（觉醒之心/基因共鸣——系统级联动特质，不属于阶位）
+                var awakeningGroup = new ActorTraitGroupAsset();
+                awakeningGroup.id = "ds_awakening_group";
+                awakeningGroup.name = "trait_group_ds_awakening_group";
+                awakeningGroup.color = "#FFD700";
+                AssetManager.trait_groups.add(awakeningGroup);
+                DSDebug.Verbose("特质分组创建成功: ds_awakening_group (异能觉醒)");
+
             }
             catch (System.Exception e)
             {
@@ -276,7 +284,7 @@ namespace Code.Traits
                 var trait = new ActorTrait
                 {
                     id = id,
-                    group_id = "ds_realm_group",
+                    group_id = "ds_awakening_group",
                     can_be_removed = false,
                     can_be_given = false,
                     needs_to_be_explored = false,

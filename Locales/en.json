@@ -1,4 +1,4 @@
-{
+﻿{
   "turb_warning": "Corruption Warning",
   "ability_telekinesis": "Telekinesis",
   "realm_abilities_title": "Realm Exclusive Abilities",
@@ -1124,6 +1124,7 @@
   "trait_group_ds_realm_group": "Ability Realm",
   "trait_group_ds_status_group": "Ability Status",
   "trait_group_ds_sect_group": "Ability Faction",
+  "trait_group_ds_awakening_group": "Awakening",
   "trait_group_ds_transcendent_group": "Transcendent Species",
   "sect_trait_commander_desc": "Regional manager of the ability organization, managing multiple captain teams, can teach high-level abilities to senior members, diplomacy+management+cultivation improvement.",
   "sect_trait_member_desc": "Official member of the ability organization, can learn basic organization abilities, enjoy organization resource bonuses, cultivation speed +3%.",

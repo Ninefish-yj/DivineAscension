@@ -1,4 +1,4 @@
-{
+﻿{
   "turb_warning": "失控警告",
   "ability_telekinesis": "念动力",
   "realm_abilities_title": "阶位专属技能",
@@ -1156,6 +1156,7 @@
   "trait_group_ds_realm_group": "异能阶位",
   "trait_group_ds_status_group": "异能状态",
   "trait_group_ds_sect_group": "异能组织",
+  "trait_group_ds_awakening_group": "异能觉醒",
   "trait_group_ds_transcendent_group": "超神级种族",
   "sect_trait_commander_desc": "异能组织区域管理者，管理多个队长小队，可传授高阶能力给资深以上成员，外交+管理+修炼提升。",
   "sect_trait_member_desc": "异能组织正式成员，可学习组织基础能力，享受组织资源加成，修炼速度+3%。",
