@@ -13,32 +13,32 @@ namespace Code.Realm.Prototype
         public static readonly List<PrototypeDef> List = new List<PrototypeDef>
         {
             // ---- 星辰 ----
-            new PrototypeDef("ce_star_01", "星光汇聚", "攻击暴击破甲，念力贯穿", "星辰系", "星辰",
+            new PrototypeDef("ce_star_01", "星光爆裂", "攻击暴击破甲，念力贯穿", "光明系", "光刃",
                 PrototypeTag.Crit, PrototypeTag.Telekinesis, 4),
-            new PrototypeDef("ce_star_02", "星辉庇护", "受击免伤，受击回血", "星辰系", "星辰",
+            new PrototypeDef("ce_star_02", "圣辉守护", "受击免伤，受击回血", "光明系", "晨曦",
                 PrototypeTag.Dodge, PrototypeTag.Blessing, 4),
-            new PrototypeDef("ce_star_03", "星辰之力", "攻击狂暴当次+25%，溅射波及", "星辰系", "星辰",
+            new PrototypeDef("ce_star_03", "星力狂暴", "攻击狂暴当次+25%，溅射波及", "强化系", "能量",
                 PrototypeTag.Berserk, PrototypeTag.Chain, 4),
             // ---- 宇宙 ----
-            new PrototypeDef("ce_cosmos_01", "宇宙之眼", "攻击念力贯穿高伤，恐惧眩晕", "星辰系", "宇宙",
+            new PrototypeDef("ce_cosmos_01", "心灵之眼", "攻击念力贯穿高伤，恐惧眩晕", "精神系", "心灵",
                 PrototypeTag.Telekinesis, PrototypeTag.Fear, 4),
-            new PrototypeDef("ce_cosmos_02", "虚空引力", "攻击重力压制目标，减速时缓", "星辰系", "宇宙",
+            new PrototypeDef("ce_cosmos_02", "引力掌控", "攻击重力压制目标，减速时缓", "时空系", "引力",
                 PrototypeTag.Gravity, PrototypeTag.TimeSlow, 4),
-            new PrototypeDef("ce_cosmos_03", "宇宙屏障", "护盾减伤，受击免伤最高", "星辰系", "宇宙",
+            new PrototypeDef("ce_cosmos_03", "次元护壁", "护盾减伤，受击免伤最高", "时空系", "空间",
                 PrototypeTag.Shield, PrototypeTag.Invisibility, 4),
             // ---- 陨石 ----
-            new PrototypeDef("ce_meteor_01", "陨石坠落", "攻击溅射波及，附加灼烧", "星辰系", "陨石",
+            new PrototypeDef("ce_meteor_01", "熔岩陨落", "攻击溅射波及，附加灼烧", "元素系", "火",
                 PrototypeTag.Chain, PrototypeTag.Burn, 6),
-            new PrototypeDef("ce_meteor_02", "陨星重压", "攻击重力压制，概率眩晕", "星辰系", "陨石",
+            new PrototypeDef("ce_meteor_02", "重力压制", "攻击重力压制，概率眩晕", "时空系", "引力",
                 PrototypeTag.Gravity, PrototypeTag.Stun, 6),
-            new PrototypeDef("ce_meteor_03", "陨铁之躯", "护盾减伤，受击反击麻痹攻击者", "星辰系", "陨石",
+            new PrototypeDef("ce_meteor_03", "磁力钢躯", "护盾减伤，受击反击麻痹攻击者", "元素系", "金属",
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 6),
             // ---- 银河 ----
-            new PrototypeDef("ce_galaxy_01", "银河之力", "攻击暴击破甲，溅射波及", "星辰系", "银河",
+            new PrototypeDef("ce_galaxy_01", "连锁闪电", "攻击暴击破甲，溅射波及", "元素系", "雷",
                 PrototypeTag.Crit, PrototypeTag.Chain, 4),
-            new PrototypeDef("ce_galaxy_02", "星河疗愈", "攻击概率回复生命，受击自愈", "星辰系", "银河",
+            new PrototypeDef("ce_galaxy_02", "星光治愈", "攻击概率回复生命，受击自愈", "生命系", "治愈",
                 PrototypeTag.Heal, PrototypeTag.Regeneration, 4),
-            new PrototypeDef("ce_galaxy_03", "星海幻影", "闪避强化，受击反击震慑攻击者", "星辰系", "银河",
+            new PrototypeDef("ce_galaxy_03", "幻影迷离", "闪避强化，受击反击震慑攻击者", "精神系", "幻象",
                 PrototypeTag.Illusion, PrototypeTag.Sound, 4),
         };
     }

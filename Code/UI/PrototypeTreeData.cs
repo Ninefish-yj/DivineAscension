@@ -62,11 +62,11 @@ namespace Code.UI
         public const float LEAF_SLOT_X = 188f;    // 异能槽位宽（节点宽+间隔）
         public const float GROUP_GAP = 160f;      // 不同小类异能群之间的最小间隔
 
-        // 大类固定展示顺序（Categories 字典无序，用顺序数组保证树 UI 稳定）
+        // 大类固定展示顺序（Categories 字典无序，用顺序数组保证树 UI 稳定；大众认知 10 系）
         private static readonly string[] CategoryOrder =
         {
             "元素系", "自然系", "精神系", "时空系", "光明系", "黑暗系",
-            "生命系", "死亡系", "强化系", "星辰系", "血族系", "神话系"
+            "生命系", "死亡系", "强化系"
         };
 
         /// <summary>构建全量异能树布局（无根节点：13 大类直接为顶层）</summary>
@@ -177,10 +177,7 @@ namespace Code.UI
                 case "黑暗系": return new Color(0.55f, 0.45f, 0.70f, 1f);   // 暗影紫
                 case "生命系": return new Color(0.40f, 0.85f, 0.55f, 1f);   // 生命翠
                 case "死亡系": return new Color(0.60f, 0.60f, 0.55f, 1f);   // 死寂灰绿
-                case "星辰系": return new Color(0.45f, 0.60f, 0.90f, 1f);   // 星辰蓝
                 case "强化系": return new Color(0.88f, 0.55f, 0.40f, 1f);   // 强化赤橙（力量感）
-                case "血族系": return new Color(0.80f, 0.30f, 0.35f, 1f);   // 血族红
-                case "神话系": return new Color(0.95f, 0.70f, 0.35f, 1f);   // 神话金橙
                 default: return new Color(0.6f, 0.6f, 0.6f, 1f);
             }
         }

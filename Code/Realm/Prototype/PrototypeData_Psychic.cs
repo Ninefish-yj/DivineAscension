@@ -27,7 +27,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("ps_mind_03", "心灵链接", "受击自愈回血，攻击治疗", "精神系", "心灵",
                 PrototypeTag.Regeneration, PrototypeTag.Heal, 3),
             // ---- 意志 ----
-            new PrototypeDef("ps_will_01", "钢铁意志", "护盾减伤强化，受击反击眩晕攻击者", "精神系", "意志",
+            new PrototypeDef("ps_will_01", "钢铁之心", "护盾减伤强化，受击反击眩晕攻击者", "精神系", "意志",
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 3),
             new PrototypeDef("ps_will_02", "不屈战意", "攻击狂暴当次+25%，吸血", "精神系", "意志",
                 PrototypeTag.Berserk, PrototypeTag.Lifesteal, 3),
