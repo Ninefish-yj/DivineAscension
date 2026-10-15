@@ -198,7 +198,7 @@ namespace Code.Realm.Prototype
                 case 2: return "玄阶";
                 case 3: return "灵阶";
                 case 4: return "圣阶";
-                case 5: return "神阶";
+                case 5: return "概念级";
                 default: return "";
             }
         }
