@@ -44,6 +44,7 @@ namespace Code.UI
         private Vector2 _dragStart;
         private Vector2 _panStart;
         private string _focusNodeId;   // 点击选中的节点（详情卡；默认=当前异能）
+        private bool _pathMode = true; // 仅路径模式：只显示当前异能所在链路（异能叶→小类→系→根）
         private float _prevPinchDist;  // 双指捏合上次距离（0=未在捏合）
         private Texture2D _bgTex;
         private Texture2D _titleBgTex;
@@ -94,7 +95,11 @@ namespace Code.UI
                     Config.paused = true;
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能树暂停捕获失败: " + dsEx.Message); }
-                Instance.ResetView();
+                // 默认仅路径模式：直接聚焦当前异能的链路；未觉醒则 Fit 全树
+                var proto = PrototypeRegistry.GetForActor(Instance._selectedActor);
+                Instance._pathMode = true;
+                if (proto != null) Instance.FocusChain(proto.Id);
+                else Instance.ResetView();
             }
             Instance.InitTextures();
             // 样式惰性初始化必须在 OnGUI 内（new GUIStyle 读 GUI.skin）
@@ -330,6 +335,20 @@ namespace Code.UI
             Rect resetBtn = new Rect(x, y, bw, bh);
             if (GUI.Button(resetBtn, GetText("proto_reset_btn", "重置视图"), _buttonStyle)) ResetView();
             x += bw + 8f;
+            // 仅路径 / 显示全部 切换
+            var proto = PrototypeRegistry.GetForActor(_selectedActor);
+            Rect pathBtn = new Rect(x, y, bw, bh);
+            if (GUI.Button(pathBtn, _pathMode ? GetText("proto_show_all_btn", "显示全部") : GetText("proto_path_btn", "仅显路径"), _buttonStyle))
+            {
+                _pathMode = !_pathMode;
+                if (_pathMode)
+                {
+                    if (proto != null) FocusChain(proto.Id);
+                    else ResetView();
+                }
+                else ResetView();
+            }
+            x += bw + 8f;
             Rect zoomHint = new Rect(x + 6f, y + 4f, Screen.width - x - 100f, bh);
             GUI.color = DSUITheme.SecondaryText;
             GUI.Label(zoomHint, GetText("proto_zoom_hint", "拖动平移 · 滚轮/双指缩放 · 点击节点看详情"), _infoStyle);
@@ -347,9 +366,17 @@ namespace Code.UI
             var proto = PrototypeRegistry.GetForActor(_selectedActor);
             if (proto == null)
                 return GetText("proto_no_prototype", "尚未觉醒异能。觉醒时将根据原版基因定相异能。");
+            string chainInfo = "";
+            if (_pathMode && _layout != null)
+            {
+                int onChain = 0;
+                foreach (var n in _layout.Nodes)
+                    if (IsOnActiveChain(n, proto.Id)) onChain++;
+                chainInfo = " · " + GetText("proto_path_only", "仅路径") + " " + onChain + " " + GetText("proto_nodes", "节点");
+            }
             return _selectedActor.getName() + " · " + proto.NameZh +
                    "（" + PrototypeTags.GetName(proto.MainTag) + " / " + PrototypeTags.GetName(proto.SubTag) + "） · " +
-                   GetText("proto_total", "共") + " " + (_layout != null ? _layout.Nodes.Count.ToString() : "0") + " " + GetText("proto_nodes", "节点");
+                   GetText("proto_total", "共") + " " + (_layout != null ? _layout.Nodes.Count.ToString() : "0") + " " + GetText("proto_nodes", "节点") + chainInfo;
         }
 
         private static string GetText(string key, string fallbackZh)
@@ -546,6 +573,7 @@ namespace Code.UI
             foreach (var node in _layout.Nodes)
             {
                 if (string.IsNullOrEmpty(node.ParentId)) continue;   // 根节点无父，不画入线
+                if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上入边
                 var parent = _layout.GetNode(node.ParentId);
                 if (parent == null) continue;
                 Rect pr = ScreenRect(parent);
@@ -589,13 +617,36 @@ namespace Code.UI
         private bool IsOnActiveChain(ProtoTreeNode node, string activeId)
         {
             if (string.IsNullOrEmpty(activeId)) return false;
-            var cur = node;
+            // 从当前异能沿父链向上爬：node 是 activeId 的祖先或自己 → 在链路上
+            var cur = _layout.GetNode(activeId);
             while (cur != null)
             {
-                if (cur.Id == activeId) return true;
+                if (cur.Id == node.Id) return true;
                 cur = _layout.GetNode(cur.ParentId);
             }
             return false;
+        }
+
+        /// <summary>聚焦当前异能链路（含根，Fit 到链路包围盒）</summary>
+        private void FocusChain(string activeId)
+        {
+            if (_layout == null || string.IsNullOrEmpty(activeId)) return;
+            Rect b = GetChainBounds(activeId);
+            FitToRect(b);
+        }
+
+        /// <summary>当前异能链路的节点包围盒（异能叶→小类→系→根，含边距）</summary>
+        private Rect GetChainBounds(string activeId)
+        {
+            float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+            foreach (var n in _layout.Nodes)
+            {
+                if (!IsOnActiveChain(n, activeId)) continue;
+                x0 = Mathf.Min(x0, n.X); y0 = Mathf.Min(y0, n.Y);
+                x1 = Mathf.Max(x1, n.X + n.W); y1 = Mathf.Max(y1, n.Y + n.H);
+            }
+            if (x0 > 1e9f) return _layout.Bounds;
+            return Rect.MinMaxRect(x0 - 60f, y0 - 60f, x1 + 60f, y1 + 60f);
         }
 
         private void DrawNodes(Rect area)
@@ -605,11 +656,12 @@ namespace Code.UI
 
             foreach (var node in _layout.Nodes)
             {
+                if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上节点
                 Rect r = ScreenRect(node);
                 if (r.xMax < -20f || r.yMax < -20f || r.x > area.width + 20f || r.y > area.height + 20f) continue; // 视口裁剪
 
                 bool isActive = node.Id == activeId;
-                bool onActiveChain = !isActive && IsOnActiveChain(node, activeId);
+                bool onActiveChain = !isActive && node.Level != -1 && IsOnActiveChain(node, activeId);
                 Color mainColor = isActive ? DSUITheme.AccentGold : node.Color;
 
                 // 圆角底色（染色）

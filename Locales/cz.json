@@ -1584,5 +1584,8 @@
   "boost_divine_heal": "神创: 治疗",
   "unit_gene_tab": "基因",
   "unit_gene_tab_desc": "当前单位的基因修炼总览：染色体亲和、实时加成、原版基因来源",
-  "unit_gene_tab_title": "基因面板 · 基因修炼总览"
+  "unit_gene_tab_title": "基因面板 · 基因修炼总览",
+  "proto_show_all_btn": "显示全部",
+  "proto_path_btn": "仅显路径",
+  "proto_path_only": "仅路径"
 }
