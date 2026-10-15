@@ -148,6 +148,8 @@ namespace Code.Realm.Prototype
                     w += GetChromosomeAffinity(actor, def.ChromosomePreference) * 1f;
                     w += GetTagAffinity(actor, def.MainTag) * 0.5f;
                     w += GetTagAffinity(actor, def.SubTag) * 0.25f;
+                    // 稀有度加权（v0.18.22）：品质越高越难天生觉醒（概念级约 1.5%）
+                    w *= PrototypeEvolution.GetRarityWeight(PrototypeEvolution.GetTier(def));
                     weights[i] = w;
                     totalWeight += w;
                 }
@@ -163,6 +165,7 @@ namespace Code.Realm.Prototype
                     {
                         string chosenId = candidates[i].Id;
                         data.custom_data_string[KEY_PROTOTYPE] = chosenId;
+                        PrototypeEvolution.RecordAwakened(actor);   // 记录来源=天生觉醒 + 觉醒年份（God 视角区分进阶）
                         DSDebug.Verbose("[GeneCultivation] 觉醒定相: " + actor.getName() + " 觉醒异能=" + candidates[i].NameZh + "(" + chosenId + ")");
                         return chosenId;
                     }

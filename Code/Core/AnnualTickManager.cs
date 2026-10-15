@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 
 using System;
 using Code;
@@ -235,6 +235,10 @@ namespace Code.Core
 
                 // 步骤1：凡人觉醒（全局抽样，不遍历全部单位）
                 AwakenMortals();
+
+                // 步骤1.5：异能进阶（年度自动事件，极低概率，境界+年限门槛）
+                try { Code.Realm.Prototype.PrototypeEvolution.AnnualSweep(); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 异能进阶年度扫描异常: " + dsEx.Message); }
 
                 // 步骤2：活跃异能者年度结算（修炼异能能量、失控指数、突破）
                 var snapshot = new List<long>(_activeCultivatorIds);

@@ -374,8 +374,12 @@ namespace Code.UI
                     if (IsOnActiveChain(n, proto.Id)) onChain++;
                 chainInfo = " · " + GetText("proto_path_only", "仅路径") + " " + onChain + " " + GetText("proto_nodes", "节点");
             }
+            // 来源（God 视角：天生觉醒 vs 后天进阶）
+            string originInfo = PrototypeEvolution.IsEvolved(_selectedActor)
+                ? " · " + GetText("proto_origin_evolved", "进阶×{0}").Replace("{0}", PrototypeEvolution.GetEvolveCount(_selectedActor).ToString())
+                : " · " + GetText("proto_origin_awakened", "觉醒");
             return _selectedActor.getName() + " · " + proto.NameZh +
-                   "（" + PrototypeTags.GetName(proto.MainTag) + " / " + PrototypeTags.GetName(proto.SubTag) + "） · " +
+                   "（" + PrototypeTags.GetName(proto.MainTag) + " / " + PrototypeTags.GetName(proto.SubTag) + "）" + originInfo + " · " +
                    GetText("proto_total", "共") + " " + (_layout != null ? _layout.Nodes.Count.ToString() : "0") + " " + GetText("proto_nodes", "节点") + chainInfo;
         }
 
@@ -711,12 +715,19 @@ namespace Code.UI
                     }
                 }
 
-                // 当前异能：右上角金色角标
+                // 当前异能：右上角金色角标；非激活概念级异能：金色小星角标
                 if (isActive)
                 {
                     float dot = Mathf.Max(5f, 7f * _zoom);
                     GUI.color = new Color(1f, 0.85f, 0.35f, 1f);
                     GUI.DrawTexture(new Rect(r.xMax - dot - 2f, r.y + 3f, dot, dot), Texture2D.whiteTexture);
+                    GUI.color = Color.white;
+                }
+                else if (node.Level == 2 && node.Def != null && PrototypeEvolution.GetTier(node.Def) >= 5 && _zoom >= 0.28f)
+                {
+                    float dot = Mathf.Max(5f, 7f * _zoom);
+                    GUI.color = new Color(1f, 0.85f, 0.35f, 0.75f);
+                    GUI.DrawTexture(new Rect(r.xMax - dot - 2f, r.y + 3f, dot, dot), _circleTex);
                     GUI.color = Color.white;
                 }
             }
@@ -761,7 +772,19 @@ namespace Code.UI
                 // ---- 异能详情 ----
                 var def = shown.Def;
                 GUI.color = DSUITheme.AccentGold;
-                GUI.Label(new Rect(x, y, w - 150f, 26f), def.NameZh, _detailNameStyle);
+                GUI.Label(new Rect(x, y, w - 210f, 26f), def.NameZh, _detailNameStyle);
+                GUI.color = Color.white;
+                // 品质徽章（异能等级 1凡~5概念级）
+                int tier = PrototypeEvolution.GetTier(def);
+                Color tierColor = tier >= 5 ? new Color(1f, 0.82f, 0.35f, 1f)
+                    : tier == 4 ? new Color(0.95f, 0.62f, 0.35f, 1f)
+                    : tier == 3 ? new Color(0.68f, 0.50f, 0.90f, 1f)
+                    : tier == 2 ? new Color(0.50f, 0.75f, 0.90f, 1f)
+                    : new Color(0.55f, 0.55f, 0.60f, 1f);
+                GUI.color = tierColor;
+                GUI.DrawTexture(new Rect(x + w - 210f, y, 56f, 22f), _badgeRoundedTex != null ? _badgeRoundedTex : Texture2D.whiteTexture);
+                GUI.color = DSUITheme.TitleText;
+                GUI.Label(new Rect(x + w - 210f, y, 56f, 22f), TierNameText(tier), _badgeStyle);
                 GUI.color = Color.white;
                 DrawTagBadge(new Rect(x + w - 150f, y, 66f, 22f), def.MainTag, 1f);
                 DrawTagBadge(new Rect(x + w - 78f, y, 66f, 22f), def.SubTag, 1f);
@@ -775,6 +798,31 @@ namespace Code.UI
                 GUI.color = DSUITheme.SecondaryText;
                 GUI.Label(new Rect(x, y, w, 22f),
                     GetText("proto_category_line", "分类：") + def.Category + " → " + def.SubCategory, _infoStyle);
+                GUI.color = Color.white;
+
+                // 来源 · 进化链（God 视角：天生觉醒 vs 后天进阶；进化目标=该异能家族内上级）
+                y += 24f;
+                var ownProto = PrototypeRegistry.GetForActor(_selectedActor);
+                bool isOwn = ownProto != null && ownProto.Id == def.Id;
+                if (isOwn)
+                {
+                    bool evolved = PrototypeEvolution.IsEvolved(_selectedActor);
+                    string originText = evolved
+                        ? GetText("proto_origin_evolved", "进阶×{0}").Replace("{0}", PrototypeEvolution.GetEvolveCount(_selectedActor).ToString())
+                        : GetText("proto_origin_awakened", "觉醒");
+                    GUI.color = evolved ? new Color(0.72f, 0.60f, 1f, 1f) : new Color(0.55f, 0.80f, 1f, 1f);
+                    GUI.Label(new Rect(x, y, 100f, 22f), GetText("proto_origin_label", "来源: ") + originText, _infoStyle);
+                    GUI.color = Color.white;
+                }
+                var evolveTarget = PrototypeEvolution.GetEvolveTarget(def);
+                string evoText;
+                if (evolveTarget != null)
+                    evoText = GetText("proto_evolve_hint", "可进化→{0}（{1}）")
+                        .Replace("{0}", evolveTarget.NameZh).Replace("{1}", TierNameText(PrototypeEvolution.GetTier(evolveTarget)));
+                else
+                    evoText = GetText("proto_evolve_peak", "已达{0}顶点").Replace("{0}", TierNameText(tier));
+                GUI.color = new Color(0.95f, 0.70f, 0.45f, 1f);
+                GUI.Label(new Rect(x + (isOwn ? 102f : 0f), y, w - (isOwn ? 102f : 0f), 22f), evoText, _infoStyle);
                 GUI.color = Color.white;
 
                 // 亲和数值（三桥联动证据：原版基因 → 染色体/标签亲和）
@@ -1008,6 +1056,20 @@ namespace Code.UI
                 case 6: return "异能";
                 case 7: return "潜能";
                 default: return index.ToString();
+            }
+        }
+
+        /// <summary>异能品质名（汉化优先，兜底业务层默认名）</summary>
+        private static string TierNameText(int tier)
+        {
+            switch (tier)
+            {
+                case 1: return GetText("proto_tier_1", "凡阶");
+                case 2: return GetText("proto_tier_2", "奇阶");
+                case 3: return GetText("proto_tier_3", "灵阶");
+                case 4: return GetText("proto_tier_4", "圣阶");
+                case 5: return GetText("proto_tier_5", "概念级");
+                default: return "";
             }
         }
         #endregion

@@ -1587,5 +1587,15 @@
   "unit_gene_tab_title": "基因面板 · 基因修炼总览",
   "proto_show_all_btn": "显示全部",
   "proto_path_btn": "仅显路径",
-  "proto_path_only": "仅路径"
+  "proto_path_only": "仅路径",
+  "proto_tier_1": "凡阶",
+  "proto_tier_2": "奇阶",
+  "proto_tier_3": "灵阶",
+  "proto_tier_4": "圣阶",
+  "proto_tier_5": "概念级",
+  "proto_origin_label": "来源: ",
+  "proto_origin_awakened": "觉醒",
+  "proto_origin_evolved": "进阶×{0}",
+  "proto_evolve_hint": "可进化→{0}（{1}）",
+  "proto_evolve_peak": "已达{0}顶点"
 }
