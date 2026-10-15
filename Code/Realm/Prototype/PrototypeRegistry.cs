@@ -17,7 +17,7 @@ namespace Code.Realm.Prototype
         public string Id;                // 异能ID（写入 custom_data_string["ds_prototype"]，全局唯一）
         public string NameZh;            // 中文名（大众认知名）
         public string DescZh;            // 效果描述（真实机制：由标签组合表达的实战效果）
-        public string Category;          // 大类（元素系/自然系/精神系/时空系/光明系/黑暗系/生命系/死亡系/星辰系/机械系/血族系/神话系）
+        public string Category;          // 大类（元素系/自然系/精神系/时空系/光明系/黑暗系/生命系/死亡系/强化系/星辰系/血族系/神话系）
         public string SubCategory;       // 小类（火/水/风…按大类内细分）
         public PrototypeTag MainTag;     // 主标签（觉醒时优先表现）
         public PrototypeTag SubTag;      // 副标签
