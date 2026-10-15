@@ -51,6 +51,7 @@ namespace Code.UI
         private Texture2D _nodeBgTex;
         private Texture2D _nodeActiveBgTex;
         private GUIStyle _titleStyle;
+        private GUIStyle _rootStyle;
         private GUIStyle _nodeStyle;
         private GUIStyle _subStyle;
         private GUIStyle _leafStyle;
@@ -136,6 +137,7 @@ namespace Code.UI
         private void InitStyles()
         {
             if (_titleStyle == null) _titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
+            if (_rootStyle == null) _rootStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             if (_nodeStyle == null) _nodeStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             if (_subStyle == null) _subStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             if (_leafStyle == null) _leafStyle = new GUIStyle(GUI.skin.label) { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
@@ -536,7 +538,7 @@ namespace Code.UI
 
             foreach (var node in _layout.Nodes)
             {
-                if (node.Level == 0) continue;
+                if (string.IsNullOrEmpty(node.ParentId)) continue;   // 根节点无父，不画入线
                 var parent = _layout.GetNode(node.ParentId);
                 if (parent == null) continue;
                 Rect pr = ScreenRect(parent);
@@ -594,11 +596,12 @@ namespace Code.UI
                 // 边框
                 DrawBorder(r, isActive ? DSUITheme.AccentGold : node.Color * new Color(0.7f, 0.7f, 0.7f, 1f));
 
-                // 缩放分级：远处只画色块；>=0.3 显名；>=0.65 异能显标签徽章
-                if (_zoom >= 0.28f)
+                // 缩放分级：远处只画色块；根/系/子类 >=0.10 显名；异能叶 >=0.28 显名；>=0.65 异能显标签徽章
+                bool showName = node.Level == 2 ? _zoom >= 0.28f : _zoom >= 0.10f;
+                if (showName)
                 {
-                    GUIStyle nameStyle = node.Level == 2 ? _leafStyle : (node.Level == 1 ? _subStyle : _nodeStyle);
-                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 12 : node.Level == 1 ? 13 : 15) * _zoom), 9, 22);
+                    GUIStyle nameStyle = node.Level == 2 ? _leafStyle : (node.Level == 1 ? _subStyle : (node.Level == 0 ? _nodeStyle : _rootStyle));
+                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 12 : node.Level == 1 ? 13 : node.Level == 0 ? 15 : 20) * _zoom), 9, 24);
                     GUI.color = isActive ? DSUITheme.AccentGold : DSUITheme.BodyText;
                     Rect nameRect = new Rect(r.x + 6f, r.y + 4f, r.width - 12f, r.height - 8f);
                     GUI.Label(nameRect, node.Name, nameStyle);
@@ -752,7 +755,7 @@ namespace Code.UI
             int count = 0;
             foreach (var n in _layout.Nodes)
             {
-                if (n.Level != 3) continue;
+                if (n.Level != 2) continue;   // 异能叶子（Level==2）
                 var cur = n;
                 while (cur != null && cur.Level > node.Level)
                 {

@@ -1552,7 +1552,7 @@
   "proto_awaken_hint": "尚未觉醒异能，觉醒时将根据原版基因定相异能。",
   "proto_cat_desc": "大类：",
   "proto_sub_desc": "小类：",
-  "proto_root_desc": "异能体系：13 大类 × 小类 × 数百异能。每个异能由 30 种效果标签组合驱动。",
+  "proto_root_desc": "异能体系：9 大系 × 小类 × 数百异能。每个异能由 30 种效果标签组合驱动。",
   "boost_title": "基因属性加成总览（实时生效）",
   "boost_none": "暂无生效的基因加成（先觉醒修炼）",
   "boost_more": " 更多",

@@ -1576,5 +1576,8 @@
   "boost_divine_heal": "Divine: Heal",
   "unit_gene_tab": "Gene",
   "unit_gene_tab_desc": "Current unit's gene cultivation overview: affinity, live boosts, vanilla sources",
-  "unit_gene_tab_title": "GENE PANEL"
+  "unit_gene_tab_title": "GENE PANEL",
+  "proto_root_desc": "异能体系：9 大系 × 小类 × 数百异能。每个异能由 30 种效果标签组合驱动。",
+  "proto_cat_desc": "大类：",
+  "proto_sub_desc": "小类："
 }
