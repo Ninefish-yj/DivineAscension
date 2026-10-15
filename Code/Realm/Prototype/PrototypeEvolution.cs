@@ -2,7 +2,7 @@
 // 异能进阶（v0.18.22 新增系统）——异能的"宝可梦式进化"（与境界/阶位系统相互独立）
 //
 // 设计（用户确认）：
-//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2奇阶/3灵阶/4圣阶/5概念级）
+//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2觉醒阶/3进化阶/4升维阶/5概念级）
 //     从低到高排布；每个异能唯一上级 = 家族内第一个严格更高品质的异能（固定链、宝可梦式）
 //  2. 年度自动事件触发：境界达标 + 觉醒年限达标 + 低概率（难度极高，品质越高越难）
 //  3. 天生高品：觉醒抽签稀有度加权（概念级约 1.5%），God 可从 UI 区分"觉醒"与"进阶"来源
@@ -116,9 +116,9 @@ namespace Code.Realm.Prototype
             int realmNeed = 99;
             switch (targetTier)
             {
-                case 2: realmNeed = 3; break;   // →奇阶：需 3 阶境界
-                case 3: realmNeed = 5; break;   // →灵阶：需 5 阶
-                case 4: realmNeed = 7; break;   // →圣阶：需 7 阶
+                case 2: realmNeed = 3; break;   // →觉醒阶：需 3 阶境界
+                case 3: realmNeed = 5; break;   // →进化阶：需 5 阶
+                case 4: realmNeed = 7; break;   // →升维阶：需 7 阶
                 case 5: realmNeed = 9; break;   // →概念级：需 9 阶
             }
             if (realmTier < realmNeed) return false;
@@ -195,9 +195,9 @@ namespace Code.Realm.Prototype
             switch (tier)
             {
                 case 1: return "凡阶";
-                case 2: return "玄阶";
-                case 3: return "灵阶";
-                case 4: return "圣阶";
+                case 2: return "觉醒阶";
+                case 3: return "进化阶";
+                case 4: return "升维阶";
                 case 5: return "概念级";
                 default: return "";
             }
