@@ -156,6 +156,7 @@ namespace Code.Realm
                         ApplyQiRegeneration(actor, 80f);
                         ApplyBasicRegeneration(actor, 0.1f);
                         ApplyBodyStrengthening(actor);
+                        TryCivilizeAnimal(actor);   // 动物开智：3阶获得高级脑功能区·文明化（原版civilized）
                         break;
 
                     case 4:
@@ -984,6 +985,29 @@ private static void ApplyBasicRegeneration(Actor actor, float ratio)
             catch (Exception e)
             {
                 DSDebug.Verbose($"[GeneCultivation] 基因效果翻倍失败: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 动物开智：非智慧生物（动物）达到3阶后获得原版 civilized（文明化）特质。
+        /// 幂等：已有 civilized / 智慧种族跳过。由 ApplyRealmFeaturesForTier case3 调用——
+        /// 突破时（ApplyAllRealmFeaturesUpTo）与年度结算（ApplyAnnualRealmFeatures）双路径覆盖，
+        /// 旧档 3 阶以上动物在下次年度结算自动补开智。
+        /// 开智后 IsHumanoidCivilized=true → 修炼速度惩罚解除，走智慧生物正常修炼路线。
+        /// </summary>
+        private static void TryCivilizeAnimal(Actor actor)
+        {
+            if (actor == null || !actor.isAlive()) return;
+            if (actor.isSapient() || !actor.isAnimal()) return;   // 智慧种族无需开智
+            if (actor.hasTrait("civilized")) return;              // 已开智（幂等）
+            try
+            {
+                actor.addTrait("civilized", false);
+                DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 达到3阶获得高级脑功能区·文明化（动物开智）");
+            }
+            catch (Exception e)
+            {
+                DSDebug.Warning($"[GeneCultivation] TryCivilizeAnimal异常: {actor.getName()}, {e.Message}");
             }
         }
 
