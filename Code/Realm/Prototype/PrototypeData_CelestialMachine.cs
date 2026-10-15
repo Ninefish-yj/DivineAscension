@@ -50,7 +50,7 @@ namespace Code.Realm.Prototype
         public static readonly List<PrototypeDef> List = new List<PrototypeDef>
         {
             // ---- 念力（原机械：本质是念力操控，归精神系）----
-            new PrototypeDef("ma_machine_01", "念力操控", "攻击念力贯穿高伤，护盾减伤", "精神系", "念力",
+            new PrototypeDef("ma_machine_01", "念力冲击", "攻击念力贯穿高伤，护盾减伤", "精神系", "念力",
                 PrototypeTag.Telekinesis, PrototypeTag.Shield, 0),
             new PrototypeDef("ma_machine_02", "念力洪流", "攻击溅射波及，暴击破甲", "精神系", "念力",
                 PrototypeTag.Chain, PrototypeTag.Crit, 0),

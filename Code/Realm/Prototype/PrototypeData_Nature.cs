@@ -41,11 +41,11 @@ namespace Code.Realm.Prototype
             new PrototypeDef("na_poison_03", "毒雾弥漫", "攻击溅射波及，附加持续伤害", "自然系", "毒",
                 PrototypeTag.Chain, PrototypeTag.Burn, 5),
             // ---- 治愈 ----
-            new PrototypeDef("na_heal_01", "自然治愈", "攻击概率回复生命，受击自愈", "自然系", "治愈",
+            new PrototypeDef("na_heal_01", "自然治愈", "攻击概率回复生命，受击自愈", "生命系", "治愈"
                 PrototypeTag.Heal, PrototypeTag.Regeneration, 2),
-            new PrototypeDef("na_heal_02", "生命赞歌", "治疗强化，护盾减伤", "自然系", "治愈",
+            new PrototypeDef("na_heal_02", "生命赞歌", "治疗强化，护盾减伤", "生命系", "治愈"
                 PrototypeTag.Soul, PrototypeTag.Shield, 2),
-            new PrototypeDef("na_heal_03", "回春术", "受击回血强化，闪避免伤", "自然系", "治愈",
+            new PrototypeDef("na_heal_03", "回春术", "受击回血强化，闪避免伤", "生命系", "治愈"
                 PrototypeTag.Blessing, PrototypeTag.Dodge, 2),
             // ---- 野兽 ----
             new PrototypeDef("na_wild_01", "野性之血", "攻击吸血，暴击破甲", "自然系", "野兽",
