@@ -95,7 +95,7 @@ namespace Code.Realm.Prototype
         public static void RecordAwakened(Actor actor)
         {
             if (actor == null || actor.data == null) return;
-            if (actor.data.custom_data_string == null) actor.data.custom_data_string = new Dictionary<string, string>();
+            if (actor.data.custom_data_string == null) actor.data.custom_data_string = new CustomDataContainer<string>();
             actor.data.custom_data_string[KEY_ORIGIN] = "awakened";
             actor.data.custom_data_string[KEY_AWAKEN_YEAR] = GetWorldYear().ToString();
         }
@@ -151,11 +151,11 @@ namespace Code.Realm.Prototype
 
             // 成功：写新异能 + 来源=进阶 + 次数
             var data = actor.data;
-            if (data.custom_data_string == null) data.custom_data_string = new Dictionary<string, string>();
+            if (data.custom_data_string == null) data.custom_data_string = new CustomDataContainer<string>();
             data.custom_data_string[GeneAffinityBridge.KEY_PROTOTYPE] = target.Id;
             data.custom_data_string[KEY_ORIGIN] = "evolved";
             data.custom_data_string[KEY_EVOLVE_COUNT] = (GetEvolveCount(actor) + 1).ToString();
-            Code.Core.DSDebug.Log("[GeneCultivation] 异能进化: " + actor.getName() + " " + proto.NameZh +
+            Code.Core.DSDebug.Verbose("[GeneCultivation] 异能进化: " + actor.getName() + " " + proto.NameZh +
                 " → " + target.NameZh + "（" + TierName(targetTier) + "），来源=进阶×" + GetEvolveCount(actor));
             return true;
         }
