@@ -597,15 +597,15 @@ namespace Code.UI
                 // 缩放分级：远处只画色块；>=0.3 显名；>=0.65 异能显标签徽章
                 if (_zoom >= 0.28f)
                 {
-                    GUIStyle nameStyle = node.Level == 3 ? _leafStyle : (node.Level == 2 ? _subStyle : _nodeStyle);
-                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 3 ? 12 : node.Level == 2 ? 13 : 15) * _zoom), 9, 22);
+                    GUIStyle nameStyle = node.Level == 2 ? _leafStyle : (node.Level == 1 ? _subStyle : _nodeStyle);
+                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 12 : node.Level == 1 ? 13 : 15) * _zoom), 9, 22);
                     GUI.color = isActive ? DSUITheme.AccentGold : DSUITheme.BodyText;
                     Rect nameRect = new Rect(r.x + 6f, r.y + 4f, r.width - 12f, r.height - 8f);
                     GUI.Label(nameRect, node.Name, nameStyle);
                     GUI.color = Color.white;
 
                     // 异能叶子：标签徽章
-                    if (node.Level == 3 && node.Def != null && _zoom >= 0.65f)
+                    if (node.Level == 2 && node.Def != null && _zoom >= 0.65f)
                     {
                         float badgeH = Mathf.Max(12f, 17f * _zoom);
                         float badgeW = (r.width - 10f) / 2f;
@@ -736,11 +736,11 @@ namespace Code.UI
                 int count = CountDescendants(shown);
                 GUI.color = DSUITheme.BodyText;
                 GUI.Label(new Rect(x, y, w, 48f),
-                    shown.Level == 1
+                    shown.Level == 0
                         ? GetText("proto_cat_desc", "大类：") + shown.Name + "，含 " + count + " 个异能。觉醒时可能定相于此系异能。"
-                        : shown.Level == 2
+                        : shown.Level == 1
                             ? GetText("proto_sub_desc", "小类：") + shown.Name + "，含 " + count + " 个异能。"
-                            : GetText("proto_root_desc", "异能体系：12 大类 × 小类 × 数百异能。每个异能由 30 种效果标签组合驱动。"),
+                            : GetText("proto_root_desc", "异能体系：13 大类 × 小类 × 数百异能。每个异能由 30 种效果标签组合驱动。"),
                     _descStyle);
                 GUI.color = Color.white;
             }

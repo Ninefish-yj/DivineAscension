@@ -17,9 +17,9 @@ namespace Code.UI
     /// <summary>异能树节点（数据模型）</summary>
     public sealed class ProtoTreeNode
     {
-        public string Id;          // 异能id / 大类名 / 小类名 / "root"
+        public string Id;          // 异能id / 大类名 / 小类名
         public string Name;        // 显示名
-        public int Level;          // 0=异能体系根 1=大类 2=小类 3=异能叶子
+        public int Level;          // 0=大类 1=小类 2=异能叶子
         public string ParentId;    // 父节点 Id（连线用）
         public float X, Y;         // 布局坐标（左上角）
         public float W, H;         // 节点尺寸
@@ -56,7 +56,6 @@ namespace Code.UI
     {
         // 布局常量（参照诸天神座 DaoTuLayout 的量级，异能树更深更宽故槽位紧凑）
         public const float LAYER_PITCH = 240f;    // 层间距（Y）
-        public const float NODE_ROOT_W = 200f, NODE_ROOT_H = 50f;
         public const float NODE_CAT_W = 180f, NODE_CAT_H = 46f;
         public const float NODE_SUB_W = 110f, NODE_SUB_H = 40f;
         public const float NODE_LEAF_W = 172f, NODE_LEAF_H = 68f;
@@ -70,22 +69,14 @@ namespace Code.UI
             "生命系", "死亡系", "强化系", "星辰系", "血族系", "神话系"
         };
 
-        /// <summary>构建全量异能树布局</summary>
+        /// <summary>构建全量异能树布局（无根节点：13 大类直接为顶层）</summary>
         public static ProtoTreeLayout Build()
         {
             var layout = new ProtoTreeLayout();
-            // 根
-            var root = new ProtoTreeNode
-            {
-                Id = "root", Name = "异能体系", Level = 0, ParentId = null,
-                Color = new Color(0.45f, 0.80f, 0.85f, 1f)
-            };
-            layout.Nodes.Add(root);
 
-            float leafY = 3f * LAYER_PITCH;
-            float subY = 2f * LAYER_PITCH;
-            float catY = 1f * LAYER_PITCH;
-            float rootY = 0f;
+            float leafY = 2f * LAYER_PITCH;
+            float subY = 1f * LAYER_PITCH;
+            float catY = 0f;
 
             // 遍历大类（固定顺序）
             var catCenters = new List<float>();
@@ -94,10 +85,10 @@ namespace Code.UI
             {
                 if (!PrototypeRegistry.Categories.TryGetValue(category, out var subs)) continue;
 
-                // 大类节点
+                // 大类节点（顶层）
                 var catNode = new ProtoTreeNode
                 {
-                    Id = category, Name = category, Level = 1, ParentId = "root",
+                    Id = category, Name = category, Level = 0, ParentId = null,
                     W = NODE_CAT_W, H = NODE_CAT_H,
                     Color = GetCategoryColor(category)
                 };
@@ -122,7 +113,7 @@ namespace Code.UI
                         if (def == null) continue;
                         var leaf = new ProtoTreeNode
                         {
-                            Id = def.Id, Name = def.NameZh, Level = 3,
+                            Id = def.Id, Name = def.NameZh, Level = 2,
                             ParentId = category + "::" + subName,
                             X = groupX0 + i * LEAF_SLOT_X, Y = leafY,
                             W = NODE_LEAF_W, H = NODE_LEAF_H,
@@ -138,7 +129,7 @@ namespace Code.UI
                     // 小类节点：居中于其异能群
                     var subNode = new ProtoTreeNode
                     {
-                        Id = category + "::" + subName, Name = subName, Level = 2,
+                        Id = category + "::" + subName, Name = subName, Level = 1,
                         ParentId = category, X = groupCenter - NODE_SUB_W / 2f, Y = subY,
                         W = NODE_SUB_W, H = NODE_SUB_H,
                         Color = catNode.Color * new Color(0.85f, 0.85f, 0.85f, 1f)
@@ -159,21 +150,6 @@ namespace Code.UI
                 catNode.X = catCenter - NODE_CAT_W / 2f;
                 catNode.Y = catY;
                 catCenters.Add(catCenter);
-            }
-
-            // 根节点：居中于全部大类群
-            if (catCenters.Count > 0)
-            {
-                float rootCenter = 0f;
-                foreach (float c in catCenters) rootCenter += c;
-                rootCenter /= catCenters.Count;
-                root.X = rootCenter - NODE_ROOT_W / 2f;
-                root.Y = rootY;
-                root.W = NODE_ROOT_W; root.H = NODE_ROOT_H;
-            }
-            else
-            {
-                root.X = 0f; root.Y = rootY; root.W = NODE_ROOT_W; root.H = NODE_ROOT_H;
             }
 
             // 内容包围盒（含边预留）
