@@ -336,14 +336,14 @@ namespace Code.UI
             if (GUI.Button(resetBtn, GetText("proto_reset_btn", "重置视图"), _buttonStyle)) ResetView();
             x += bw + 8f;
             // 仅路径 / 显示全部 切换
-            var proto = PrototypeRegistry.GetForActor(_selectedActor);
+            var activeProto = PrototypeRegistry.GetForActor(_selectedActor);
             Rect pathBtn = new Rect(x, y, bw, bh);
             if (GUI.Button(pathBtn, _pathMode ? GetText("proto_show_all_btn", "显示全部") : GetText("proto_path_btn", "仅显路径"), _buttonStyle))
             {
                 _pathMode = !_pathMode;
                 if (_pathMode)
                 {
-                    if (proto != null) FocusChain(proto.Id);
+                    if (activeProto != null) FocusChain(activeProto.Id);
                     else ResetView();
                 }
                 else ResetView();
