@@ -1544,6 +1544,7 @@
   "bridge_chr_feeders": "Feeding genes ({0}):",
   "bridge_more": " more",
   "proto_sources_line": "Vanilla gene sources: ",
+  "proto_zoom_hint": "Drag to pan · Wheel/Pinch to zoom · Tap node for details",
   "boost_title": "GENE BOOST SUMMARY (live)",
   "boost_none": "No active gene boosts (awaken first)",
   "boost_more": " more",

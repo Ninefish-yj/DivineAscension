@@ -1542,6 +1542,7 @@
   "bridge_chr_feeders": "来源基因（{0}）:",
   "bridge_more": " 更多",
   "proto_sources_line": "原版基因支撑: ",
+  "proto_zoom_hint": "拖动平移 · 滚轮/双指缩放 · 点击节点看详情",
   "boost_title": "基因属性加成总览（实时生效）",
   "boost_none": "暂无生效的基因加成（先觉醒修炼）",
   "boost_more": " 更多",

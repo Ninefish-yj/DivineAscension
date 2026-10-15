@@ -44,6 +44,7 @@ namespace Code.UI
         private Vector2 _dragStart;
         private Vector2 _panStart;
         private string _focusNodeId;   // 点击选中的节点（详情卡；默认=当前异能）
+        private float _prevPinchDist;  // 双指捏合上次距离（0=未在捏合）
         private Texture2D _bgTex;
         private Texture2D _titleBgTex;
         private Texture2D _cardBgTex;
@@ -183,7 +184,7 @@ namespace Code.UI
             if (worldRect.width < 1f || worldRect.height < 1f || areaW < 10f || areaH < 10f) return;
             float zx = areaW / worldRect.width;
             float zy = areaH / worldRect.height;
-            _zoom = Mathf.Clamp(Mathf.Min(zx, zy), ZOOM_MIN, 1f);
+            _zoom = Mathf.Clamp(Mathf.Min(zx, zy), 0.02f, 1f);   // Fit 场景放宽下限（274 节点大树可完整显示）
             float cx = worldRect.center.x * _zoom;
             float cy = worldRect.center.y * _zoom;
             _pan.x = Screen.width / 2f - cx;
@@ -322,7 +323,7 @@ namespace Code.UI
             x += bw + 8f;
             Rect zoomHint = new Rect(x + 6f, y + 4f, Screen.width - x - 100f, bh);
             GUI.color = DSUITheme.SecondaryText;
-            GUI.Label(zoomHint, GetText("proto_zoom_hint", "拖动平移 · 滚轮缩放 · 点击节点看详情"), _infoStyle);
+            GUI.Label(zoomHint, GetText("proto_zoom_hint", "拖动平移 · 滚轮/双指缩放 · 点击节点看详情"), _infoStyle);
             GUI.color = Color.white;
         }
 
@@ -383,22 +384,14 @@ namespace Code.UI
 
         private void HandleTreeInput(Event e, Rect area)
         {
-            if (!area.Contains(e.mousePosition)) return;
-
-            // 滚轮缩放（以鼠标位置为中心）
-            if (e.type == EventType.ScrollWheel)
+            // ---- 每帧轮询输入（统一在 Repaint 帧执行一次，避免 Layout/事件帧重复应用）----
+            if (e.type == EventType.Repaint)
             {
-                float factor = e.delta.y > 0f ? 1.15f : 1f / 1.15f;
-                float before = _zoom;
-                _zoom = Mathf.Clamp(_zoom * factor, ZOOM_MIN, ZOOM_MAX);
-                if (Mathf.Abs(_zoom - before) > 0.0001f)
-                {
-                    Vector2 mouse = e.mousePosition;
-                    _pan = mouse + (_pan - mouse) * (_zoom / before);
-                }
-                e.Use();
-                return;
+                HandlePolledInput(area);
             }
+            if (Input.touchCount > 0) return;   // 触摸期间 IMGUI 鼠标事件不处理
+
+            if (!area.Contains(e.mousePosition)) return;
 
             // 拖动平移（左键在空白处 / 中键 / 右键）
             if (e.type == EventType.MouseDown && (e.button == 2 || e.button == 1 || (e.button == 0 && HitTestNode(e.mousePosition) == null)))
@@ -432,6 +425,77 @@ namespace Code.UI
                     _focusNodeId = hit.Id;
                     e.Use();
                 }
+            }
+        }
+
+        /// <summary>轮询输入：PC 滚轮缩放 + 手机双指捏合缩放 + 单指拖动平移。
+        /// 说明：IMGUI 的 ScrollWheel 事件只在存在滚动容器时才派发，全屏自绘树不可靠，
+        /// 故改用 Input.mouseScrollDelta 轮询；手机双指缩放此前完全缺失，一并补上。</summary>
+        private void HandlePolledInput(Rect area)
+        {
+            // ---- PC 滚轮缩放（以鼠标为中心）----
+            float wheel = Input.mouseScrollDelta.y;
+            if (Mathf.Abs(wheel) > 0.0001f)
+            {
+                Vector2 mouse = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y); // → GUI 坐标
+                if (area.Contains(mouse))
+                {
+                    ApplyZoomAt(mouse, wheel > 0f ? 1.15f : 1f / 1.15f);
+                }
+            }
+
+            // ---- 手机触摸 ----
+            if (Input.touchCount >= 2)
+            {
+                // 双指捏合缩放（以两指中点为中心）
+                Touch t0 = Input.GetTouch(0), t1 = Input.GetTouch(1);
+                Vector2 mid = (t0.position + t1.position) * 0.5f;
+                mid.y = Screen.height - mid.y; // → GUI 坐标
+                if (area.Contains(mid))
+                {
+                    float d = Vector2.Distance(t0.position, t1.position);
+                    if (_prevPinchDist > 0f && Mathf.Abs(d - _prevPinchDist) > 1f)
+                    {
+                        ApplyZoomAt(mid, d / _prevPinchDist);
+                    }
+                    _prevPinchDist = d;
+                }
+                else _prevPinchDist = 0f;
+            }
+            else if (Input.touchCount == 1)
+            {
+                // 单指拖动平移；Began 时若命中节点则选中详情
+                _prevPinchDist = 0f;
+                Touch t0 = Input.GetTouch(0);
+                Vector2 p = t0.position;
+                p.y = Screen.height - p.y; // → GUI 坐标
+                if (!area.Contains(p)) return;
+                if (t0.phase == TouchPhase.Began)
+                {
+                    var hit = HitTestNode(p);
+                    if (hit != null) { _focusNodeId = hit.Id; _draging = false; }
+                    else { _draging = true; _dragStart = p; _panStart = _pan; }
+                }
+                else if (t0.phase == TouchPhase.Moved && _draging)
+                {
+                    _pan = _panStart + (p - _dragStart);
+                }
+                else if (t0.phase == TouchPhase.Ended || t0.phase == TouchPhase.Canceled)
+                {
+                    _draging = false;
+                }
+            }
+            else _prevPinchDist = 0f;
+        }
+
+        /// <summary>以 anchor 为锚点缩放（anchor 为 GUI 屏幕坐标）</summary>
+        private void ApplyZoomAt(Vector2 anchor, float factor)
+        {
+            float before = _zoom;
+            _zoom = Mathf.Clamp(_zoom * factor, ZOOM_MIN, ZOOM_MAX);
+            if (Mathf.Abs(_zoom - before) > 0.0001f)
+            {
+                _pan = anchor + (_pan - anchor) * (_zoom / before);
             }
         }
 
@@ -615,9 +679,9 @@ namespace Code.UI
                 GUI.Label(new Rect(x, y, w, 22f),
                     GetText("proto_affinity_line",
                         "标签亲和  {0} {1:F1} / {2} {3:F1}   染色体 {4} {5:F1}")
-                    .Replace("{0}", PrototypeTags.GetName(def.MainTag)).Replace("{1}", mainAff.ToString("F1"))
-                    .Replace("{2}", PrototypeTags.GetName(def.SubTag)).Replace("{3}", subAff.ToString("F1"))
-                    .Replace("{4}", GetChromosomeName(def.ChromosomePreference)).Replace("{5}", chromoAff.ToString("F1")),
+                    .Replace("{0}", PrototypeTags.GetName(def.MainTag)).Replace("{1:F1}", mainAff.ToString("F1"))
+                    .Replace("{2}", PrototypeTags.GetName(def.SubTag)).Replace("{3:F1}", subAff.ToString("F1"))
+                    .Replace("{4}", GetChromosomeName(def.ChromosomePreference)).Replace("{5:F1}", chromoAff.ToString("F1")),
                     _infoStyle);
                 GUI.color = Color.white;
 
