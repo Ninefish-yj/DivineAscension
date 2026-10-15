@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能进阶（v0.18.22 新增系统）——异能的"宝可梦式进化"（与境界/阶位系统相互独立）
 //
 // 设计（用户确认）：
@@ -195,10 +195,10 @@ namespace Code.Realm.Prototype
             switch (tier)
             {
                 case 1: return "凡阶";
-                case 2: return "奇阶";
+                case 2: return "玄阶";
                 case 3: return "灵阶";
                 case 4: return "圣阶";
-                case 5: return "概念级";
+                case 5: return "神阶";
                 default: return "";
             }
         }

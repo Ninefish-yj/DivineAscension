@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 精神系（v0.18.0）
 // 大类：精神系 | 小类：念力/心灵/意志/预知/催眠/操控/幻象
 // 描述 = 真实机制（由主/副标签组合表达），不含虚假效果。
@@ -44,7 +44,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("ps_hypno_01", "催眠术", "攻击眩晕定身目标，恐惧加深", "精神系", "催眠",
                 PrototypeTag.Stun, PrototypeTag.Fear, 5),
             new PrototypeDef("ps_hypno_02", "沉睡", "攻击减速时缓目标，概率眩晕", "精神系", "催眠",
-                PrototypeTag.TimeSlow, PrototypeTag.Stun, 5),
+                PrototypeTag.TimeSlow, PrototypeTag.Sleep, 5),
             new PrototypeDef("ps_hypno_03", "梦魇", "攻击附加诅咒持续伤害，眩晕", "精神系", "催眠",
                 PrototypeTag.Curse, PrototypeTag.Stun, 5),
             // ---- 操控 ----
@@ -58,7 +58,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("ps_illusion_01", "幻术", "闪避强化，受击概率免伤", "精神系", "幻象",
                 PrototypeTag.Illusion, PrototypeTag.Dodge, 4),
             new PrototypeDef("ps_illusion_02", "影分身", "受击免伤最高，攻击暴击", "精神系", "幻象",
-                PrototypeTag.Invisibility, PrototypeTag.Crit, 4),
+                PrototypeTag.Invisibility, PrototypeTag.Clone, 4),
             new PrototypeDef("ps_illusion_03", "幻境", "受击反击震慑攻击者，闪避", "精神系", "幻象",
                 PrototypeTag.Sound, PrototypeTag.Illusion, 4),
         };

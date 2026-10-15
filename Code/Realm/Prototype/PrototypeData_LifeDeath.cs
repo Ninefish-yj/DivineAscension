@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 生命系 / 死亡系（v0.18.0）
 // 大类：生命系（生命/治愈/再生/生长/祝福）| 死亡系（亡灵/死亡/腐化/灵魂/凋零）
 // 描述 = 真实机制（由主/副标签组合表达），不含虚假效果。
@@ -23,7 +23,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("lf_heal_01", "圣愈术", "攻击概率回复生命，受击回血", "生命系", "治愈",
                 PrototypeTag.Heal, PrototypeTag.Blessing, 2),
             new PrototypeDef("lf_heal_02", "群疗", "攻击溅射波及，治疗强化", "生命系", "治愈",
-                PrototypeTag.Chain, PrototypeTag.Heal, 2),
+                PrototypeTag.Chain, PrototypeTag.HealAlly, 2),
             new PrototypeDef("lf_heal_03", "愈合", "受击自愈回血强化，免伤", "生命系", "治愈",
                 PrototypeTag.Regeneration, PrototypeTag.Dodge, 2),
             // ---- 再生 ----
@@ -65,14 +65,14 @@ namespace Code.Realm.Prototype
             new PrototypeDef("de_death_01", "死亡宣告", "攻击念力贯穿高伤，诅咒加深", "死亡系", "死亡",
                 PrototypeTag.Telekinesis, PrototypeTag.Curse, 5),
             new PrototypeDef("de_death_02", "收割", "攻击暴击破甲，吸血", "死亡系", "死亡",
-                PrototypeTag.Crit, PrototypeTag.Lifesteal, 5),
+                PrototypeTag.Crit, PrototypeTag.Execute, 5),
             new PrototypeDef("de_death_03", "死域", "攻击减速时缓目标，概率眩晕", "死亡系", "死亡",
                 PrototypeTag.TimeSlow, PrototypeTag.Stun, 5),
             // ---- 腐化 ----
             new PrototypeDef("de_corrupt_01", "腐化", "攻击附加中毒持续伤害，溅射", "死亡系", "腐化",
                 PrototypeTag.Poison, PrototypeTag.Chain, 5),
             new PrototypeDef("de_corrupt_02", "衰败", "攻击附加灼烧持续伤害，减速", "死亡系", "腐化",
-                PrototypeTag.Burn, PrototypeTag.Slow, 5),
+                PrototypeTag.Burn, PrototypeTag.Aging, 5),
             new PrototypeDef("de_corrupt_03", "腐甲", "受击反击震慑攻击者，受击回血", "死亡系", "腐化",
                 PrototypeTag.Sound, PrototypeTag.Regeneration, 5),
             // ---- 灵魂 ----

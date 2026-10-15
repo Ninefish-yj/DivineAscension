@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 光明系 / 黑暗系（v0.18.0）
 // 大类：光明系（圣光/光刃/净化/晨曦）| 黑暗系（暗影/腐蚀/诅咒/夜幕）
 // 描述 = 真实机制（由主/副标签组合表达），不含虚假效果。
@@ -60,7 +60,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("dk_corrode_02", "溶解", "攻击附加灼烧持续伤害，溅射波及", "黑暗系", "腐蚀",
                 PrototypeTag.Burn, PrototypeTag.Chain, 5),
             new PrototypeDef("dk_corrode_03", "蚀甲", "攻击眩晕定身，减速目标", "黑暗系", "腐蚀",
-                PrototypeTag.Stun, PrototypeTag.Slow, 5),
+                PrototypeTag.Stun, PrototypeTag.ArmorBreak, 5),
             // ---- 诅咒 ----
             new PrototypeDef("dk_curse_01", "恶咒", "攻击附加诅咒持续伤害，恐惧眩晕", "黑暗系", "诅咒",
                 PrototypeTag.Curse, PrototypeTag.Fear, 5),

@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 元素系（v0.18.0）
 // 大类：元素系 | 小类：火/水/风/雷/冰/土/木/光/暗/金属
 // 注意：fire/water/… 10 个 id 为 v0.17.0 旧档异能，禁止改名/删（旧档 ds_prototype 兼容）。
@@ -52,9 +52,9 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Shield, PrototypeTag.Vibration, 4),
             // ---- 土 ----
             new PrototypeDef("earth", "地裂", "护盾减伤，攻击波及周围", "元素系", "土",
-                PrototypeTag.Shield, PrototypeTag.Chain, 2),
+                PrototypeTag.Shield, PrototypeTag.Petrify, 2),
             new PrototypeDef("el_earth_02", "岩铠", "护盾减伤，受击自愈回血", "元素系", "土",
-                PrototypeTag.Shield, PrototypeTag.Regeneration, 2),
+                PrototypeTag.Shield, PrototypeTag.ElementResist, 2),
             new PrototypeDef("el_earth_03", "山崩", "攻击重力压制目标，溅射波及", "元素系", "土",
                 PrototypeTag.Gravity, PrototypeTag.Chain, 2),
             // ---- 木 ----
@@ -68,7 +68,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("light", "圣光", "治疗自身，护盾减伤", "光明系", "圣光",
                 PrototypeTag.Heal, PrototypeTag.Shield, 3),
             new PrototypeDef("el_light_02", "净化", "攻击概率回复生命，治疗强化", "光明系", "净化",
-                PrototypeTag.Soul, PrototypeTag.Heal, 3),
+                PrototypeTag.Soul, PrototypeTag.Cleanse, 3),
             new PrototypeDef("el_light_03", "光罩", "受击免伤强化，受击回血", "光明系", "圣光",
                 PrototypeTag.Invisibility, PrototypeTag.Blessing, 3),
             // ---- 暗 ----
@@ -77,7 +77,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("el_dark_02", "猎杀", "攻击吸血强化，概率暴击", "黑暗系", "暗影",
                 PrototypeTag.Blood, PrototypeTag.Crit, 5),
             new PrototypeDef("el_dark_03", "侵蚀", "攻击附加诅咒持续伤害，恐惧眩晕", "黑暗系", "夜幕",
-                PrototypeTag.Curse, PrototypeTag.Fear, 5),
+                PrototypeTag.Curse, PrototypeTag.Weakness, 5),
             // ---- 金属 ----
             new PrototypeDef("metal", "御金", "攻击暴击破甲，护盾硬化", "元素系", "金属",
                 PrototypeTag.Crit, PrototypeTag.Shield, 0),

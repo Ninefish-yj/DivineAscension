@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 时空系（v0.18.0）
 // 大类：时空系 | 小类：时间/空间/次元/引力/速度
 // 描述 = 真实机制（由主/副标签组合表达），不含虚假效果。
@@ -21,7 +21,7 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Regeneration, PrototypeTag.Heal, 4),
             // ---- 空间 ----
             new PrototypeDef("st_space_01", "瞬移", "闪避强化，受击概率免伤", "时空系", "空间",
-                PrototypeTag.Illusion, PrototypeTag.Dodge, 4),
+                PrototypeTag.Illusion, PrototypeTag.Teleport, 4),
             new PrototypeDef("st_space_02", "空间斩", "攻击念力贯穿高伤，溅射波及", "时空系", "空间",
                 PrototypeTag.Telekinesis, PrototypeTag.Chain, 4),
             new PrototypeDef("st_space_03", "壁垒", "护盾减伤，受击免伤", "时空系", "空间",
@@ -44,7 +44,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("st_speed_01", "极速", "身法闪避，攻击暴击", "时空系", "速度",
                 PrototypeTag.Dodge, PrototypeTag.Crit, 1),
             new PrototypeDef("st_speed_02", "瞬连", "攻击暴击破甲，减速目标", "时空系", "速度",
-                PrototypeTag.Crit, PrototypeTag.Slow, 1),
+                PrototypeTag.Crit, PrototypeTag.MultiShot, 1),
             new PrototypeDef("st_speed_03", "音速", "攻击击退眩晕，溅射波及", "时空系", "速度",
                 PrototypeTag.Knockback, PrototypeTag.Chain, 1),
         };

@@ -72,18 +72,28 @@ namespace Code.Realm.Prototype
                     float shieldReduction = Mathf.Min(MAX_SHIELD_REDUCTION, PrototypeTags.Get(PrototypeTag.Shield).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Shield) * 0.03f);
                     damage *= Mathf.Max(0.05f, 1f - shieldReduction);
                 }
-                // 闪避组：Dodge/Illusion/Invisibility 概率完全免伤（强度递增）
+                // 闪避组：Dodge/Illusion/Invisibility/Clone/Teleport 概率完全免伤（强度递增）
                 if (proto.MainTag == PrototypeTag.Dodge || proto.SubTag == PrototypeTag.Dodge ||
                     proto.MainTag == PrototypeTag.Illusion || proto.SubTag == PrototypeTag.Illusion ||
-                    proto.MainTag == PrototypeTag.Invisibility || proto.SubTag == PrototypeTag.Invisibility)
+                    proto.MainTag == PrototypeTag.Invisibility || proto.SubTag == PrototypeTag.Invisibility ||
+                    proto.MainTag == PrototypeTag.Clone || proto.SubTag == PrototypeTag.Clone ||
+                    proto.MainTag == PrototypeTag.Teleport || proto.SubTag == PrototypeTag.Teleport)
                 {
-                    PrototypeTag dodgeTag = proto.MainTag == PrototypeTag.Dodge || proto.MainTag == PrototypeTag.Illusion || proto.MainTag == PrototypeTag.Invisibility
+                    PrototypeTag dodgeTag = proto.MainTag == PrototypeTag.Dodge || proto.MainTag == PrototypeTag.Illusion || proto.MainTag == PrototypeTag.Invisibility ||
+                        proto.MainTag == PrototypeTag.Clone || proto.MainTag == PrototypeTag.Teleport
                         ? proto.MainTag : proto.SubTag;
                     float dodgeChance = Mathf.Min(MAX_DODGE_CHANCE, PrototypeTags.Get(dodgeTag).Strength + GeneAffinityBridge.GetTagAffinity(defender, dodgeTag) * 0.05f);
                     if (UnityEngine.Random.value < dodgeChance)
                     {
                         damage = 0f;
                         DSDebug.Verbose("[GeneCultivation] " + defender.getName() + " 异能闪避！");
+                        // 分身：免伤后回敬攻击者伤害（v0.18.24）
+                        if (dodgeTag == PrototypeTag.Clone && attacker != null && attacker.isAlive())
+                        {
+                            float reflect = Mathf.Max(1f, MAX_DODGE_CHANCE * 0.5f);
+                            try { attacker.getHit(reflect, false, AttackType.Other, defender, false, false, true); }
+                            catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 分身反击异常: " + dsEx.Message); }
+                        }
                     }
                 }
                 // 防守回复组：Blessing/Regeneration 受击概率回血
@@ -115,6 +125,25 @@ namespace Code.Realm.Prototype
                         try { DSStatusManager.SafeAddStatusEffect(attacker, "stunned", 2f); }
                         catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能反击附加状态异常: " + dsEx.Message); }
                     }
+                }
+                // 元素抗性：受击减伤（v0.18.24，元素/异常攻击抗性）
+                if (proto.MainTag == PrototypeTag.ElementResist || proto.SubTag == PrototypeTag.ElementResist)
+                {
+                    float resist = Mathf.Min(0.35f, PrototypeTags.Get(PrototypeTag.ElementResist).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.ElementResist) * 0.02f);
+                    damage *= Mathf.Max(0.05f, 1f - resist);
+                }
+                // 净化：受击概率清除自身负面状态（v0.18.24）
+                if (proto.MainTag == PrototypeTag.Cleanse || proto.SubTag == PrototypeTag.Cleanse)
+                {
+                    var def = PrototypeTags.Get(PrototypeTag.Cleanse);
+                    float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Cleanse) * 0.04f);
+                    if (UnityEngine.Random.value < chance) TryCleanse(defender);
+                }
+                // 反弹：受击反弹伤害给攻击者（v0.18.24，带递归防护）
+                if (attacker != null && attacker.isAlive() &&
+                    (proto.MainTag == PrototypeTag.Thorns || proto.SubTag == PrototypeTag.Thorns))
+                {
+                    TryThorns(defender, attacker, damage);
                 }
             }
             catch (System.Exception dsEx)
@@ -201,6 +230,37 @@ namespace Code.Realm.Prototype
                     break;
                 case PrototypeTag.Telekinesis:
                     TryCrit(attacker, tag, ref damage);
+                    break;
+                // ---- v0.18.24 大众认知补充标签（攻击组）----
+                case PrototypeTag.Entangle:
+                    TryAddStatus(attacker, target, "frozen", tag, 8f, multiplier, 0.07f);
+                    break;
+                case PrototypeTag.Petrify:
+                    damage *= 1.1f;                          // 石化易碎：当次伤害 +10%
+                    TryAddStatus(attacker, target, "stunned", tag, 3f, multiplier, 0.06f);
+                    break;
+                case PrototypeTag.Aging:
+                    TryAddStatus(attacker, target, "slow", tag, 6f, multiplier, 0.08f);
+                    TryAddStatus(attacker, target, "weakened", tag, 10f, multiplier, 0.06f);
+                    break;
+                case PrototypeTag.Weakness:
+                    TryAddStatus(attacker, target, "weakened", tag, 12f, multiplier, 0.07f);
+                    break;
+                case PrototypeTag.ArmorBreak:
+                    damage *= def.Strength;                  // 破甲穿透：当次伤害 +30%
+                    TryAddStatus(attacker, target, "weakened", tag, 4f, multiplier, 0.06f);
+                    break;
+                case PrototypeTag.Execute:
+                    TryExecute(attacker, target, tag, damage);
+                    break;
+                case PrototypeTag.Sleep:
+                    TryAddStatus(attacker, target, "stunned", tag, 4f, multiplier, 0.06f);
+                    break;
+                case PrototypeTag.MultiShot:
+                    damage *= 1f + def.Strength;             // 多重连击：当次伤害 +50%
+                    break;
+                case PrototypeTag.HealAlly:
+                    TryHealAllies(attacker, target, damage, def);
                     break;
                 default:
                     break;
@@ -320,6 +380,108 @@ namespace Code.Realm.Prototype
             {
                 _chainProcessing.Remove(attackerId);
             }
+        }
+
+        /// <summary>致死：目标生命低于 15% 时概率直接斩杀（v0.18.24）</summary>
+        private static void TryExecute(Actor attacker, Actor target, PrototypeTag tag, float damage)
+        {
+            if (attacker == null || target == null || !target.isAlive()) return;
+            try
+            {
+                float maxHp = target.getMaxHealth();
+                float curHp = target.getHealth();
+                if (maxHp <= 0f || curHp / maxHp >= 0.15f) return;   // 仅对重伤目标
+                var def = PrototypeTags.Get(tag);
+                if (def == null) return;
+                float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.02f);
+                if (UnityEngine.Random.value < chance)
+                {
+                    target.getHit(curHp, false, AttackType.Other, attacker,
+                        pSkipIfShake: false, pMetallicWeapon: false, pCheckDamageReduction: false);
+                    DSDebug.Verbose("[GeneCultivation] " + attacker.getName() + " 异能斩杀: " + target.getName());
+                }
+            }
+            catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能致死异常: " + dsEx.Message); }
+        }
+
+        /// <summary>治疗他人：攻击概率治愈半径内友军（含自身）（v0.18.24）</summary>
+        private static void TryHealAllies(Actor attacker, Actor target, float baseDamage, PrototypeTagDef def)
+        {
+            if (attacker == null || !attacker.isAlive() || def == null || baseDamage <= 0f) return;
+            try
+            {
+                float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, PrototypeTag.HealAlly) * 0.04f);
+                if (UnityEngine.Random.value > chance) return;
+                float healAmount = baseDamage * def.Strength;
+                if (healAmount < 1f) return;
+                // 自身 + 半径 5 内友军
+                TryHeal(attacker, healAmount);
+                if (World.world == null || World.world.units == null) return;
+                var units = World.world.units.getSimpleList();
+                if (units == null) return;
+                Vector2 center = attacker.current_position;
+                foreach (var obj in units)
+                {
+                    Actor ally = obj as Actor;
+                    if (ally == null || !ally.isAlive() || ally == attacker) continue;
+                    // 友军判定：同王国（无王国不误伤也不乱奶）
+                    if (attacker.kingdom == null || ally.kingdom == null) continue;
+                    if (attacker.kingdom != ally.kingdom) continue;
+                    if (Toolbox.DistVec2Float(center, ally.current_position) <= 5f)
+                        TryHeal(ally, healAmount * 0.5f);
+                }
+            }
+            catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能治疗友军异常: " + dsEx.Message); }
+        }
+
+        /// <summary>反弹：受击概率反弹伤害给攻击者（带递归防护，防双反弹死循环）（v0.18.24）</summary>
+        private static void TryThorns(Actor defender, Actor attacker, float incomingDamage)
+        {
+            if (defender == null || attacker == null || !attacker.isAlive()) return;
+            long defenderId = defender.getID();
+            if (_chainProcessing.Contains(defenderId)) return;   // 反弹链中不再反弹（防互弹死循环）
+            try
+            {
+                var def = PrototypeTags.Get(PrototypeTag.Thorns);
+                if (def == null) return;
+                float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Thorns) * 0.04f);
+                if (UnityEngine.Random.value > chance) return;
+                float reflect = incomingDamage * def.Strength;
+                if (reflect < 1f) return;
+                _chainProcessing.Add(defenderId);
+                try
+                {
+                    attacker.getHit(reflect, false, AttackType.Other, defender,
+                        pSkipIfShake: false, pMetallicWeapon: false, pCheckDamageReduction: true);
+                    DSDebug.Verbose("[GeneCultivation] " + defender.getName() + " 异能反弹: " + attacker.getName());
+                }
+                finally { _chainProcessing.Remove(defenderId); }
+            }
+            catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能反弹异常: " + dsEx.Message); }
+        }
+
+        /// <summary>净化：清除自身负面状态（原版状态移除，v0.18.24）</summary>
+        private static readonly string[] NEGATIVE_STATUSES = new string[]
+        {
+            "weak", "slow", "fear", "confused", "diseased", "plague", "weakened", "poisoned", "burning", "frozen", "stunned"
+        };
+        private static void TryCleanse(Actor actor)
+        {
+            if (actor == null) return;
+            try
+            {
+                foreach (string status in NEGATIVE_STATUSES)
+                {
+                    try
+                    {
+                        if (Code.Core.StatusHelper.HasStatus(actor, status))
+                            actor.finishStatusEffect(status);
+                    }
+                    catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 净化移除状态异常: " + dsEx.Message); }
+                }
+                DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 异能净化负面状态");
+            }
+            catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能净化异常: " + dsEx.Message); }
         }
     }
 }

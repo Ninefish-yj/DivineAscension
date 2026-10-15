@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能数据 · 自然系（v0.18.0）
 // 大类：自然系 | 小类：植物/动物/气象/毒/治愈/野兽/藤蔓
 // 描述 = 真实机制（由主/副标签组合表达），不含虚假效果。
@@ -16,7 +16,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("na_plant_01", "草木之心", "治疗自身，攻击减速缠绕目标", "自然系", "植物",
                 PrototypeTag.Heal, PrototypeTag.Slow, 2),
             new PrototypeDef("na_plant_02", "荆棘", "受击反击麻痹攻击者，护盾减伤", "自然系", "植物",
-                PrototypeTag.Vibration, PrototypeTag.Shield, 2),
+                PrototypeTag.Vibration, PrototypeTag.Thorns, 2),
             new PrototypeDef("na_plant_03", "花愈", "受击自愈回血，攻击附加中毒", "自然系", "植物",
                 PrototypeTag.Regeneration, PrototypeTag.Poison, 2),
             // ---- 动物 ----
@@ -56,7 +56,7 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Illusion, PrototypeTag.Crit, 1),
             // ---- 藤蔓 ----
             new PrototypeDef("na_vine_01", "缚藤", "攻击眩晕定身，减速目标", "自然系", "藤蔓",
-                PrototypeTag.Stun, PrototypeTag.Slow, 2),
+                PrototypeTag.Stun, PrototypeTag.Entangle, 2),
             new PrototypeDef("na_vine_02", "绞藤", "攻击重力压制，附加持续伤害", "自然系", "藤蔓",
                 PrototypeTag.Gravity, PrototypeTag.Burn, 2),
             new PrototypeDef("na_vine_03", "藤墙", "护盾减伤，受击自愈", "自然系", "藤蔓",

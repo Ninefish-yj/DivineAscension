@@ -24,10 +24,12 @@ using System.Collections.Generic;
 namespace Code.Realm.Prototype
 {
     /// <summary>
-    /// 异能效果标签（30 个，全部真实生效）
+    /// 异能效果标签（44 个，全部真实生效）
     /// 攻击标签（命中时由攻击方触发）：Burn/Slow/Stun/Poison/Chain/Lifesteal/Crit/Heal/
-    ///   Frostbite/Knockback/Gravity/TimeSlow/Fear/Berserk/Drain/Blood/Soul/Curse/Frost/Plasma/Telekinesis
-    /// 防守标签（受击时生效）：Shield/Dodge/Blessing/Magnetism/Vibration/Sound/Illusion/Invisibility/Regeneration
+    ///   Frostbite/Knockback/Gravity/TimeSlow/Fear/Berserk/Drain/Blood/Soul/Curse/Frost/Plasma/Telekinesis/
+    ///   Entangle/Petrify/Aging/Weakness/ArmorBreak/Execute/Sleep/MultiShot/HealAlly（v0.18.24 大众认知补充）
+    /// 防守标签（受击时生效）：Shield/Dodge/Blessing/Magnetism/Vibration/Sound/Illusion/Invisibility/Regeneration/
+    ///   Thorns/Clone/ElementResist/Cleanse/Teleport（v0.18.24 大众认知补充）
     /// </summary>
     public enum PrototypeTag
     {
@@ -64,7 +66,24 @@ namespace Code.Realm.Prototype
         Sound,      // 声波：受击概率震慑攻击者（音爆反震）
         Illusion,   // 幻象：受击概率制造幻象闪避（闪避强化）
         Invisibility, // 隐身：受击概率隐遁免伤（闪避最高）
-        Regeneration // 再生：受击概率自愈回血（战斗再生）
+        Regeneration, // 再生：受击概率自愈回血（战斗再生）
+        // ---- 大众认知补充标签（v0.18.24 新增 14 个，共 44 标签）----
+        // 攻击标签：Entangle/Petrify/Aging/Weakness/ArmorBreak/Execute/Sleep/MultiShot/HealAlly
+        // 防守标签：Thorns/Clone/ElementResist/Cleanse/Teleport
+        Entangle,     // 束缚：缠绕定身（深度冰冻，比减速更牢）
+        Petrify,      // 石化：定身+易碎（更长眩晕+当次增伤）
+        Aging,        // 衰老：加速老化（虚弱+减速双状态）
+        Weakness,     // 虚弱：削弱目标（长时虚弱）
+        ArmorBreak,   // 破甲：穿透减伤+后续虚弱
+        Execute,      // 致死：低血量概率斩杀
+        Sleep,        // 睡眠：陷入沉睡（长眩晕）
+        MultiShot,    // 多重：连击爆发（当次伤害+50%）
+        HealAlly,     // 治疗：攻击概率治愈友军（含自身）
+        Thorns,       // 反弹：受击反弹伤害给攻击者
+        Clone,        // 分身：受击免伤+回敬伤害
+        ElementResist,// 元素抗性：受击减伤（元素/异常攻击抗性）
+        Cleanse,      // 净化：受击概率清除自身负面状态
+        Teleport      // 瞬移：受击概率遁走免伤（闪避最高）
     }
 
     /// <summary>标签静态定义（数据驱动）</summary>
@@ -131,6 +150,21 @@ namespace Code.Realm.Prototype
             Add(new PrototypeTagDef(PrototypeTag.Illusion, "幻象", "受击概率制造幻象闪避（闪避强化）", false, 1f, 1f, 0.22f));
             Add(new PrototypeTagDef(PrototypeTag.Invisibility, "隐身", "受击概率隐遁免伤（闪避最高）", false, 1f, 1f, 0.3f));
             Add(new PrototypeTagDef(PrototypeTag.Regeneration, "再生", "受击概率自愈回血（战斗再生）", false, 0.5f, 1f, 0.25f));
+            // ---- 大众认知补充标签（14 个，v0.18.24）----
+            Add(new PrototypeTagDef(PrototypeTag.Entangle, "束缚", "攻击缠绕定身目标（深度冰冻）", true, 0.20f, 0.45f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.Petrify, "石化", "攻击将目标石化（长眩晕+易碎）", true, 0.12f, 0.35f, 1.1f));
+            Add(new PrototypeTagDef(PrototypeTag.Aging, "衰老", "攻击使目标衰老（虚弱+减速）", true, 0.18f, 0.45f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.Weakness, "虚弱", "攻击削弱目标（长时虚弱）", true, 0.20f, 0.50f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.ArmorBreak, "破甲", "攻击破开护甲（穿透减伤+虚弱）", true, 0.25f, 0.55f, 1.3f));
+            Add(new PrototypeTagDef(PrototypeTag.Execute, "致死", "攻击斩杀重伤目标（低血量）", true, 0.05f, 0.15f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.Sleep, "睡眠", "攻击使目标陷入沉睡（长眩晕）", true, 0.12f, 0.35f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.MultiShot, "多重", "攻击连击爆发（当次伤害+50%）", true, 0.30f, 0.70f, 0.5f));
+            Add(new PrototypeTagDef(PrototypeTag.HealAlly, "治疗", "攻击概率治愈友军（含自身）", true, 0.30f, 0.60f, 0.3f));
+            Add(new PrototypeTagDef(PrototypeTag.Thorns, "反弹", "受击反弹伤害给攻击者", false, 0.25f, 0.60f, 0.3f));
+            Add(new PrototypeTagDef(PrototypeTag.Clone, "分身", "受击概率完全免伤并回敬伤害", false, 1f, 1f, 0.22f));
+            Add(new PrototypeTagDef(PrototypeTag.ElementResist, "元素抗性", "受击减伤（元素/异常攻击抗性）", false, 1f, 1f, 0.2f));
+            Add(new PrototypeTagDef(PrototypeTag.Cleanse, "净化", "受击概率清除自身负面状态", false, 0.30f, 0.70f, 1f));
+            Add(new PrototypeTagDef(PrototypeTag.Teleport, "瞬移", "受击概率遁走免伤（闪避最高）", false, 1f, 1f, 0.35f));
         }
 
         private static void Add(PrototypeTagDef def)
