@@ -65,18 +65,18 @@ namespace Code.Realm.Prototype
             new PrototypeDef("el_wood_03", "缠藤", "攻击眩晕定身，减速目标", "元素系", "木",
                 PrototypeTag.Stun, PrototypeTag.Slow, 2),
             // ---- 光 ----
-            new PrototypeDef("light", "圣光", "治疗自身，护盾减伤", "光明系", "圣光"
+            new PrototypeDef("light", "圣光", "治疗自身，护盾减伤", "光明系", "圣光",
                 PrototypeTag.Heal, PrototypeTag.Shield, 3),
-            new PrototypeDef("el_light_02", "净化", "攻击概率回复生命，治疗强化", "光明系", "净化"
+            new PrototypeDef("el_light_02", "净化", "攻击概率回复生命，治疗强化", "光明系", "净化",
                 PrototypeTag.Soul, PrototypeTag.Heal, 3),
-            new PrototypeDef("el_light_03", "光罩", "受击免伤强化，受击回血", "光明系", "圣光"
+            new PrototypeDef("el_light_03", "光罩", "受击免伤强化，受击回血", "光明系", "圣光",
                 PrototypeTag.Invisibility, PrototypeTag.Blessing, 3),
             // ---- 暗 ----
-            new PrototypeDef("dark", "暗影", "攻击吸血，附加暗蚀持续伤害", "黑暗系", "暗影"
+            new PrototypeDef("dark", "暗影", "攻击吸血，附加暗蚀持续伤害", "黑暗系", "暗影",
                 PrototypeTag.Lifesteal, PrototypeTag.Burn, 5),
-            new PrototypeDef("el_dark_02", "猎杀", "攻击吸血强化，概率暴击", "黑暗系", "暗影"
+            new PrototypeDef("el_dark_02", "猎杀", "攻击吸血强化，概率暴击", "黑暗系", "暗影",
                 PrototypeTag.Blood, PrototypeTag.Crit, 5),
-            new PrototypeDef("el_dark_03", "侵蚀", "攻击附加诅咒持续伤害，恐惧眩晕", "黑暗系", "夜幕"
+            new PrototypeDef("el_dark_03", "侵蚀", "攻击附加诅咒持续伤害，恐惧眩晕", "黑暗系", "夜幕",
                 PrototypeTag.Curse, PrototypeTag.Fear, 5),
             // ---- 金属 ----
             new PrototypeDef("metal", "御金", "攻击暴击破甲，护盾硬化", "元素系", "金属",
