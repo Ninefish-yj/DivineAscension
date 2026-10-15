@@ -50,6 +50,9 @@ namespace Code.UI
         private Texture2D _cardBgTex;
         private Texture2D _nodeBgTex;
         private Texture2D _nodeActiveBgTex;
+        private Texture2D _nodeRoundedTex;    // 圆角节点底（白色，DrawNodes 染色）
+        private Texture2D _badgeRoundedTex;   // 圆角标签徽章底（白色，染色）
+        private Texture2D _circleTex;         // 圆形系徽章（白色，染色）
         private GUIStyle _titleStyle;
         private GUIStyle _rootStyle;
         private GUIStyle _nodeStyle;
@@ -130,6 +133,10 @@ namespace Code.UI
             if (_bgTex == null) _bgTex = MakeSolidTexture(2, 2, new Color(0.06f, 0.07f, 0.10f, 0.95f));
             if (_titleBgTex == null) _titleBgTex = MakeSolidTexture(2, 2, new Color(0.12f, 0.13f, 0.17f, 0.98f));
             if (_cardBgTex == null) _cardBgTex = MakeSolidTexture(2, 2, new Color(0.10f, 0.11f, 0.14f, 0.96f));
+            if (_nodeRoundedTex == null) _nodeRoundedTex = MakeRoundedRectTexture(96, 40, 0.24f, Color.white);
+            if (_badgeRoundedTex == null) _badgeRoundedTex = MakeRoundedRectTexture(48, 24, 0.30f, Color.white);
+            if (_circleTex == null) _circleTex = MakeCircleTexture(64, Color.white);
+            // 兼容保留（绘制处以圆角纹理为主）
             if (_nodeBgTex == null) _nodeBgTex = MakeSolidTexture(2, 2, new Color(0.15f, 0.16f, 0.21f, 0.95f));
             if (_nodeActiveBgTex == null) _nodeActiveBgTex = MakeSolidTexture(2, 2, new Color(0.36f, 0.32f, 0.18f, 0.98f));
         }
@@ -545,21 +552,37 @@ namespace Code.UI
                 Rect nr = ScreenRect(node);
                 Vector2 from = new Vector2(pr.center.x, pr.yMax);
                 Vector2 to = new Vector2(nr.center.x, nr.yMin);
-                // 直角折线（矩形连线）：父底中点 → 垂直下行 → 水平平移 → 垂直进入子顶中点
+                // 贝塞尔曲线（父底 → 子顶平滑下弧），当前异能所在路径高亮发光（双层：晕+实线）
                 bool activeEdge = IsOnActiveChain(node, activeId);
                 Color c = activeEdge ? DSUITheme.AccentGold : DSUITheme.BorderDark;
                 float t = activeEdge ? 3f : LINE_THICK;
-                float midY = (from.y + to.y) * 0.5f;
-                if (Mathf.Abs(from.y - to.y) > 1f)
+                if (activeEdge)
                 {
-                    DrawLine(from, new Vector2(from.x, midY), c, t);
-                    DrawLine(new Vector2(from.x, midY), new Vector2(to.x, midY), c, t);
-                    DrawLine(new Vector2(to.x, midY), to, c, t);
+                    DrawCurvedEdge(from, to, new Color(c.r, c.g, c.b, 0.26f), t + 4f);   // 外层发光晕
+                    DrawCurvedEdge(from, to, c, t);                                       // 内层实线
                 }
                 else
                 {
-                    DrawLine(from, to, c, t);
+                    DrawCurvedEdge(from, to, c, t);
                 }
+            }
+        }
+
+        /// <summary>三次贝塞尔曲线（垂直切线控制点：父底中点 → 子顶中点平滑下弧）</summary>
+        private static void DrawCurvedEdge(Vector2 from, Vector2 to, Color color, float thickness)
+        {
+            float dy = Mathf.Max(Mathf.Abs(to.y - from.y), 8f);
+            Vector2 c1 = new Vector2(from.x, from.y + dy * 0.45f);
+            Vector2 c2 = new Vector2(to.x, to.y - dy * 0.45f);
+            const int SEGS = 14;
+            Vector2 prev = from;
+            for (int i = 1; i <= SEGS; i++)
+            {
+                float t = i / (float)SEGS;
+                float u = 1f - t;
+                Vector2 p = u * u * u * from + 3f * u * u * t * c1 + 3f * u * t * t * c2 + t * t * t * to;
+                DrawLine(prev, p, color, thickness);
+                prev = p;
             }
         }
 
@@ -586,15 +609,33 @@ namespace Code.UI
                 if (r.xMax < -20f || r.yMax < -20f || r.x > area.width + 20f || r.y > area.height + 20f) continue; // 视口裁剪
 
                 bool isActive = node.Id == activeId;
+                bool onActiveChain = !isActive && IsOnActiveChain(node, activeId);
                 Color mainColor = isActive ? DSUITheme.AccentGold : node.Color;
 
-                // 底色
-                GUI.DrawTexture(r, isActive ? _nodeActiveBgTex : _nodeBgTex);
+                // 圆角底色（染色）
+                GUI.color = isActive ? new Color(0.36f, 0.32f, 0.18f, 0.98f) : new Color(0.15f, 0.16f, 0.21f, 0.95f);
+                GUI.DrawTexture(r, _nodeRoundedTex);
+                GUI.color = Color.white;
                 // 左侧色条（大类色/金色）
                 GUI.color = mainColor;
                 GUI.DrawTexture(new Rect(r.x, r.y, Mathf.Max(3f, 4f * _zoom), r.height), Texture2D.whiteTexture);
+                // 路径发光边框（当前异能所在链路的中间节点：半透明金外扩框）
+                if (onActiveChain)
+                    DrawBorder(new Rect(r.x - 2f, r.y - 2f, r.width + 4f, r.height + 4f), new Color(0.95f, 0.85f, 0.55f, 0.35f));
                 // 边框
                 DrawBorder(r, isActive ? DSUITheme.AccentGold : node.Color * new Color(0.7f, 0.7f, 0.7f, 1f));
+
+                // 系徽章圆形图标（左上角，系色）
+                float iconSize = Mathf.Max(10f, 20f * _zoom);
+                bool showIcon = node.Level != 2 || _zoom >= 0.28f;
+                float iconPad = 0f;
+                if (showIcon)
+                {
+                    iconPad = iconSize + 7f;
+                    GUI.color = mainColor;
+                    GUI.DrawTexture(new Rect(r.x + 5f, r.y + 5f, iconSize, iconSize), _circleTex);
+                    GUI.color = Color.white;
+                }
 
                 // 缩放分级：远处只画色块；根/系/子类 >=0.10 显名；异能叶 >=0.28 显名；>=0.65 异能显标签徽章
                 bool showName = node.Level == 2 ? _zoom >= 0.28f : _zoom >= 0.10f;
@@ -603,7 +644,7 @@ namespace Code.UI
                     GUIStyle nameStyle = node.Level == 2 ? _leafStyle : (node.Level == 1 ? _subStyle : (node.Level == 0 ? _nodeStyle : _rootStyle));
                     nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 12 : node.Level == 1 ? 13 : node.Level == 0 ? 15 : 20) * _zoom), 9, 24);
                     GUI.color = isActive ? DSUITheme.AccentGold : DSUITheme.BodyText;
-                    Rect nameRect = new Rect(r.x + 6f, r.y + 4f, r.width - 12f, r.height - 8f);
+                    Rect nameRect = new Rect(r.x + 6f + iconPad, r.y + 4f, r.width - 12f - iconPad, r.height - 8f);
                     GUI.Label(nameRect, node.Name, nameStyle);
                     GUI.color = Color.white;
 
@@ -798,12 +839,57 @@ namespace Code.UI
         {
             if (rect.width < 8f || rect.height < 6f) return;
             GUI.color = GetTagColor(tag) * new Color(0.55f, 0.55f, 0.55f, 1f);
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.DrawTexture(rect, _badgeRoundedTex != null ? _badgeRoundedTex : Texture2D.whiteTexture);
             GUI.color = DSUITheme.TitleText;
             int fs = Mathf.Clamp(Mathf.RoundToInt(10 * Mathf.Max(0.8f, zoom)), 8, 12);
             GUIStyle st = _badgeStyles != null ? _badgeStyles[fs - 8] : _badgeStyle;
             GUI.Label(rect, PrototypeTags.GetName(tag), st);
             GUI.color = Color.white;
+        }
+
+        /// <summary>圆角矩形纹理（白色，GUI.color 染色；1px 抗锯齿圆角）</summary>
+        private static Texture2D MakeRoundedRectTexture(int w, int h, float radiusFrac, Color color)
+        {
+            Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            float radius = Mathf.Max(1f, Mathf.Min(w, h) * radiusFrac);
+            Color[] px = new Color[w * h];
+            float innerW = w / 2f - radius, innerH = h / 2f - radius;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    float cx = x + 0.5f - w / 2f;
+                    float cy = y + 0.5f - h / 2f;
+                    float dx = Mathf.Max(Mathf.Abs(cx) - innerW, 0f);
+                    float dy = Mathf.Max(Mathf.Abs(cy) - innerH, 0f);
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float alpha = Mathf.Clamp01(radius - dist + 0.5f);
+                    px[y * w + x] = new Color(color.r, color.g, color.b, color.a * alpha);
+                }
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            return tex;
+        }
+
+        /// <summary>实心圆形纹理（白色，GUI.color 染色；1px 抗锯齿边缘）</summary>
+        private static Texture2D MakeCircleTexture(int size, Color color)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            float r = size / 2f;
+            Color[] px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Mathf.Sqrt((x + 0.5f - r) * (x + 0.5f - r) + (y + 0.5f - r) * (y + 0.5f - r));
+                    float alpha = Mathf.Clamp01(r - d + 0.5f);
+                    px[y * size + x] = new Color(color.r, color.g, color.b, color.a * alpha);
+                }
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            return tex;
         }
 
         /// <summary>30 标签配色（按组：灼烧/减速/眩晕/毒蚀/吸血/暴击/治疗/溅射/狂暴/护盾/闪避/反击/回复）</summary>
