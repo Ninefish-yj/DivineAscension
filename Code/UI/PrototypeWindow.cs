@@ -543,10 +543,21 @@ namespace Code.UI
                 Rect nr = ScreenRect(node);
                 Vector2 from = new Vector2(pr.center.x, pr.yMax);
                 Vector2 to = new Vector2(nr.center.x, nr.yMin);
-                // 父链高亮：节点自身或其父链上的节点是当前异能
+                // 直角折线（矩形连线）：父底中点 → 垂直下行 → 水平平移 → 垂直进入子顶中点
                 bool activeEdge = IsOnActiveChain(node, activeId);
-                DrawLine(from, to, activeEdge ? DSUITheme.AccentGold : DSUITheme.BorderDark,
-                    activeEdge ? 3f : LINE_THICK);
+                Color c = activeEdge ? DSUITheme.AccentGold : DSUITheme.BorderDark;
+                float t = activeEdge ? 3f : LINE_THICK;
+                float midY = (from.y + to.y) * 0.5f;
+                if (Mathf.Abs(from.y - to.y) > 1f)
+                {
+                    DrawLine(from, new Vector2(from.x, midY), c, t);
+                    DrawLine(new Vector2(from.x, midY), new Vector2(to.x, midY), c, t);
+                    DrawLine(new Vector2(to.x, midY), to, c, t);
+                }
+                else
+                {
+                    DrawLine(from, to, c, t);
+                }
             }
         }
 
