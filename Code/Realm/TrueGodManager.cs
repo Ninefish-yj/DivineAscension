@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,9 +13,10 @@ using Code.Dimension;
 namespace Code.Realm
 {
 	/// <summary>
-	/// 真神跨存档互通管理器
-	/// 真神角色数据存储在全局文件中，可在不同存档间互通
-	/// 当真神诞生时自动保存，新存档加载时自动载入
+	/// 真神跨存档互通管理器（v0.18.52 移动语义）
+	/// 圣所 = 跨存档移动仓：单位「移入圣所」= 全量数据快照 + 从当前世界移除（原存档不再存在）；
+	/// 「放置」= 整档恢复到目标世界 + 删除圣所记录（移动完成）。
+	/// 所有数据完整保留：ActorData 全量（含境界/能量/神名/基因等 custom_data）+ 亚种/氏族/文化/语言。
 	/// </summary>
 	public static class TrueGodManager
 	{
@@ -41,6 +43,13 @@ namespace Code.Realm
 			public int YearsLived;        // 存活年数
 			public List<ChromosomeData> Genome; // 基因序列快照（nucleus 染色体；ChromosomeData 为原版 [Serializable] 类，Newtonsoft.Json 可直接序列化）
 			public List<string> Traits;   // 特质快照（ActorData.saved_traits；含登神特质/修炼特质/完美生命）
+
+			// v0.18.52 整档快照：所有数据完整保留（跨存档移动）。旧记录（升级前）这些字段为 null → 放置走业务字段重建降级路径
+			public ActorData ActorSnapshot;       // 单位全量数据（含 custom_data：境界/能量/神名/基因标签等）
+			public SubspeciesData SubspeciesSnapshot; // 专属亚种（登神单位基因载体）
+			public CultureData CultureSnapshot;  // 所属文化
+			public LanguageData LanguageSnapshot; // 所属语言
+			public ClanData ClanSnapshot;        // 所属氏族
 		}
 
 		/// <summary>
@@ -57,6 +66,29 @@ namespace Code.Realm
 		private static TrueGodGlobalData _globalData;
 		private static bool _initialized = false;
 		private static readonly object _lock = new object();
+
+		/// <summary>整档序列化配置：包含非公开成员（ActorData 大量字段/属性为 internal/private，需完整复制所有数据）</summary>
+		private static readonly JsonSerializerSettings PrivateSettings = new JsonSerializerSettings
+		{
+			ContractResolver = new DefaultContractResolver
+			{
+#pragma warning disable 618
+				DefaultMembersSearchFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+#pragma warning restore 618
+			}
+		};
+
+		/// <summary>深拷贝（整档快照用：序列化→反序列化，含私有成员；失败返回 null）</summary>
+		private static TData DeepCopy<TData>(TData data) where TData : class
+		{
+			if (data == null) return null;
+			try
+			{
+				return JsonConvert.DeserializeObject<TData>(
+					JsonConvert.SerializeObject(data, Formatting.None, PrivateSettings), PrivateSettings);
+			}
+			catch (Exception) { return null; }
+		}
 
 		/// <summary>
 		/// 全局真神数据文件路径
@@ -155,29 +187,28 @@ namespace Code.Realm
 		}
 
 		/// <summary>
-		/// 当真神诞生时保存到全局存储
+		/// 移入圣所（v0.18.52 移动语义）：全量快照 + 从当前世界移除单位
+		/// 移入后原存档不再存在该单位；数据（ActorData 全量+亚种/氏族/文化/语言）完整保留，可在任意存档放置。
+		/// 仅超神级（13阶）单位可移入。
 		/// </summary>
-		public static void OnTrueGodAscended(Actor actor)
+		public static TrueGodData MoveGodToSanctuary(Actor actor)
 		{
-			if (actor == null || !actor.isAlive()) return;
+			if (actor == null || !actor.isAlive() || World.world == null) return null;
 
 			int tier = CultivationData.GetRealmTier(actor);
-			if (tier < 13) return; // 只有真神才跨存档
-
-			lock (_lock)
+			if (tier < 13)
 			{
-				if (!_initialized) Init();
+				DSDebug.Warning("[GeneCultivation] 仅超神级（13阶）单位可移入圣所跨存档移动");
+				return null;
+			}
 
-				// 检查是否已存在（按名称+起源世界复合键，同名但不同存档世界的真神允许共存，L-3修复）
+			try
+			{
+				// 先冻结数据到最新（原版 save 前置），再整档快照
+				actor.prepareForSave();
 				string godName = actor.getName();
 				string currentWorld = World.world?.name ?? "Unknown";
-				var existing = _globalData.TrueGods.FirstOrDefault(g => g.Name == godName && g.OriginWorld == currentWorld);
-				if (existing != null)
-				{
-					_globalData.TrueGods.Remove(existing);
-				}
 
-				// 创建真神数据
 				var godData = new TrueGodData
 				{
 					Name = godName,
@@ -186,26 +217,52 @@ namespace Code.Realm
 					// v0.18.51：神名跨存档快照（东名+西名），放置时恢复独属神名
 					DivineName = ReadDivineName(actor, "divine_name"),
 					DivineNameWest = ReadDivineName(actor, "divine_name_west"),
-										UnlockedElements = CultivationData.GetUnlockedElements(actor),
+					UnlockedElements = CultivationData.GetUnlockedElements(actor),
 					ActiveCombos = CultivationData.GetActiveCombos(actor),
 					Qi = CultivationData.GetEnergy(actor),
 					Mastery = CultivationData.GetMastery(actor),
 					Turbulence = CultivationData.GetTurbulence(actor),
 					EnlightenmentExp = CultivationData.GetEnlightenmentExp(actor),
 					AscensionTime = DateTime.Now.Ticks,
-					OriginWorld = World.world?.name ?? "Unknown",
+					OriginWorld = currentWorld,
 					KillCount = 0,
 					YearsLived = actor.getAge(),
-						// 基因/特质快照（放置=真·复刻：登神单位亚种为专属亚种，nucleus 即原单位基因）
-						Genome = actor.subspecies?.nucleus != null ? actor.subspecies.nucleus.getListForSave() : null,
-						Traits = ReadSavedTraits(actor)
+					// 基因/特质快照（降级路径用；整档快照已含全部数据）
+					Genome = actor.subspecies?.nucleus != null ? actor.subspecies.nucleus.getListForSave() : null,
+					Traits = ReadSavedTraits(actor),
+					// v0.18.52 整档快照：所有数据完整保留
+					ActorSnapshot = DeepCopy(actor.getData() as ActorData),
+					SubspeciesSnapshot = DeepCopy(actor.subspecies?.data),
+					CultureSnapshot = DeepCopy(actor.culture?.data),
+					LanguageSnapshot = DeepCopy(actor.language?.data),
+					ClanSnapshot = DeepCopy(actor.clan?.data)
 				};
 
-				_globalData.TrueGods.Add(godData);
-				_globalData.TotalTrueGods = _globalData.TrueGods.Count;
-				SaveGlobalData();
+				lock (_lock)
+				{
+					if (!_initialized) Init();
 
-				DSDebug.Verbose($"[GeneCultivation] 真神 {godName} 已载入跨存档神殿，当前共有 {_globalData.TrueGods.Count} 位真神");
+					// 按名称+起源世界复合键去重（同名不同世界的真神允许共存）
+					var existing = _globalData.TrueGods.FirstOrDefault(g => g.Name == godName && g.OriginWorld == currentWorld);
+					if (existing != null)
+					{
+						_globalData.TrueGods.Remove(existing);
+					}
+					_globalData.TrueGods.Add(godData);
+					_globalData.TotalTrueGods = _globalData.TrueGods.Count;
+					SaveGlobalData();
+				}
+
+				// 移动语义：从当前世界移除（原存档不再存在该单位；不走死亡链，无尸体/墓碑）
+				actor.removeByMetamorphosis();
+
+				DSDebug.Verbose($"[GeneCultivation] 真神 {godName} 已移入圣所（全量数据+离开当前世界），当前共有 {_globalData.TrueGods.Count} 位");
+				return godData;
+			}
+			catch (Exception e)
+			{
+				DSDebug.Error($"[GeneCultivation] 移入圣所失败: {e.Message}");
+				return null;
 			}
 		}
 
@@ -266,10 +323,128 @@ namespace Code.Realm
 		}
 
 		/// <summary>
-		/// 生成真神单位（按真神记录的原种族 asset_id 真·生成，修复"放置后不是原种族"）
-		/// 旧记录（Race=Unknown/空）回退：随机取当前世界一个种族的 asset_id
+		/// 放置真神（v0.18.52 移动语义：放置=移动完成）
+		/// 整档快照优先：loadObject 全量恢复（所有数据原样，含境界/神名/基因/氏族/文化/语言）；
+		/// 旧记录（升级前，无整档）降级：业务字段重建。
 		/// </summary>
 		public static Actor SpawnTrueGod(TrueGodData godData)
+		{
+			if (godData == null || World.world == null) return null;
+
+			try
+			{
+				// 整档快照优先：所有数据完整保留（v0.18.52）
+				if (godData.ActorSnapshot != null)
+				{
+					Actor god = RestoreFullSnapshot(godData);
+					if (god != null && god.isAlive())
+					{
+						// 神名注册表一致性：整档已含神名（custom_data_string），按现存神名登记（同角色跨存档复刻放行）
+						string east = ReadDivineName(god, "divine_name");
+						string west = ReadDivineName(god, "divine_name_west");
+						Code.Realm.RealmMechanics.RestoreSpawnedGodDivineName(god, east, west);
+
+						DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已整档恢复（移动完成）");
+						return god;
+					}
+					DSDebug.Warning("[TrueGodManager] 整档恢复失败，回退业务字段重建");
+				}
+
+				// 旧记录降级：业务字段重建（登神亚种基因+境界+特质+神名）
+				return SpawnTrueGodLegacy(godData);
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[TrueGodManager] 生成真神失败: {e.Message}");
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// 整档恢复（v0.18.52）：亚种/文化/语言/氏族各自 loadObject 重建（换新id），
+		/// 单位 ActorData 注入 units.loadObject——数据 100% 原样，境界/神名/基因等 custom_data 全部保留。
+		/// </summary>
+		private static Actor RestoreFullSnapshot(TrueGodData godData)
+		{
+			try
+			{
+				var subspeciesData = DeepCopy(godData.SubspeciesSnapshot);
+				var languageData = DeepCopy(godData.LanguageSnapshot);
+				var cultureData = DeepCopy(godData.CultureSnapshot);
+				var clanData = DeepCopy(godData.ClanSnapshot);
+				var data = DeepCopy(godData.ActorSnapshot);
+				if (data == null) return null;
+
+				// 关联数据重建（沿用原版 loadObject 载入；id 全部换新，避免与目标存档冲突）
+				if (subspeciesData != null)
+				{
+					subspeciesData.id = World.world.map_stats.getNextId("subspecies");
+					subspeciesData.created_time = World.world.map_stats.world_time;
+					data.subspecies = subspeciesData.id;
+					World.world.subspecies.loadObject(subspeciesData);
+				}
+				if (languageData != null)
+				{
+					languageData.id = World.world.map_stats.getNextId("language");
+					languageData.created_time = World.world.map_stats.world_time;
+					data.language = languageData.id;
+					World.world.languages.loadObject(languageData);
+				}
+				if (cultureData != null)
+				{
+					cultureData.id = World.world.map_stats.getNextId("culture");
+					cultureData.created_time = World.world.map_stats.world_time;
+					data.culture = cultureData.id;
+					World.world.cultures.loadObject(cultureData);
+				}
+				if (clanData != null)
+				{
+					clanData.id = World.world.map_stats.getNextId("clan");
+					clanData.created_time = World.world.map_stats.world_time;
+					data.clan = clanData.id;
+					World.world.clans.loadObject(clanData);
+				}
+
+				// 单位本体：换新id、落到生成点、注入世界
+				data.id = World.world.map_stats.getNextId("unit");
+				WorldTile tile = FindSpawnTile();
+				if (tile == null) return null;
+				if (World.world.cities.get(data.cityID) == null) data.cityID = -1;
+				data.homeBuildingID = -1;
+				data.transportID = -1;
+				data.x = tile.pos.x;
+				data.y = tile.pos.y;
+				World.world.units.loadObject(data);
+
+				return GetActorById(data.id);
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[TrueGodManager] 整档恢复异常: {e.Message}");
+				return null;
+			}
+		}
+
+		/// <summary>按 id 从世界取单位实例（loadObject 注入后拿回 Actor）</summary>
+		private static Actor GetActorById(long id)
+		{
+			try
+			{
+				if (World.world?.units == null) return null;
+				var units = World.world.units.units_only_alive;
+				if (units == null) return null;
+				for (int i = 0; i < units.Count; i++)
+				{
+					var a = units[i];
+					if (a != null && a.getID() == id) return a;
+				}
+			}
+			catch (Exception) { }
+			return null;
+		}
+
+		/// <summary>旧记录降级路径（无整档快照）：按业务字段重建（原 v0.18.51 逻辑）</summary>
+		private static Actor SpawnTrueGodLegacy(TrueGodData godData)
 		{
 			if (godData == null || World.world == null) return null;
 

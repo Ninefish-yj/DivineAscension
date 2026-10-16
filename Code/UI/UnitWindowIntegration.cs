@@ -241,6 +241,34 @@ namespace Code.UI
                         DSDebug.Verbose("[单位窗口] 技能GUI渲染跳过: " + guiEx.Message);
                     }
                 }
+                // v0.18.52 移动语义：超神级（13阶）单位可「移入圣所」——全量数据快照+离开当前世界（跨存档移动）
+                if (tier >= 13)
+                {
+                    try
+                    {
+                        if (Event.current != null)
+                        {
+                            GUILayout.Space(6);
+                            if (GUILayout.Button(UILocalization.Get("unit_move_to_sanctuary"), GUILayout.Height(26)))
+                            {
+                                Code.Realm.TrueGodManager.TrueGodData moved = Code.Realm.TrueGodManager.MoveGodToSanctuary(actor);
+                                if (moved != null)
+                                {
+                                    Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("unit_move_to_sanctuary_ok"));
+                                    DSDebug.Verbose(string.Format("[GeneCultivation] {0} 已移入圣所（离开当前世界）", actor.getName()));
+                                }
+                                else
+                                {
+                                    Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("unit_move_to_sanctuary_fail"));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception moveEx)
+                    {
+                        DSDebug.Verbose("[单位窗口] 移入圣所按钮跳过: " + moveEx.Message);
+                    }
+                }
                 // 建筑按钮已移到神力栏，单位窗口里不再显示
             }
             catch (Exception e)

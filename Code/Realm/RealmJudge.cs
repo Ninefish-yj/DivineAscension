@@ -678,8 +678,7 @@ namespace Code.Realm
             if (actor == null || !actor.isAlive()) return;
             try
             {
-                // 跨存档保存
-                TrueGodManager.OnTrueGodAscended(actor);
+                // v0.18.52 移动语义：登神不再自动入圣所（圣所=主动移入的移动仓，单位登神后留在当前世界）
                 RealmMechanics.OnTrueGodAscended(actor);
                 // 对接原版时代系统：突破超神级时自动切换到超神纪元
                 Code.Realm.EraBridge.OnTranscendenceBreakthrough(13);

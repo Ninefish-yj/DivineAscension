@@ -1931,5 +1931,10 @@
   "god_domain_death_3_west": "God of the Dark Realm",
   "god_domain_death_4_west": "God of the Return",
   "god_domain_death_5_west": "Lord Who Ferries the Dead",
-  "god_domain_death_6_west": "Goddess of the Homeward Road"
+  "god_domain_death_6_west": "Goddess of the Homeward Road",
+  "codex_spawn_ok": "Placed from Sanctuary (move complete)",
+  "codex_spawn_fail": "Place failed (record kept)",
+  "unit_move_to_sanctuary": "Move to Sanctuary",
+  "unit_move_to_sanctuary_ok": "Moved to Sanctuary — left this world (placeable in other saves)",
+  "unit_move_to_sanctuary_fail": "Failed to move to Sanctuary"
 }

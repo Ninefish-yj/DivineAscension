@@ -1612,7 +1612,18 @@ public class AbilityCodexPanel : MonoBehaviour
 				{
 					try
 					{
-						Code.Realm.TrueGodManager.SpawnTrueGod(g);
+						Code.Realm.TrueGodManager.TrueGodData dsGod = g;
+						Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod);
+						if (dsPlaced != null && dsPlaced.isAlive())
+						{
+							// v0.18.52 移动语义：放置成功=移动完成，删除圣所记录（该单位只存在于新存档）
+							Code.Realm.TrueGodManager.DeleteTrueGod(dsGod.Name, dsGod.OriginWorld);
+							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+						}
+						else
+						{
+							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+						}
 					}
 					catch (System.Exception dsSpawnEx)
 					{
