@@ -221,7 +221,7 @@ namespace Code.Data
             data.custom_data_int.TryGetValue(K_TIER, out int val);
             return val;
         }
-        public static void SetRealmTier(Actor actor, int value, bool allowBigJump = false)
+        public static void SetRealmTier(Actor actor, int value, bool allowBigJump = false, bool suppressBirth = false)
         {
             var data = GetDataOnce(actor);
             if (data == null) return;
@@ -244,14 +244,15 @@ namespace Code.Data
             data.custom_data_int[K_TIER] = clamped;
 
             // 突破到13阶超神级，自动保存到跨存档圣所
-            if (clamped >= 13 && clamped > old)
+            // suppressBirth：圣所放置/存档恢复场景跳过完整诞生链（切纪元/弹通知/重复存档在点击帧内执行易崩溃）
+            if (clamped >= 13 && clamped > old && !suppressBirth)
             {
                 try { Realm.RealmJudge.HandleTrueGodBirth(actor); } catch { }
             }
             
             // 高位阶名额限制检查（跳阶突破/调试设阶也走这里）
             // 正常突破和深度觉醒突破在RealmJudge里已检查，这里兜底防止跳阶突破绕过
-            if (clamped >= 11 && clamped > old)
+            if (clamped >= 11 && clamped > old && !suppressBirth)
             {
                 try
                 {

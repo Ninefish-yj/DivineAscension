@@ -1610,7 +1610,14 @@ public class AbilityCodexPanel : MonoBehaviour
 				GUILayout.Label(string.Format("{0}  |  T{1}  |  {2}" + UILocalization.Get("codex_years"), g.Name, g.RealmTier, g.YearsLived), GUILayout.Width(200));
 				if (GUILayout.Button(UILocalization.Get("codex_spawn"), GUILayout.Width(60), GUILayout.Height(pantheonRowH)))
 				{
-					Code.Realm.TrueGodManager.SpawnTrueGod(g);
+					try
+					{
+						Code.Realm.TrueGodManager.SpawnTrueGod(g);
+					}
+					catch (System.Exception dsSpawnEx)
+					{
+						Code.Core.DSDebug.Warning("[GeneCultivation] 圣所放置真神异常: " + dsSpawnEx.Message);
+					}
 				}
 				if (GUILayout.Button(UILocalization.Get("codex_delete"), GUILayout.Width(60), GUILayout.Height(pantheonRowH)))
 				{

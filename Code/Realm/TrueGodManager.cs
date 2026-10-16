@@ -292,7 +292,9 @@ namespace Code.Realm
 				// 真·复刻：先重建基因序列（专属亚种），再登神升华（升华会基于恢复后的基因做协调效应）
 				RestoreGenome(god, godData.Genome);
 
-				CultivationData.SetRealmTier(god, 13);
+				// 恢复境界：allowBigJump 跳过跳阶限制（放置=直接恢复 13 阶，不是从 0 突破）；
+				// suppressBirth 跳过完整诞生链（切纪元/弹通知/重复存档在 OnGUI 点击帧内执行易原生崩溃）
+				CultivationData.SetRealmTier(god, 13, allowBigJump: true, suppressBirth: true);
 				CultivationData.SetEnergy(god, godData.Qi);
 				CultivationData.SetMastery(god, godData.Mastery);
 				CultivationData.SetTurbulence(god, godData.Turbulence);
@@ -323,10 +325,11 @@ namespace Code.Realm
 			try
 			{
 				if (god == null || genome == null || genome.Count == 0) return;
+				if (god.current_tile == null) return;
 
 				// 创建专属亚种承载基因（登神单位基因是单位独有，不能写入共享亚种）
 				Subspecies sp = World.world.subspecies.newSpecies(god.asset, god.current_tile);
-				if (sp == null) return;
+				if (sp == null || sp.nucleus == null) return;
 
 				// 清空默认染色体，按快照逐条重建（Chromosome public 构造 + genes 公开列表 + Nucleus.addChromosome/setDirty）
 				sp.nucleus.reset();
