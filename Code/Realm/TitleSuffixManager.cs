@@ -515,6 +515,23 @@ namespace Code.Realm
             // 直接调用 StripOurDecorations，逻辑统一
             return StripOurDecorations(fullName);
         }
+
+        /// <summary>取单位纯本名（剥掉称号/境界装饰；供列表/统计等需要本名的展示使用，不改存档）（v0.18.57）</summary>
+        public static string GetBaseName(Actor actor)
+        {
+            try
+            {
+                if (actor == null) return "";
+                var data = ActorDataAccessor.GetData(actor);
+                if (data == null) return "";
+                string baseName = StripOurDecorations(data.name);
+                return string.IsNullOrEmpty(baseName) ? data.name : baseName;
+            }
+            catch
+            {
+                return actor != null ? actor.getName() : "";
+            }
+        }
     }
 
     // ============================================================

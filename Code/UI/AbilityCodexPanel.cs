@@ -1585,10 +1585,21 @@ public class AbilityCodexPanel : MonoBehaviour
 			if (god != null && CultivationData.GetRealmTier(god) >= 13)
 			{
 				hasActiveGods = true;
-				GUILayout.BeginHorizontal((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)rowH) });
-				// v0.18.54：境界名动态取值（Divine_{tier}_name），修复模板写死"超神级超神级"重复问题
 				int godTier = CultivationData.GetRealmTier(god);
-				GUILayout.Label(string.Format(UILocalization.Get("codex_true_god_row"), god.getName(), god.getAge(), UILocalization.Get("Divine_" + godTier + "_name")), GUILayout.Width(220));
+				// v0.18.57：真神列表拆两行——神名行（只显神名/称号）+ 单位行（纯本名 | 境界 | 岁），
+				// 不再混入"神名 - 本名-超神级"整串装饰名
+				string displayTitle = Code.Realm.TitleSuffixManager.GetDisplayTitle(god);
+				if (!string.IsNullOrEmpty(displayTitle))
+				{
+					GUILayout.BeginHorizontal((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)rowH) });
+					GUI.color = DSUITheme.AccentGold;
+					GUILayout.Label(displayTitle, GUILayout.Width(220));
+					GUI.color = Color.white;
+					GUILayout.EndHorizontal();
+				}
+				GUILayout.BeginHorizontal((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)rowH) });
+				string baseName = Code.Realm.TitleSuffixManager.GetBaseName(god);
+				GUILayout.Label(string.Format(UILocalization.Get("codex_true_god_row"), baseName, god.getAge(), UILocalization.Get("Divine_" + godTier + "_name")), GUILayout.Width(220));
 				GUILayout.EndHorizontal();
 			}
 		}
