@@ -87,8 +87,8 @@ namespace Code.Combat
                         float dist = Vector2.Distance(center, new Vector2(x, y));
                         if (dist > radius) continue;
 
-                        // 概率检查（中心概率更高，边缘概率更低）
-                        float adjustedChance = destructionChance * (1f - dist / radius * 0.5f);
+                        // 概率检查（v0.18.46：中心地块必破，边缘线性递减至 chance×0.5——修复旧版中心也只有50%概率导致"破坏太弱"）
+                        float adjustedChance = Mathf.Lerp(1f, destructionChance * 0.5f, dist / radius);
                         if (random.NextDouble() > adjustedChance) continue;
 
                         // 冷却检查

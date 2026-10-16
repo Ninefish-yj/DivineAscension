@@ -732,40 +732,27 @@ namespace Code.Realm
                         TriggerDivinePunishmentEffects(actor);
                     }
                     
-                    // ★ 地形破坏：10阶以上技能释放时破坏范围内的地形
-                    if (tier >= 10)
+                    // ★ 地形破坏（v0.18.46：6阶起触发；半径/概率函数式上升——统一指数公式，替代分段硬编码）
+                    if (tier >= 6)
                     {
                         try
                         {
                             // 根据技能类型选择破坏类型（境界越高，破坏类型越强）
                             Code.Combat.TerrainDestructionType terrainType = tier switch
                             {
-                                >= 13 => Code.Combat.TerrainDestructionType.DivinePunishment,      // 真神：神罚型
+                                >= 13 => Code.Combat.TerrainDestructionType.DivinePunishment,      // 超神：神罚型
                                 >= 12 => Code.Combat.TerrainDestructionType.DimensionalStrike,     // 真神级：维度打击型
                                 >= 11 => Code.Combat.TerrainDestructionType.EnergyStorm,            // 登神级：能量风暴型
-                                _ => Code.Combat.TerrainDestructionType.Generic                      // 使徒级：通用型
+                                _ => Code.Combat.TerrainDestructionType.Generic                      // 使徒/场域级：通用型
                             };
                             
-                            // 根据境界设置破坏概率（境界越高，概率越高）
-                            float terrainChance = tier switch
-                            {
-                                >= 13 => 0.50f,  // 真神：50%
-                                >= 12 => 0.40f,  // 真神级：40%
-                                >= 11 => 0.30f,  // 登神级：30%
-                                _ => 0.20f        // 使徒级：20%
-                            };
+                            // 破坏概率：函数式上升（6阶43% → 10阶55% → 13阶64%；中心地块由DSTerrainDestruction保证必破）
+                            float terrainChance = 0.25f + tier * 0.03f;
                             
-                            // 根据境界设置破坏范围（境界越高，范围越大）
-                            // 真神：60格（接近全屏，但不是完全全屏，避免性能问题）
-                            float terrainRadius = tier switch
-                            {
-                                >= 13 => 60f,    // 超神级：60格
-                                >= 12 => 45f,    // 真神级：45格
-                                >= 11 => 35f,    // 登神级：35格
-                                >= 10 => 25f,    // 使徒级：25格
-                                >= 9 => 15f,     // 天灾级：15格
-                                _ => 0f          // 8阶及以下：无地形破坏
-                            };
+                            // 破坏半径：统一指数公式 3.5×1.3^tier（6阶≈17格 → 10阶≈48格 → 13阶≈106格）
+                            // 上限=地图短边45%（防全图破坏与性能问题）
+                            float maxRadius = Mathf.Min(MapBox.width, MapBox.height) * 0.45f;
+                            float terrainRadius = Mathf.Min(3.5f * Mathf.Pow(1.3f, tier), maxRadius);
                             
                             int destroyed = Code.Combat.DSTerrainDestruction.DestroyTerrain(
                                 center: actor.current_position,

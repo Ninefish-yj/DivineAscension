@@ -235,23 +235,32 @@ namespace Code.Traits
         {
             try
             {
-                // 境界属性加成（参考香火神道神格数值，指数增长，高阶压倒性力量）
+                // 境界属性加成（v0.18.46：主属性统一指数公式生成——函数式上升，替代手写硬编码表）
+                // damage/health：base 40 × 2.3^(tier-1)（13阶≈88万，全阶比旧表略强）
+                // armor：base 30 × 1.85^(tier-4)（10阶起对齐旧表，高阶更强）
+                // speed：base 0.2 × 1.18^(tier-1)
                 var stats = new BaseStats();
+                float dmg = 40f * Mathf.Pow(2.3f, tier - 1);
+                stats["damage"] = Mathf.RoundToInt(dmg);
+                stats["health"] = Mathf.RoundToInt(dmg * 10f);
+                if (tier >= 4) stats["armor"] = Mathf.RoundToInt(30f * Mathf.Pow(1.85f, tier - 4));
+                stats["speed"] = 0.2f * Mathf.Pow(1.18f, tier - 1);
+                // 其余字段保持原有阶位配置（不强行公式化，避免破坏次要属性平衡）
                 switch (tier)
                 {
-                    case 1: stats["damage"]=30; stats["health"]=300; stats["speed"]=0.2f; stats["mana"]=20; stats["lifespan"]=20f; break;
-                    case 2: stats["damage"]=80; stats["health"]=800; stats["speed"]=0.3f; stats["mana"]=40; stats["stamina"]=20; stats["lifespan"]=40f; break;
-                    case 3: stats["damage"]=200; stats["health"]=2000; stats["speed"]=0.4f; stats["mana"]=60; stats["intelligence"]=3; stats["lifespan"]=80f; break;
-                    case 4: stats["damage"]=500; stats["health"]=5000; stats["speed"]=0.4f; stats["stamina"]=40; stats["scale"]=0.1f; stats["armor"]=30f; stats["lifespan"]=160f; break;
-                    case 5: stats["damage"]=1200; stats["health"]=12000; stats["speed"]=0.5f; stats["mana"]=100; stats["warfare"]=3; stats["armor"]=60f; stats["lifespan"]=300f; break;
-                    case 6: stats["damage"]=2800; stats["health"]=28000; stats["speed"]=0.6f; stats["range"]=2f; stats["stamina"]=60; stats["armor"]=120f; stats["attack_speed"]=2f; stats["lifespan"]=500f; break;
-                    case 7: stats["damage"]=6000; stats["health"]=60000; stats["speed"]=0.6f; stats["intelligence"]=6; stats["mana"]=160; stats["attack_speed"]=4f; stats["armor"]=240f; stats["lifespan"]=800f; break;
-                    case 8: stats["damage"]=13000; stats["health"]=130000; stats["speed"]=0.7f; stats["mana"]=240; stats["skill_spell"]=0.2f; stats["attack_speed"]=6f; stats["armor"]=450f; stats["lifespan"]=1200f; break;
-                    case 9: stats["damage"]=30000; stats["health"]=300000; stats["speed"]=0.8f; stats["stamina"]=100; stats["warfare"]=6; stats["armor"]=750f; stats["attack_speed"]=10f; stats["range"]=2f; stats["lifespan"]=1800f; break;
-                    case 10: stats["damage"]=70000; stats["health"]=700000; stats["speed"]=0.9f; stats["range"]=4f; stats["mana"]=320; stats["attack_speed"]=16f; stats["armor"]=1200f; stats["lifespan"]=3000f; break;
-                    case 11: stats["damage"]=160000; stats["health"]=1600000; stats["speed"]=1.0f; stats["range"]=6f; stats["stamina"]=200; stats["attack_speed"]=24f; stats["armor"]=2100f; break;
-                    case 12: stats["damage"]=350000; stats["health"]=3500000; stats["speed"]=1.2f; stats["range"]=8f; stats["mana"]=400; stats["attack_speed"]=30f; stats["armor"]=3000f; break;
-                    case 13: stats["damage"]=800000; stats["health"]=8000000; stats["speed"]=1.5f; stats["range"]=10f; stats["stamina"]=400; stats["attack_speed"]=40f; stats["armor"]=5000f; break;
+                    case 1: stats["mana"]=20; stats["lifespan"]=20f; break;
+                    case 2: stats["mana"]=40; stats["stamina"]=20; stats["lifespan"]=40f; break;
+                    case 3: stats["mana"]=60; stats["intelligence"]=3; stats["lifespan"]=80f; break;
+                    case 4: stats["stamina"]=40; stats["scale"]=0.1f; stats["lifespan"]=160f; break;
+                    case 5: stats["mana"]=100; stats["warfare"]=3; stats["lifespan"]=300f; break;
+                    case 6: stats["range"]=2f; stats["stamina"]=60; stats["attack_speed"]=2f; stats["lifespan"]=500f; break;
+                    case 7: stats["intelligence"]=6; stats["mana"]=160; stats["attack_speed"]=4f; stats["lifespan"]=800f; break;
+                    case 8: stats["mana"]=240; stats["skill_spell"]=0.2f; stats["attack_speed"]=6f; stats["lifespan"]=1200f; break;
+                    case 9: stats["stamina"]=100; stats["warfare"]=6; stats["attack_speed"]=10f; stats["range"]=2f; stats["lifespan"]=1800f; break;
+                    case 10: stats["range"]=4f; stats["mana"]=320; stats["attack_speed"]=16f; stats["lifespan"]=3000f; break;
+                    case 11: stats["range"]=6f; stats["stamina"]=200; stats["attack_speed"]=24f; break;
+                    case 12: stats["range"]=8f; stats["mana"]=400; stats["attack_speed"]=30f; break;
+                    case 13: stats["range"]=10f; stats["stamina"]=400; stats["attack_speed"]=40f; break;
                 }
 
                 var trait = new ActorTrait
