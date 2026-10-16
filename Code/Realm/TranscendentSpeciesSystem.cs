@@ -215,6 +215,13 @@ namespace Code.Realm
                 //  基因序列协调效应：扫描单位基因/特质属性，写入翻倍增量（由 GeneEnergyAttributeApplier 真正应用）
                 string geneticBoost = ScanAndApplyGeneticBoost(actor);
 
+                // 战斗表现层（v0.18.47）：登神升华演出——慢动作+瞬间冻结+暗幕+金色冲击环（世界「屏息」一瞬）
+                try
+                {
+                    Code.Combat.Fx.CombatFxDirector.AscensionCeremony(actor);
+                }
+                catch (System.Exception dsFxEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 登神升华演出失败: " + dsFxEx.Message); }
+
                 DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 突破登神级！脱离原种族成为独立种族（亚种名：{subspeciesName}），授予【完美生命】基因特质（突变分类、不可去除）。基因序列协调效应：{geneticBoost}");
             }
             catch (Exception e)

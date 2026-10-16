@@ -369,6 +369,13 @@ namespace Code.Realm
             float tierMultiplier = 1f + CultivationData.GetRealmTier(actor) * 0.5f;
             int tier = CultivationData.GetRealmTier(actor);
 
+            // 战斗表现层（v0.18.47）：技能释放演出——中心光斑/命中星/火花/音效，高境界追加轻击停
+            try
+            {
+                Code.Combat.Fx.CombatFxDirector.SpellBurst(actor, actor.current_position, tier);
+            }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 技能释放演出失败: " + dsEx.Message); }
+
             switch (ability.Type)
             {
                 case AbilityType.Damage:
@@ -760,6 +767,16 @@ namespace Code.Realm
                                 destructionChance: terrainChance,
                                 destructionType: terrainType,
                                 caster: actor);
+
+                            // 战斗表现层（v0.18.47）：地形破坏冲击波——地面环/粗冲击环/碎石/重音效，大范围追加击停
+                            if (destroyed > 0)
+                            {
+                                try
+                                {
+                                    Code.Combat.Fx.CombatFxDirector.Shockwave(actor.current_position, terrainRadius);
+                                }
+                                catch (System.Exception dsFxEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 地形破坏演出失败: " + dsFxEx.Message); }
+                            }
                             
                             if (destroyed > 0)
                             {

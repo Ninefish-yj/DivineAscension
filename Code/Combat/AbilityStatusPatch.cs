@@ -210,6 +210,17 @@ namespace Code.Combat
                     }
                 }
 
+                // 战斗表现层（v0.18.47）：伤害命中演出——登神单位出手时触发星形/火花/碎片/音效，大伤害追加击停
+                // （仅登神攻击者触发，避免原版生物互殴被演出刷屏）
+                try
+                {
+                    if (from != null && CultivationData.IsAscended(from))
+                    {
+                        Code.Combat.Fx.CombatFxDirector.HitImpact(__instance, damage);
+                    }
+                }
+                catch (System.Exception dsFxEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 命中演出失败: " + dsFxEx.Message); }
+
                 pDamage = damage;
             }
             catch (Exception dsEx)
