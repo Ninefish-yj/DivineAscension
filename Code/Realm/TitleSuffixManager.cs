@@ -312,6 +312,23 @@ namespace Code.Realm
             }
         }
 
+        /// <summary>展示称号：真神（13阶且有神名）直接用神名，其余用基因称号（v0.18.31 神名系统与单位一致）</summary>
+        public static string GetDisplayTitle(Actor actor)
+        {
+            if (actor == null) return "";
+            try
+            {
+                int tier = CultivationData.GetRealmTier(actor);
+                if (tier >= 13)
+                {
+                    string divineName = Code.Realm.RealmMechanics.GetStoredDivineName(actor);
+                    if (!string.IsNullOrEmpty(divineName)) return divineName;
+                }
+                return GetElementTitle(actor);
+            }
+            catch { return GetElementTitle(actor); }
+        }
+
         /// <summary>获取带后缀的展示名（供 getName() Postfix 调用，不修改存档）</summary>
         public static string GetDisplayName(Actor actor)
         {
@@ -327,8 +344,8 @@ namespace Code.Realm
                 int tier = CultivationData.GetRealmTier(actor);
                 if (tier <= 0) return baseName; // 未觉醒不添加后缀
 
-                // 基因称号（8阶及以上解锁）
-                string geneTitle = GetElementTitle(actor);
+                // 展示称号（真神=神名，其余=基因称号）
+                string geneTitle = GetDisplayTitle(actor);
                 // 境界后缀
                 string realmSuffix = Code.Core.GeneCultivationConfig.EnableTitleSuffix ? GetRealmSuffix(tier) : "";
 

@@ -99,12 +99,19 @@ namespace Code.UI
                     ShowStatRow(__instance, UILocalization.Get("unit_prototype"), dsProto.NameZh,
                         null, MetaType.None, -1L, false, null, null, null, false);
                 }
-                // 行1.2：登神级种族（11阶以上脱离原种族成为独立种族，种族名=前缀称号+之裔）
+                // 行1.2：登神级种族（11阶以上脱离原种族成为独立种族，种族名=前缀称号+之裔；真神用神名）
                 if (Code.Realm.TranscendentSpeciesSystem.IsTranscendent(actor))
                 {
-                    string title = Code.Realm.TitleSuffixManager.GetElementTitle(actor);
+                    string title = Code.Realm.TitleSuffixManager.GetDisplayTitle(actor);
                     string speciesName = !string.IsNullOrEmpty(title) ? title + UILocalization.Get("unit_descendant_suffix") : UILocalization.Get("unit_species_transcendent");
                     ShowStatRow(__instance, UILocalization.Get("unit_species"), speciesName,
+                        null, MetaType.None, -1L, false, null, null, null, false);
+                }
+                // 行1.15：神名/所属神（v0.18.31 真神显示神名，神眷者显示所属神，与历史记录一致）
+                string godLine = BuildGodNameLine(actor, tier);
+                if (!string.IsNullOrEmpty(godLine))
+                {
+                    ShowStatRow(__instance, UILocalization.Get("unit_god_name"), godLine,
                         null, MetaType.None, -1L, false, null, null, null, false);
                 }
                 // 行2：异能能量
@@ -374,6 +381,27 @@ namespace Code.UI
         {
             string tierName = GetTierName(tier);
             return string.Format(UILocalization.Get("realm_format"), tier, tierName);
+        }
+        /// <summary>构建神名/所属神文本（v0.18.31）：真神显示神名，神眷者显示所属神，其余为空</summary>
+        private static string BuildGodNameLine(Actor actor, int tier)
+        {
+            try
+            {
+                if (tier >= 13)
+                {
+                    string divineName = Code.Realm.RealmMechanics.GetStoredDivineName(actor);
+                    return string.IsNullOrEmpty(divineName) ? "" : divineName;
+                }
+                if (Code.Realm.RealmMechanics.IsDivineBlessed(actor))
+                {
+                    string god = Code.Realm.RealmMechanics.GetBlessedByGod(actor);
+                    return string.IsNullOrEmpty(god)
+                        ? UILocalization.Get("unit_god_blessed_unknown")
+                        : string.Format(UILocalization.Get("unit_god_blessed_by"), god);
+                }
+                return "";
+            }
+            catch { return ""; }
         }
         /// <summary>获取下一境界异能能量门槛（统一调用RealmJudge，避免硬编码不一致）</summary>
         private static float GetNextRealmThreshold(int currentTier)

@@ -103,7 +103,7 @@ namespace Code.Realm
                     if (__instance == null) return;
                     Actor actor = Traverse.Create(__instance).Property("actor").GetValue<Actor>();
                     if (actor == null || !actor.hasTrait(TRAIT_SPECIES_TRANSCENDENT)) return;
-                    string title = TitleSuffixManager.GetElementTitle(actor);
+                    string title = TitleSuffixManager.GetDisplayTitle(actor); // v0.18.31 真神用神名
                     if (string.IsNullOrEmpty(title)) return;
                     LocalizedText titleText = Traverse.Create(__instance).Field("_main_tab_title").GetValue<LocalizedText>();
                     if (titleText == null) return;

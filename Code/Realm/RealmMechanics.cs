@@ -323,6 +323,16 @@ namespace Code.Realm
                 // 标记神眷状态
                 CultivationData.SetCooldown(target, "divine_blessed", 1);
 
+                // v0.18.31 持久化所属神（供神眷者单位窗显示"所属神"；神名优先）
+                try
+                {
+                    string godName = GetStoredDivineName(god);
+                    if (string.IsNullOrEmpty(godName)) godName = god.getName();
+                    CultivationData.EnsureCustomDataInitialized(target);
+                    ActorDataAccessor.GetData(target).custom_data_string["divine_blessed_by"] = godName;
+                }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 神眷归属记录异常: " + dsEx.Message); }
+
                 // 记录
                 var record = new DivineBlessingRecord
                 {
@@ -356,6 +366,36 @@ namespace Code.Realm
         {
             if (actor == null) return false;
             return CultivationData.GetCooldown(actor, "divine_blessed") > 0;
+        }
+
+        /// <summary>读取单位已存的神名（custom_data_string["divine_name"]，无则空串）（v0.18.31 称号/单位窗共用）</summary>
+        public static string GetStoredDivineName(Actor actor)
+        {
+            try
+            {
+                if (actor == null) return "";
+                var data = ActorDataAccessor.GetData(actor);
+                if (data == null || data.custom_data_string == null) return "";
+                string name;
+                if (data.custom_data_string.TryGetValue("divine_name", out name)) return name ?? "";
+                return "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>读取神眷者所属神（神名；旧存档未记录则空串）（v0.18.31）</summary>
+        public static string GetBlessedByGod(Actor actor)
+        {
+            try
+            {
+                if (actor == null || !IsDivineBlessed(actor)) return "";
+                var data = ActorDataAccessor.GetData(actor);
+                if (data == null || data.custom_data_string == null) return "";
+                string god;
+                if (data.custom_data_string.TryGetValue("divine_blessed_by", out god)) return god ?? "";
+                return "";
+            }
+            catch { return ""; }
         }
 
         /// <summary>

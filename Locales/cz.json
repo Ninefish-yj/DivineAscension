@@ -1597,5 +1597,8 @@
   "proto_origin_awakened": "觉醒",
   "proto_origin_evolved": "进阶×{0}",
   "proto_evolve_hint": "可进化→{0}（{1}）",
-  "proto_evolve_peak": "已达{0}顶点"
+  "proto_evolve_peak": "已达{0}顶点",
+  "unit_god_name": "神名",
+  "unit_god_blessed_by": "所属神：{0}",
+  "unit_god_blessed_unknown": "神眷者"
 }

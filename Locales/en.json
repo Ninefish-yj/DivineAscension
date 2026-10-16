@@ -1592,5 +1592,8 @@
   "proto_origin_awakened": "Awakened",
   "proto_origin_evolved": "Evolved×{0}",
   "proto_evolve_hint": "Evolves to {0} ({1})",
-  "proto_evolve_peak": "Peak of {0}"
+  "proto_evolve_peak": "Peak of {0}",
+  "unit_god_name": "Divine Name",
+  "unit_god_blessed_by": "Patron God: {0}",
+  "unit_god_blessed_unknown": "Divine Blessed"
 }
