@@ -109,6 +109,7 @@ namespace Code.UI
 		#region 初始化
 		private void InitTextures()
 		{
+			// 纯纹理初始化（可在非 OnGUI 时机调用；GUI.skin 样式已拆到 EnsureStyles）
 			if (_bgTex == null) _bgTex = MakeSolidTexture(2, 2, new Color(0.11f, 0.12f, 0.15f, 0.96f));
 			if (_titleBgTex == null) _titleBgTex = MakeSolidTexture(2, 2, new Color(0.16f, 0.17f, 0.21f, 0.98f));
 			if (_leftPanelBgTex == null) _leftPanelBgTex = MakeSolidTexture(2, 2, new Color(0.13f, 0.14f, 0.18f, 0.95f));
@@ -117,6 +118,11 @@ namespace Code.UI
 			if (_categoryBgTex == null) _categoryBgTex = MakeSolidTexture(2, 2, new Color(0.20f, 0.21f, 0.26f, 0.95f));
 			if (_detailBgTex == null) _detailBgTex = MakeSolidTexture(2, 2, new Color(0.13f, 0.14f, 0.17f, 0.95f));
 			if (_awakenBtnTex == null) _awakenBtnTex = MakeSolidTexture(2, 2, new Color(0.45f, 0.50f, 0.62f, 0.9f));
+		}
+
+		/// <summary>样式惰性初始化（必须 OnGUI 内调用——GUI.skin 只能在 OnGUI 时机访问）</summary>
+		private void EnsureStyles()
+		{
 			if (_panelStyle == null)
 			{
 				_panelStyle = new GUIStyle(GUI.skin.box);
@@ -164,6 +170,7 @@ namespace Code.UI
 			}
 
 			InitTextures();
+			EnsureStyles();   // GUI.skin 样式必须在 OnGUI 内惰性创建
 
 			// 窗口拖动（标题栏区域，排除关闭按钮）
 			Rect titleRect = new Rect(_windowRect.x, _windowRect.y, _windowRect.width, TITLE_HEIGHT);
