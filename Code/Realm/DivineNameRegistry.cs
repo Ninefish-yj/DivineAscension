@@ -174,18 +174,37 @@ namespace Code.Realm
 						if (unit == null) continue;
 						var data = ActorDataAccessor.GetData(unit);
 						if (data?.custom_data_string == null) continue;
+						// v0.18.41 神位制：东名（divine_name）+ 西名（divine_name_west）分别登记；旧档仅单键自动兼容
 						string dn;
-						if (!data.custom_data_string.TryGetValue("divine_name", out dn)) continue;
-						if (string.IsNullOrEmpty(dn)) continue;
-						if (_data.Names.ContainsKey(dn)) continue; // 保留先登记者
-						_data.Names[dn] = new DivineNameEntry
+						if (data.custom_data_string.TryGetValue("divine_name", out dn) && !string.IsNullOrEmpty(dn))
 						{
-							OwnerName = unit.getName(),
-							OwnerId = ReadActorId(unit),
-							WorldName = World.world?.name ?? "Unknown",
-							TakenAt = DateTime.Now.Ticks
-						};
-						added++;
+							if (!_data.Names.ContainsKey(dn)) // 保留先登记者
+							{
+								_data.Names[dn] = new DivineNameEntry
+								{
+									OwnerName = unit.getName(),
+									OwnerId = ReadActorId(unit),
+									WorldName = World.world?.name ?? "Unknown",
+									TakenAt = DateTime.Now.Ticks
+								};
+								added++;
+							}
+						}
+						string dnw;
+						if (data.custom_data_string.TryGetValue("divine_name_west", out dnw) && !string.IsNullOrEmpty(dnw))
+						{
+							if (!_data.Names.ContainsKey(dnw))
+							{
+								_data.Names[dnw] = new DivineNameEntry
+								{
+									OwnerName = unit.getName(),
+									OwnerId = ReadActorId(unit),
+									WorldName = World.world?.name ?? "Unknown",
+									TakenAt = DateTime.Now.Ticks
+								};
+								added++;
+							}
+						}
 					}
 					if (added > 0) Save();
 					DSDebug.Verbose($"[GeneCultivation] 神名注册表扫描完成，本次登记 {added} 个，累计 {_data.Names.Count} 个");
