@@ -368,7 +368,7 @@ namespace Code.Realm
             return CultivationData.GetCooldown(actor, "divine_blessed") > 0;
         }
 
-        /// <summary>读取单位已存的神名（v0.18.41 神位制：东方名+西方名一一对应；按当前语言返回，英文界面优先西方名；旧档单键自动兼容）</summary>
+        /// <summary>读取单位已存的神名（v0.18.41 神位制：东方名+西方名一一对应；v0.18.45 起同一语言内同时显示东西双名"东 · 西"；旧档单键自动兼容）</summary>
         public static string GetStoredDivineName(Actor actor)
         {
             try
@@ -380,8 +380,9 @@ namespace Code.Realm
                 data.custom_data_string.TryGetValue("divine_name", out east);
                 data.custom_data_string.TryGetValue("divine_name_west", out west);
                 if (string.IsNullOrEmpty(east) && string.IsNullOrEmpty(west)) return "";
-                if (UILocalization.CurrentLanguage == "en" && !string.IsNullOrEmpty(west)) return west;
-                return string.IsNullOrEmpty(east) ? west : east;
+                if (string.IsNullOrEmpty(east)) return west;
+                if (string.IsNullOrEmpty(west)) return east;
+                return east + " · " + west;
             }
             catch { return ""; }
         }
