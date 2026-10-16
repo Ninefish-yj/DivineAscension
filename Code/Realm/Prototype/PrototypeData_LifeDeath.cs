@@ -26,6 +26,10 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Chain, PrototypeTag.HealAlly, 2, 4),
             new PrototypeDef("lf_heal_03", "愈合", "受击自愈回血强化，免伤", "生命系", "治愈",
                 PrototypeTag.Regeneration, PrototypeTag.Dodge, 2, 5),
+            new PrototypeDef("lf_heal_04", "圣泉", "攻击回血，受击净化负面", "生命系", "治愈",
+                PrototypeTag.Heal, PrototypeTag.Cleanse, 2, 6),
+            new PrototypeDef("lf_heal_05", "神愈", "攻击群疗友军，受击再生", "生命系", "治愈",
+                PrototypeTag.HealAlly, PrototypeTag.Regeneration, 2, 8),
             // ---- 再生 ----
             new PrototypeDef("lf_regrow_01", "复生", "受击自愈回血，护盾减伤", "生命系", "再生",
                 PrototypeTag.Regeneration, PrototypeTag.Shield, 2, 3),

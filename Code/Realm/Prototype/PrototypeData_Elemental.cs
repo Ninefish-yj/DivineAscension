@@ -22,6 +22,8 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Berserk, PrototypeTag.Burn, 6, 5),
             new PrototypeDef("el_fire_04", "火衣", "受击概率自愈，灼烧反击", "元素系", "火",
                 PrototypeTag.Regeneration, PrototypeTag.Burn, 6, 8),
+            new PrototypeDef("el_fire_05", "焚世", "等离子灼烧，低血量直接焚灭", "元素系", "火",
+                PrototypeTag.Plasma, PrototypeTag.Execute, 6, 9),
             // ---- 水 ----
             new PrototypeDef("water", "御水", "治疗自身，护盾减伤", "元素系", "水",
                 PrototypeTag.Heal, PrototypeTag.Shield, 2, 1),
@@ -85,6 +87,10 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Telekinesis, PrototypeTag.Chain, 0, 7),
             new PrototypeDef("el_metal_03", "金身", "护盾减伤强化，受击反震眩晕攻击者", "元素系", "金属",
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 0, 9),
+            new PrototypeDef("el_metal_04", "精钢", "护盾减伤，受击反弹伤害", "元素系", "金属",
+                PrototypeTag.Shield, PrototypeTag.Thorns, 0, 6),
+            new PrototypeDef("el_metal_05", "万剑归宗", "念力万剑贯穿，低血量斩杀", "元素系", "金属",
+                PrototypeTag.Telekinesis, PrototypeTag.Execute, 0, 8),
         };
     }
 }

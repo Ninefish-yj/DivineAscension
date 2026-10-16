@@ -54,6 +54,10 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Fear, PrototypeTag.Telekinesis, 6, 1),
             new PrototypeDef("my_dragon_03", "钢躯", "护盾减伤强化，受击反击麻痹攻击者", "强化系", "体魄",
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 6, 4),
+            new PrototypeDef("en_body_06", "铁骨", "护盾减伤，受击反弹伤害", "强化系", "体魄",
+                PrototypeTag.Shield, PrototypeTag.Thorns, 6, 6),
+            new PrototypeDef("en_body_08", "霸体", "受击自愈，护盾减伤", "强化系", "体魄",
+                PrototypeTag.Regeneration, PrototypeTag.Shield, 6, 8),
             // ---- 神 ----
             new PrototypeDef("my_god_01", "天罚", "攻击念力贯穿高伤，暴击破甲", "光明系", "圣光",
                 PrototypeTag.Telekinesis, PrototypeTag.Crit, 3, 1),
