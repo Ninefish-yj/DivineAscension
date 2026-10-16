@@ -221,7 +221,7 @@ namespace Code.Realm
 		{
 			try
 			{
-				return ActorDataAccessor.GetData(actor).id;
+				return (int)ActorDataAccessor.GetData(actor).id;
 			}
 			catch (Exception) { return 0; }
 		}

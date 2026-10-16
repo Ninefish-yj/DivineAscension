@@ -220,7 +220,9 @@ namespace Code.Realm
             {"gene_will_source", new[]{"意志", "决心", "信念", "道心", "毅力"}},
             {"gene_ability_source", new[]{"异能", "天赋", "潜力", "能力", "资质"}},
             {"gene_potential_source", new[]{"潜能", "潜力", "根骨", "天资", "资质"}},
-        };_elementStemMapEn = new Dictionary<string, string[]>
+        };
+
+        private static readonly Dictionary<string, string[]> _elementStemMapEn = new Dictionary<string, string[]>
         {
             {"gene_cell_division", new[]{"Regen", "SelfHeal", "Newborn", "Fission", "Proliferate"}},
             {"gene_muscle_growth", new[]{"Strength", "Might", "Brawn", "Colossus", "Burst"}},
