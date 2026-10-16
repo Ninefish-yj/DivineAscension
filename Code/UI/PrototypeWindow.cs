@@ -12,6 +12,7 @@
 // ============================================================
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Code.Core;
 using Code.Realm.Prototype;
@@ -45,6 +46,10 @@ namespace Code.UI
         private Vector2 _panStart;
         private string _focusNodeId;   // 点击选中的节点（详情卡；默认=当前异能）
         private bool _pathMode = true; // 仅路径模式：只显示当前异能所在链路（异能叶→小类→系→根）
+        // 仅路径模式：链上节点紧凑重排（根在下→叶在上，居中堆叠，连线自然变短）
+        private string _chainCacheKey;                               // 缓存对应的 activeId
+        private readonly Dictionary<string, Vector2> _chainPos = new Dictionary<string, Vector2>();
+        private float _chainMaxW, _chainMaxH;
         private float _prevPinchDist;  // 双指捏合上次距离（0=未在捏合）
         private Texture2D _bgTex;
         private Texture2D _titleBgTex;
@@ -212,10 +217,22 @@ namespace Code.UI
             if (node == null) return;
             float targetZoom = Mathf.Max(_zoom, 0.85f);
             _zoom = Mathf.Clamp(targetZoom, ZOOM_MIN, ZOOM_MAX);
-            float cx = (node.X + node.W / 2f) * _zoom;
-            float cy = (node.Y + node.H / 2f) * _zoom;
+            // 仅路径模式：当前异能节点按紧凑链坐标居中（避免聚焦到原布局的空白远处）
+            string activeId = GetActiveProtoId();
+            Vector2 pos = (_pathMode && !string.IsNullOrEmpty(activeId) && IsOnActiveChain(node, activeId))
+                ? GetChainPos(node, activeId) : new Vector2(node.X, node.Y);
+            float cx = (pos.x + node.W / 2f) * _zoom;
+            float cy = (pos.y + node.H / 2f) * _zoom;
             _pan.x = Screen.width / 2f - cx;
             _pan.y = (TITLE_HEIGHT + TOOLBAR_H + Screen.height) / 2f - cy;
+        }
+
+        /// <summary>链上节点的紧凑坐标（惰性构建缓存）</summary>
+        private Vector2 GetChainPos(ProtoTreeNode node, string activeId)
+        {
+            EnsureChainLayout(activeId);
+            if (_chainPos.TryGetValue(node.Id, out Vector2 p)) return p;
+            return new Vector2(node.X, node.Y);
         }
         #endregion
 
@@ -542,12 +559,20 @@ namespace Code.UI
         private ProtoTreeNode HitTestNode(Vector2 screenPos)
         {
             if (_layout == null) return null;
+            string activeId = GetActiveProtoId();
             foreach (var node in _layout.Nodes)
             {
-                Rect r = ScreenRect(node);
+                Rect r = NodeScreenRect(node, activeId);
                 if (r.Contains(screenPos)) return node;
             }
             return null;
+        }
+
+        /// <summary>当前选中单位已觉醒的异能 Id（无则 null）</summary>
+        private string GetActiveProtoId()
+        {
+            var proto = PrototypeRegistry.GetForActor(_selectedActor);
+            return proto != null ? proto.Id : null;
         }
 
         /// <summary>世界坐标 → 屏幕矩形</summary>
@@ -580,8 +605,8 @@ namespace Code.UI
                 if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上入边
                 var parent = _layout.GetNode(node.ParentId);
                 if (parent == null) continue;
-                Rect pr = ScreenRect(parent);
-                Rect nr = ScreenRect(node);
+                Rect pr = NodeScreenRect(parent, activeId);
+                Rect nr = NodeScreenRect(node, activeId);
                 Vector2 from = new Vector2(pr.center.x, pr.yMax);
                 Vector2 to = new Vector2(nr.center.x, nr.yMin);
                 // 贝塞尔曲线（父底 → 子顶平滑下弧），当前异能所在路径高亮发光（双层：晕+实线）
@@ -631,6 +656,47 @@ namespace Code.UI
             return false;
         }
 
+        /// <summary>仅路径模式：链上节点紧凑重排（根在下→叶在上，同 x 居中堆叠），连线自然变短</summary>
+        private void EnsureChainLayout(string activeId)
+        {
+            if (_chainCacheKey == activeId && _chainPos.Count > 0) return;
+            _chainCacheKey = activeId;
+            _chainPos.Clear();
+            _chainMaxW = 0f; _chainMaxH = 0f;
+            if (_layout == null || string.IsNullOrEmpty(activeId)) return;
+
+            // 收集链上节点，按 Level 升序（根 Level0 在底部 → 异能叶 Level2 在顶部）
+            var nodes = new List<ProtoTreeNode>();
+            foreach (var n in _layout.Nodes)
+                if (IsOnActiveChain(n, activeId)) nodes.Add(n);
+            nodes.Sort((a, b) => a.Level.CompareTo(b.Level));
+
+            float maxW = 0f;
+            foreach (var n in nodes) maxW = Mathf.Max(maxW, n.W);
+            const float SPACING = 26f;   // 世界单位纵向间隙（缩放后仍紧凑）
+            float curY = 0f;
+            foreach (var n in nodes)
+            {
+                float x = (maxW - n.W) * 0.5f;
+                _chainPos[n.Id] = new Vector2(x, curY);
+                curY += n.H + SPACING;
+            }
+            _chainMaxW = maxW;
+            _chainMaxH = curY - SPACING;   // 去掉末尾间隙 = 链总高
+        }
+
+        /// <summary>节点屏幕矩形：仅路径模式链上节点用紧凑坐标，其余用原布局坐标</summary>
+        private Rect NodeScreenRect(ProtoTreeNode node, string activeId)
+        {
+            if (_pathMode && !string.IsNullOrEmpty(activeId) && IsOnActiveChain(node, activeId))
+            {
+                EnsureChainLayout(activeId);
+                if (_chainPos.TryGetValue(node.Id, out Vector2 p))
+                    return new Rect(p.x * _zoom + _pan.x, p.y * _zoom + _pan.y, node.W * _zoom, node.H * _zoom);
+            }
+            return ScreenRect(node);
+        }
+
         /// <summary>聚焦当前异能链路（含根，Fit 到链路包围盒）</summary>
         private void FocusChain(string activeId)
         {
@@ -639,9 +705,15 @@ namespace Code.UI
             FitToRect(b);
         }
 
-        /// <summary>当前异能链路的节点包围盒（异能叶→小类→系→根，含边距）</summary>
+        /// <summary>当前异能链路的节点包围盒（异能叶→小类→系→根，含边距）；仅路径模式=紧凑链包围盒</summary>
         private Rect GetChainBounds(string activeId)
         {
+            if (_pathMode && !string.IsNullOrEmpty(activeId))
+            {
+                EnsureChainLayout(activeId);
+                if (_chainPos.Count > 0)
+                    return new Rect(-60f, -60f, _chainMaxW + 120f, _chainMaxH + 120f);
+            }
             float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
             foreach (var n in _layout.Nodes)
             {
@@ -661,7 +733,7 @@ namespace Code.UI
             foreach (var node in _layout.Nodes)
             {
                 if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上节点
-                Rect r = ScreenRect(node);
+                Rect r = NodeScreenRect(node, activeId);
                 if (r.xMax < -20f || r.yMax < -20f || r.x > area.width + 20f || r.y > area.height + 20f) continue; // 视口裁剪
 
                 bool isActive = node.Id == activeId;
