@@ -39,7 +39,7 @@ namespace Code.Realm.Prototype
                 case PrototypeTag.Heal: return "fx_hearts";                  // 治疗：心形
                 case PrototypeTag.Chain: return "fx_lightning_medium";       // 连锁：闪电
                 case PrototypeTag.Knockback: return "fx_explosion_tiny";     // 击退：小爆
-                case PrototypeTag.Gravity: return "fx_boulder";              // 重力：落石
+                case PrototypeTag.Gravity: return "fx_meteorite";            // 重力：陨石压落（v0.18.60 原fx_boulder=原版保龄球滚石特效，改陨石贴合重力意象）
                 case PrototypeTag.Berserk: return "fx_fire_smoke";           // 狂暴：怒火
                 // ---- v0.18.24 大众认知补充 ----
                 case PrototypeTag.Entangle: return "fx_fishnet";             // 束缚：渔网
