@@ -131,7 +131,8 @@ namespace Code.Realm
 				if (_data.Names.TryGetValue(name, out var existing))
 				{
 					// 同一单位重复登记：幂等放行（读档后单位重新触发登神流程）
-					if (existing.OwnerId == ReadActorId(god) && existing.OwnerName == god.getName())
+					// v0.18.51：同角色跨存档复刻也放行（圣所放置=同一角色，单位ID会变但名称一致，神名继续独属于该角色）
+					if (existing.OwnerId == ReadActorId(god) || existing.OwnerName == god.getName())
 					{
 						return true;
 					}

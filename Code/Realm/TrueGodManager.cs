@@ -27,6 +27,8 @@ namespace Code.Realm
 			public string Name;           // 真神名称
 			public string Race;           // 种族
 			public int RealmTier;         // 境界（13=真神）
+			public string DivineName;     // 神名·东方（v0.18.51：跨存档唯一性——放置时恢复本单位的神名，而非重新分配）
+			public string DivineNameWest; // 神名·西方（与东方一一对应）
 			public List<string> UnlockedElements; // 已解锁基因
 			public List<string> ActiveCombos;     // 已激活组合
 			public float Qi;              // 异能能量
@@ -181,6 +183,9 @@ namespace Code.Realm
 					Name = godName,
 					Race = ReadAssetId(actor) ?? "Unknown",
 					RealmTier = tier,
+					// v0.18.51：神名跨存档快照（东名+西名），放置时恢复独属神名
+					DivineName = ReadDivineName(actor, "divine_name"),
+					DivineNameWest = ReadDivineName(actor, "divine_name_west"),
 										UnlockedElements = CultivationData.GetUnlockedElements(actor),
 					ActiveCombos = CultivationData.GetActiveCombos(actor),
 					Qi = CultivationData.GetEnergy(actor),
@@ -309,7 +314,11 @@ namespace Code.Realm
 				// 真·复刻：恢复特质快照（登神特质/修炼特质/完美生命）
 				RestoreTraits(god, godData.Traits);
 
-				DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已按原种族 {assetId} 放置（基因+特质已复刻）");
+				// v0.18.51：恢复独属神名（快照有则写回+登记；旧记录无神名则补授唯一神名）
+				// 只恢复神名本身，不触发氏族/神眷/宗教/切纪元等诞生链（放置≠诞生）
+				Code.Realm.RealmMechanics.RestoreSpawnedGodDivineName(god, godData.DivineName, godData.DivineNameWest);
+
+				DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已按原种族 {assetId} 放置（基因+特质+神名已复刻）");
 				return god;
 			}
 			catch (Exception e)
@@ -397,6 +406,18 @@ namespace Code.Realm
 				ActorData data = actor.getData() as ActorData;
 				if (data == null || data.saved_traits == null) return null;
 				return new List<string>(data.saved_traits);
+			}
+			catch (Exception) { return null; }
+		}
+
+		/// <summary>读取单位神名键（ActorData.custom_data_string）</summary>
+		private static string ReadDivineName(Actor actor, string key)
+		{
+			try
+			{
+				var data = ActorDataAccessor.GetData(actor);
+				if (data == null || data.custom_data_string == null) return null;
+				return data.custom_data_string.TryGetValue(key, out string v) ? v : null;
 			}
 			catch (Exception) { return null; }
 		}

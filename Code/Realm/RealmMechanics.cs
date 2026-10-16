@@ -877,8 +877,51 @@ namespace Code.Realm
             catch { return 3; }
         }
 
-private static string GrantDivineName(Actor god)
-        {
+		/// <summary>
+		/// 圣所放置场景恢复神名（v0.18.51，跨存档唯一性）
+		/// 只恢复神名本身：快照有神名则写回+登记（同角色跨存档复刻放行）；
+		/// 旧记录无神名则补授唯一神名对（复用选名排重逻辑，绝不与已占用神名重复）。
+		/// 不触发氏族/神眷/宗教/切纪元等诞生链（放置≠诞生）。
+		/// </summary>
+		public static void RestoreSpawnedGodDivineName(Actor god, string eastSnapshot, string westSnapshot)
+		{
+			if (god == null || !god.isAlive()) return;
+			try
+			{
+				string east = eastSnapshot, west = westSnapshot;
+				if (string.IsNullOrEmpty(east) || string.IsNullOrEmpty(west))
+				{
+					// 旧记录无神名：补授唯一神名对（只授名，不建氏族不切纪元）
+					if (!PickUniqueDivineNamePair(god, out east, out west) || string.IsNullOrEmpty(east))
+					{
+						DSDebug.Warning("[GeneCultivation] 放置真神补授神名失败");
+						return;
+					}
+				}
+
+				CultivationData.EnsureCustomDataInitialized(god);
+				var data = ActorDataAccessor.GetData(god);
+				if (data?.custom_data_string == null) return;
+				data.custom_data_string["divine_name"] = east;
+				data.custom_data_string["divine_name_west"] = west;
+				// 登记到跨存档注册表（东名+西名；同角色复刻幂等放行，已被其他单位占用则不覆盖）
+				if (!DivineNameRegistry.Claim(east, god))
+				{
+					DSDebug.Warning($"[GeneCultivation] 东方神名 {east} 登记失败（可能已被其他单位占用）");
+				}
+				if (!DivineNameRegistry.Claim(west, god))
+				{
+					DSDebug.Warning($"[GeneCultivation] 西方神名 {west} 登记失败（可能已被其他单位占用）");
+				}
+			}
+			catch (Exception dsEx)
+			{
+				DSDebug.Warning("[GeneCultivation] RestoreSpawnedGodDivineName 异常: " + dsEx.Message);
+			}
+		}
+
+		private static string GrantDivineName(Actor god)
+		{
             try
             {
                 var data = ActorDataAccessor.GetData(god);
