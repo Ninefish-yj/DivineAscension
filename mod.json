@@ -1,7 +1,7 @@
 {
   "name": "基因修炼",
   "author": "阿鱼要吃书",
-  "version": "v0.18.48",
+  "version": "v0.18.49",
   "GUID": "GeneCultivation",
   "description": "WorldBox 0.51 现代异能修炼模组",
   "homepage": "https://github.com/Ninefish-yj/GeneCultivation",
@@ -17,5 +17,6 @@
   "optionalDependencies": [],
   "requirements": {
     "gameVersion": "0.51"
-  }
+  },
+  "iconPath": "icon.png"
 }
