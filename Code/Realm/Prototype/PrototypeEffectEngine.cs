@@ -71,6 +71,7 @@ namespace Code.Realm.Prototype
                 {
                     float shieldReduction = Mathf.Min(MAX_SHIELD_REDUCTION, PrototypeTags.Get(PrototypeTag.Shield).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Shield) * 0.03f);
                     damage *= Mathf.Max(0.05f, 1f - shieldReduction);
+                    PrototypeFx.PlayDefendFx(defender, PrototypeTag.Shield, 0.25f);   // v0.18.28 护盾光效（低出镜防疲劳）
                 }
                 // 闪避组：Dodge/Illusion/Invisibility/Clone/Teleport 概率完全免伤（强度递增）
                 if (proto.MainTag == PrototypeTag.Dodge || proto.SubTag == PrototypeTag.Dodge ||
@@ -86,6 +87,7 @@ namespace Code.Realm.Prototype
                     if (UnityEngine.Random.value < dodgeChance)
                     {
                         damage = 0f;
+                        PrototypeFx.PlayDefendFx(defender, dodgeTag);   // v0.18.28 闪避/分身/瞬移特效
                         DSDebug.Verbose("[GeneCultivation] " + defender.getName() + " 异能闪避！");
                         // 分身：免伤后回敬攻击者伤害（v0.18.24）
                         if (dodgeTag == PrototypeTag.Clone && attacker != null && attacker.isAlive())
@@ -107,7 +109,11 @@ namespace Code.Realm.Prototype
                     if (UnityEngine.Random.value < chance)
                     {
                         float healAmount = damage * def.Strength;
-                        if (healAmount > 1f) TryHeal(defender, healAmount);
+                        if (healAmount > 1f)
+                        {
+                            PrototypeFx.PlayDefendFx(defender, healDefTag);   // v0.18.28 祝福/再生绿光
+                            TryHeal(defender, healAmount);
+                        }
                     }
                 }
                 // 反击组：Magnetism/Vibration/Sound 受击概率麻痹攻击者
@@ -122,6 +128,7 @@ namespace Code.Realm.Prototype
                     float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, counterTag) * 0.04f);
                     if (UnityEngine.Random.value < chance)
                     {
+                        PrototypeFx.PlayDefendFx(defender, counterTag);   // v0.18.28 磁力/震动/声波反击特效
                         try { DSStatusManager.SafeAddStatusEffect(attacker, "stunned", 2f); }
                         catch (System.Exception dsEx) { DSDebug.Verbose("[GeneCultivation] 异能反击附加状态异常: " + dsEx.Message); }
                     }
@@ -131,18 +138,24 @@ namespace Code.Realm.Prototype
                 {
                     float resist = Mathf.Min(0.35f, PrototypeTags.Get(PrototypeTag.ElementResist).Strength + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.ElementResist) * 0.02f);
                     damage *= Mathf.Max(0.05f, 1f - resist);
+                    PrototypeFx.PlayDefendFx(defender, PrototypeTag.ElementResist, 0.25f);   // v0.18.28 抗性盾光（低出镜）
                 }
                 // 净化：受击概率清除自身负面状态（v0.18.24）
                 if (proto.MainTag == PrototypeTag.Cleanse || proto.SubTag == PrototypeTag.Cleanse)
                 {
                     var def = PrototypeTags.Get(PrototypeTag.Cleanse);
                     float chance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(defender, PrototypeTag.Cleanse) * 0.04f);
-                    if (UnityEngine.Random.value < chance) TryCleanse(defender);
+                    if (UnityEngine.Random.value < chance)
+                    {
+                        PrototypeFx.PlayDefendFx(defender, PrototypeTag.Cleanse);   // v0.18.28 净化圣光
+                        TryCleanse(defender);
+                    }
                 }
                 // 反弹：受击反弹伤害给攻击者（v0.18.24，带递归防护）
                 if (attacker != null && attacker.isAlive() &&
                     (proto.MainTag == PrototypeTag.Thorns || proto.SubTag == PrototypeTag.Thorns))
                 {
+                    PrototypeFx.PlayDefendFx(defender, PrototypeTag.Thorns);   // v0.18.28 反弹火花
                     TryThorns(defender, attacker, damage);
                 }
             }
@@ -265,6 +278,9 @@ namespace Code.Realm.Prototype
                 default:
                     break;
             }
+
+            // v0.18.28 异能视觉特效：命中目标位置播放原版粒子（35% 出镜率，防每击刷屏）
+            PrototypeFx.PlayAttackFx(attacker, target, tag);
         }
 
         /// <summary>吸血组：Lifesteal/Drain/Blood（吸血比例按标签强度，受上限约束）</summary>
@@ -398,6 +414,7 @@ namespace Code.Realm.Prototype
                 {
                     target.getHit(curHp, false, AttackType.Other, attacker,
                         pSkipIfShake: false, pMetallicWeapon: false, pCheckDamageReduction: false);
+                    PrototypeFx.PlayAttackFx(attacker, target, tag, force: true);   // v0.18.28 斩杀必现死神特效
                     DSDebug.Verbose("[GeneCultivation] " + attacker.getName() + " 异能斩杀: " + target.getName());
                 }
             }
