@@ -627,7 +627,7 @@
   "graph_max_tier": "已达最高阶位（超神）",
   "god_death_concept_1": "概念消融，存在归虚。",
   "god_birth_concept_1": "概念终极，超越存在。",
-  "judge_true_god_birth_desc": "{0} 登临超神级，完成终极基因跃迁，固化维度空间，执掌完整基因本源。{1}{2}之下，全球异能者的基因锁随之松动，进化之路豁然开朗。",
+  "judge_true_god_birth_desc": "{0} 登临超神级，完成终极基因跃迁，固化维度空间，执掌完整基因本源。法则之下，全球异能者的基因锁随之松动，进化之路豁然开朗。",
   "combo_creation": "创世",
   "god_name_spirit_11": "思维之神",
   "sect_common_prefix_14": "突破",
@@ -795,7 +795,7 @@
   "codex_combat": "战斗",
   "stats_active_rifts": "当前活跃裂隙",
   "element_traits_category": "基因系",
-  "event_breakthrough": "{0}突破至{2}。基因序列重组完毕，能量再度跃升。",
+  "event_breakthrough": "{0}{2}，基因序列重组完毕，能量再度跃升。",
   "era_force_desc": "力场法则稳固，万物灵动自如",
   "event_true_god_body_collapse": "真神之躯崩解，",
   "debug_global_truth": "基因掌握：幻想 {0} · 现实 {1}",
@@ -1941,5 +1941,7 @@
   "codex_spawn_fail": "放置失败（圣所记录已保留）",
   "unit_move_to_sanctuary": "移入圣所",
   "unit_move_to_sanctuary_ok": "已移入圣所，离开当前世界（可在其他存档放置）",
-  "unit_move_to_sanctuary_fail": "移入圣所失败"
+  "unit_move_to_sanctuary_fail": "移入圣所失败",
+  "judge_true_god_name_title": "神名加冕",
+  "judge_true_god_name_desc": "「{0}」之名加冕于 {1}，法则铭记此名，此名独属于他，跨存档唯一。"
 }

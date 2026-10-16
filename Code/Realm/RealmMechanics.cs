@@ -814,6 +814,26 @@ namespace Code.Realm
                     return;
                 }
 
+                // v0.18.53 神名加冕记录：神名授予成功即写入历史（独立于氏族/神眷/判词链路，
+                // 旧版神名记录挂在立教链末尾，链路中途异常即丢失——表现为历史面板"获得神名"文案消失）
+                try
+                {
+                    string eastFull, westFull;
+                    GetStoredDivineNamePair(god, out eastFull, out westFull);
+                    string fullName = !string.IsNullOrEmpty(westFull) ? eastFull + " · " + westFull : eastFull;
+                    DSEventManager.RecordEvent(
+                        DSEventType.Divine,
+                        UILocalization.Get("judge_true_god_name_title"),
+                        string.Format(UILocalization.Get("judge_true_god_name_desc"), fullName, god.getName()),
+                        god.getName(),
+                        god.getID(),
+                        13, god);
+                }
+                catch (Exception e)
+                {
+                    DSDebug.Warning($"[GeneCultivation] 神名加冕记录异常: {e.Message}");
+                }
+
                 // 2. 创建氏族
                 ClanData clan = CreateDivineClan(god, divineName);
                 if (clan == null)

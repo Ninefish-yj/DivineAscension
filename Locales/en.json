@@ -618,7 +618,7 @@
   "graph_max_tier": "Reached highest tier (True God)",
   "god_death_concept_1": "Concept melted, existence returns to void.",
   "god_birth_concept_1": "Concept ultimate, transcend existence.",
-  "judge_true_god_birth_desc": "{0} ascends to Tier 13, completes the ultimate gene leap, solidifies dimensional space, and commands the complete gene origin. Under {1}{2}, the gene locks of every ability user loosen, and the path of evolution opens wide.",
+  "judge_true_god_birth_desc": "{0} ascends to Overgod, completes ultimate genetic leap, solidifies dimensional space, and holds the complete genetic origin. Under the law, gene locks of all mutants loosen — the path of evolution opens.",
   "combo_creation": "Creation",
   "god_name_spirit_11": "God of Thought",
   "sect_common_prefix_14": "Breakthrough",
@@ -775,7 +775,7 @@
   "codex_combat": "Combat",
   "ability_speed_desc": "Extraordinary speed",
   "element_traits_category": "Elemental",
-  "event_breakthrough": "{0} ascends to Tier {1} {2}. The gene sequence is reorganized, and energy surges anew.",
+  "event_breakthrough": "{0} {2}. Genetic sequence reorganized, energy surges again.",
   "era_force_desc": "Force field laws stable, all things agile and free",
   "event_true_god_body_collapse": "The body of the True God collapses. ",
   "debug_global_truth": "Elements: F {0} · R {1}",
@@ -1936,5 +1936,7 @@
   "codex_spawn_fail": "Place failed (record kept)",
   "unit_move_to_sanctuary": "Move to Sanctuary",
   "unit_move_to_sanctuary_ok": "Moved to Sanctuary — left this world (placeable in other saves)",
-  "unit_move_to_sanctuary_fail": "Failed to move to Sanctuary"
+  "unit_move_to_sanctuary_fail": "Failed to move to Sanctuary",
+  "judge_true_god_name_title": "Divine Name Coronation",
+  "judge_true_god_name_desc": "The name \"{0}\" is crowned upon {1}. The law remembers this name — it belongs solely to him, unique across saves."
 }
