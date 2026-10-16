@@ -1585,7 +1585,9 @@ public class AbilityCodexPanel : MonoBehaviour
 			{
 				hasActiveGods = true;
 				GUILayout.BeginHorizontal((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)rowH) });
-				GUILayout.Label(string.Format(UILocalization.Get("codex_true_god_row"), god.getName(), god.getAge()), GUILayout.Width(220));
+				// v0.18.54：境界名动态取值（Divine_{tier}_name），修复模板写死"超神级超神级"重复问题
+				int godTier = CultivationData.GetRealmTier(god);
+				GUILayout.Label(string.Format(UILocalization.Get("codex_true_god_row"), god.getName(), god.getAge(), UILocalization.Get("Divine_" + godTier + "_name")), GUILayout.Width(220));
 				GUILayout.EndHorizontal();
 			}
 		}
