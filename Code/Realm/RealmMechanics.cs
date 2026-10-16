@@ -480,6 +480,74 @@ namespace Code.Realm
             UILocalization.Get("god_name_concept_7"), UILocalization.Get("god_name_concept_8"), UILocalization.Get("god_name_concept_9"), UILocalization.Get("god_name_concept_10"), UILocalization.Get("god_name_concept_11"), UILocalization.Get("god_name_concept_12")
         };
 
+        /// <summary>异能标签 → 神名组映射（v0.18.32：神名与异能相符，大众认知；组号 0物质/1生命/2能量/3力场/4时空/5精神/6信息/7概念）</summary>
+        private static readonly Dictionary<Code.Realm.Prototype.PrototypeTag, int> TagToDivineGroup = new Dictionary<Code.Realm.Prototype.PrototypeTag, int>
+        {
+            // ---- 攻击标签 ----
+            { Code.Realm.Prototype.PrototypeTag.Burn, 2 },      // 灼烧 → 能量（炽阳/烈焰）
+            { Code.Realm.Prototype.PrototypeTag.Plasma, 2 },    // 等离子 → 能量
+            { Code.Realm.Prototype.PrototypeTag.Frost, 0 },     // 寒冰 → 物质（寒冰帝君）
+            { Code.Realm.Prototype.PrototypeTag.Frostbite, 0 }, // 霜冻 → 物质
+            { Code.Realm.Prototype.PrototypeTag.Slow, 4 },      // 减速 → 时空（时间之主）
+            { Code.Realm.Prototype.PrototypeTag.TimeSlow, 4 },  // 时缓 → 时空
+            { Code.Realm.Prototype.PrototypeTag.Stun, 3 },      // 麻痹 → 力场（磁场帝君）
+            { Code.Realm.Prototype.PrototypeTag.Knockback, 3 }, // 击退 → 力场（斥力）
+            { Code.Realm.Prototype.PrototypeTag.Gravity, 3 },   // 重力 → 力场（引力之主）
+            { Code.Realm.Prototype.PrototypeTag.Berserk, 3 },   // 狂暴 → 力场（力场编织者）
+            { Code.Realm.Prototype.PrototypeTag.Crit, 3 },      // 暴击 → 力场
+            { Code.Realm.Prototype.PrototypeTag.Chain, 3 },     // 溅射 → 力场（空间扩散）
+            { Code.Realm.Prototype.PrototypeTag.ArmorBreak, 3 },// 破甲 → 力场（空间撕裂）
+            { Code.Realm.Prototype.PrototypeTag.MultiShot, 3 }, // 多重 → 力场（爆发）
+            { Code.Realm.Prototype.PrototypeTag.Poison, 7 },    // 毒蚀 → 概念（熵/混沌）
+            { Code.Realm.Prototype.PrototypeTag.Curse, 7 },     // 诅咒 → 概念
+            { Code.Realm.Prototype.PrototypeTag.Aging, 7 },     // 衰老 → 概念（熵增）
+            { Code.Realm.Prototype.PrototypeTag.Weakness, 7 },  // 虚弱 → 概念
+            { Code.Realm.Prototype.PrototypeTag.Execute, 7 },   // 致死 → 概念（虚无之神）
+            { Code.Realm.Prototype.PrototypeTag.Lifesteal, 1 }, // 吸血 → 生命（血脉之源）
+            { Code.Realm.Prototype.PrototypeTag.Drain, 1 },     // 汲取 → 生命
+            { Code.Realm.Prototype.PrototypeTag.Blood, 1 },     // 血祭 → 生命
+            { Code.Realm.Prototype.PrototypeTag.Heal, 1 },      // 治疗 → 生命（生命之母）
+            { Code.Realm.Prototype.PrototypeTag.HealAlly, 1 },  // 治疗友军 → 生命
+            { Code.Realm.Prototype.PrototypeTag.Regeneration, 1 }, // 再生 → 生命
+            { Code.Realm.Prototype.PrototypeTag.Blessing, 1 },  // 祝福 → 生命（生机护佑）
+            { Code.Realm.Prototype.PrototypeTag.Entangle, 1 },  // 束缚 → 生命（自然缠绕）
+            { Code.Realm.Prototype.PrototypeTag.Soul, 5 },      // 灵魂 → 精神（灵魂之神）
+            { Code.Realm.Prototype.PrototypeTag.Fear, 5 },      // 恐惧 → 精神
+            { Code.Realm.Prototype.PrototypeTag.Telekinesis, 5 }, // 念力 → 精神（意念之主）
+            { Code.Realm.Prototype.PrototypeTag.Illusion, 5 },  // 幻象 → 精神（梦境之王）
+            { Code.Realm.Prototype.PrototypeTag.Invisibility, 5 }, // 隐身 → 精神（幻象隐遁）
+            { Code.Realm.Prototype.PrototypeTag.Sleep, 5 },     // 睡眠 → 精神（梦境）
+            { Code.Realm.Prototype.PrototypeTag.Clone, 5 },     // 分身 → 精神（幻象分身）
+            // ---- 防守标签 ----
+            { Code.Realm.Prototype.PrototypeTag.Shield, 0 },    // 护盾 → 物质（磐石/晶壁/山岳）
+            { Code.Realm.Prototype.PrototypeTag.Thorns, 0 },    // 反弹 → 物质（晶壁）
+            { Code.Realm.Prototype.PrototypeTag.ElementResist, 0 }, // 元素抗性 → 物质（坚固）
+            { Code.Realm.Prototype.PrototypeTag.Vibration, 0 }, // 震动 → 物质（山岳）
+            { Code.Realm.Prototype.PrototypeTag.Petrify, 0 },   // 石化 → 物质（磐石）
+            { Code.Realm.Prototype.PrototypeTag.Dodge, 3 },     // 闪避 → 力场（虚空之神）
+            { Code.Realm.Prototype.PrototypeTag.Magnetism, 3 }, // 磁力 → 力场（磁场帝君）
+            { Code.Realm.Prototype.PrototypeTag.Sound, 3 },     // 声波 → 力场（音爆冲击）
+            { Code.Realm.Prototype.PrototypeTag.Teleport, 3 },  // 瞬移 → 力场（空间之神）
+            { Code.Realm.Prototype.PrototypeTag.Cleanse, 2 }    // 净化 → 能量（圣光/光辉）
+        };
+
+        /// <summary>按异能标签选神名组（v0.18.32：神名与异能相符；无异能/无匹配则回退基因染色体）</summary>
+        private static int GetDivineNameGroupByPrototype(Actor god)
+        {
+            try
+            {
+                var def = Code.Realm.Prototype.PrototypeRegistry.GetForActor(god);
+                if (def != null)
+                {
+                    int g;
+                    if (TagToDivineGroup.TryGetValue(def.MainTag, out g)) return g;
+                    if (TagToDivineGroup.TryGetValue(def.SubTag, out g)) return g;
+                }
+            }
+            catch { }
+            return GetDominantElementGroup(god);
+        }
+
         /// <summary>按主要基因染色体获取神名（每条染色体12个，染色体索引0-7）</summary>
         private static string GetDivineNameByElementGroup(int elementGroup)
         {
@@ -525,10 +593,10 @@ namespace Code.Realm
 
                 // 4. 宗教已在11阶登神级时创建（原版ReligionManager），13阶不重复创建
 
-                // 获取主要基因染色体（从已解锁基因中选择出现最多的染色体），用于选择判词
-                int elementGroup = GetDominantElementGroup(god);
+                // 神名组（与神名同一来源：异能标签优先，回退基因染色体），用于选择判词
+                int elementGroup = GetDivineNameGroupByPrototype(god);
 
-                // 使用新的判词系统（按基因染色体分类，每条染色体3套，简短有力有气势）
+                // 使用判词系统（按神名组分类，每条染色体3套，简短有力有气势）
                 string birthDesc = DSEventTexts.GetTrueGodBirthDesc(god.getName(), elementGroup);
 
                 // 全局通知（宏大叙事风格，使用新判词）
@@ -590,8 +658,8 @@ private static string GrantDivineName(Actor god)
                     if (!string.IsNullOrEmpty(existing)) return existing;
                 }
 
-                // 根据主要基因染色体选择神名（每条染色体12个，体现基因特色）
-                int elementGroup = GetDominantElementGroup(god);
+                // 根据异能标签选择神名组（v0.18.32：神名与异能相符，如金刚=护盾→磐石/晶壁系；无匹配回退基因染色体）
+                int elementGroup = GetDivineNameGroupByPrototype(god);
                 string name = GetDivineNameByElementGroup(elementGroup);
 
                 // 存储神名
