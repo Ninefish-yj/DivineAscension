@@ -1566,9 +1566,10 @@ public class AbilityCodexPanel : MonoBehaviour
 		}
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
 		GUI.color = DSUITheme.AccentGold;
-		GUILayout.Label(string.Format(UILocalization.Get("ascended_count"), num), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandWidth(true) });
+		// v0.18.55 修复计数错位：num2=13阶超神级 → ascended_count(超神级)；num=12阶真神级 → truegod_count(真神级)
+		GUILayout.Label(string.Format(UILocalization.Get("ascended_count"), num2), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandWidth(true) });
 		GUI.color = new Color(1f, 0.85f, 0.4f);
-		GUILayout.Label(string.Format(UILocalization.Get("truegod_count"), num2), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandWidth(true) });
+		GUILayout.Label(string.Format(UILocalization.Get("truegod_count"), num), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandWidth(true) });
 		GUI.color = Color.white;
 		GUILayout.EndHorizontal();
 		GUILayout.Space(SpacingMedium);
