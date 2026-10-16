@@ -557,6 +557,58 @@ namespace Code.Realm
         }
 
         /// <summary>
+        /// 分配全局唯一神名（v0.18.39 神名独属单位，跨存档不重名）
+        /// 优先级：组内12名（异能相符）→ 全库96名（跨组借名，神名独属优先于同组）→ 全库耗尽随机兜底。
+        /// 候选顺序洗牌，避免长期固定抽取前几名。
+        /// </summary>
+        private static string PickUniqueDivineName(int elementGroup)
+        {
+            try
+            {
+                // 旧档兼容：先扫描当前世界已有神名并登记，防止与旧档撞名
+                DivineNameRegistry.EnsureSwept();
+
+                // 1) 组内 12 名（随机顺序，保证神名与异能相符优先）
+                int start = elementGroup * 12;
+                int[] groupOrder = ShuffleOrder(12);
+                for (int k = 0; k < 12; k++)
+                {
+                    string candidate = DivineNames[start + groupOrder[k]];
+                    if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
+                }
+
+                // 2) 组内全被占用 → 全库 96 名（跨组借名：独属性优先于同组相符）
+                int[] allOrder = ShuffleOrder(96);
+                for (int k = 0; k < 96; k++)
+                {
+                    string candidate = DivineNames[allOrder[k]];
+                    if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
+                }
+
+                // 3) 全库耗尽（96个神名全部有主，极罕见）：随机兜底并警告
+                DSDebug.Warning("[GeneCultivation] 神名词库已全部被占用，回退随机分配");
+            }
+            catch (Exception e)
+            {
+                DSDebug.Warning($"[GeneCultivation] 唯一神名分配异常: {e.Message}");
+            }
+            return GetDivineNameByElementGroup(elementGroup);
+        }
+
+        /// <summary>生成 [0, count) 的随机排列（Fisher-Yates 洗牌，避免 Linq 依赖）</summary>
+        private static int[] ShuffleOrder(int count)
+        {
+            int[] order = new int[count];
+            for (int i = 0; i < count; i++) order[i] = i;
+            for (int i = count - 1; i > 0; i--)
+            {
+                int j = UnityEngine.Random.Range(0, i + 1);
+                int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+            }
+            return order;
+        }
+
+        /// <summary>
         /// 真神诞生统一入口（突破13阶时调用）
         /// 1. 随机获得神名
         /// 2. 用神名创建氏族（真神为首领）
@@ -660,13 +712,19 @@ private static string GrantDivineName(Actor god)
 
                 // 根据异能标签选择神名组（v0.18.32：神名与异能相符，如金刚=护盾→磐石/晶壁系；无匹配回退基因染色体）
                 int elementGroup = GetDivineNameGroupByPrototype(god);
-                string name = GetDivineNameByElementGroup(elementGroup);
+                // v0.18.39：神名全局唯一（跨存档独属）——组内优先（异能相符），组内耗尽跨组借名，全库耗尽才随机兜底
+                string name = PickUniqueDivineName(elementGroup);
 
                 // 存储神名
                 try
                 {
                     CultivationData.EnsureCustomDataInitialized(god);
                     ActorDataAccessor.GetData(god).custom_data_string["divine_name"] = name;
+                    // 登记到跨存档注册表（神名独属该单位；登记失败不阻断神名授予）
+                    if (!DivineNameRegistry.Claim(name, god))
+                    {
+                        DSDebug.Warning($"[GeneCultivation] 神名 {name} 登记失败（可能已被其他单位占用）");
+                    }
                 } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] GrantDivineName 异常: " + dsEx.Message); }
                 CultivationData.SetCooldown(god, "divine_name", 1);
 
