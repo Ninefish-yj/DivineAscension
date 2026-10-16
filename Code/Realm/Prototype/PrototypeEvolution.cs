@@ -2,11 +2,12 @@
 // 异能进阶（v0.18.22 新增系统）——异能的"宝可梦式进化"（与境界/阶位系统相互独立）
 //
 // 设计（用户确认）：
-//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2觉醒阶/3进化阶/4升维阶/5概念级）
+//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2觉醒阶/3进化阶/4升维阶/5概念级/6超凡阶/7法则阶/8本源阶/9神话阶）
 //     从低到高排布；每个异能唯一上级 = 家族内第一个严格更高品质的异能（固定链、宝可梦式）
 //  2. 年度自动事件触发：境界达标 + 觉醒年限达标 + 低概率（难度极高，品质越高越难）
-//  3. 天生高品：觉醒抽签稀有度加权（概念级约 1.5%），God 可从 UI 区分"觉醒"与"进阶"来源
+//  3. 天生高品：觉醒抽签稀有度加权（神话阶极低），God 可从 UI 区分"觉醒"与"进阶"来源
 // 单一职责：品质推导 / 进化链查询 / 觉醒来源记录 / 年度进阶判定 / 年度扫描
+// v0.18.61：品质扩至 9 档（TIER_MAX=9）；GetTier 读 PrototypeDef.Tier 显式档位（缺省回退旧线性分档兼容旧数据）
 // ============================================================
 
 using System.Collections.Generic;
@@ -21,12 +22,13 @@ namespace Code.Realm.Prototype
         public const string KEY_EVOLVE_COUNT = "ds_prototype_evolve_count"; // 进阶次数（int 字符串）
         public const string KEY_AWAKEN_YEAR = "ds_prototype_awaken_year";   // 觉醒年份（世界年，1年=60s，与年度结算同源）
 
-        public const int TIER_MAX = 5;
+        public const int TIER_MAX = 9;
 
-        /// <summary>异能品质：同系同子类家族内按注册顺序分档（越靠后品越高，1凡~5概念级）</summary>
+        /// <summary>异能品质：显式档位优先（PrototypeDef.Tier，1凡~9神话）；缺省时回退同家族注册顺序线性分档（旧数据兼容）</summary>
         public static int GetTier(PrototypeDef def)
         {
             if (def == null) return 1;
+            if (def.Tier >= 1 && def.Tier <= TIER_MAX) return def.Tier;
             if (!PrototypeRegistry.Categories.TryGetValue(def.Category, out var subs) ||
                 !subs.TryGetValue(def.SubCategory, out var list) || list == null || list.Count == 0)
                 return 1;
@@ -36,7 +38,7 @@ namespace Code.Realm.Prototype
             {
                 if (list[i] != null && list[i].Id == def.Id)
                 {
-                    int tier = 1 + (i * 4) / (n - 1);
+                    int tier = 1 + (i * (TIER_MAX - 1)) / (n - 1);
                     if (tier > TIER_MAX) tier = TIER_MAX;
                     return tier;
                 }
@@ -44,7 +46,7 @@ namespace Code.Realm.Prototype
             return 1;
         }
 
-        /// <summary>进化目标（唯一上级）：同家族内第一个严格更高品质的异能；概念级/家族顶点 → null</summary>
+        /// <summary>进化目标（唯一上级）：同家族内第一个严格更高品质的异能；神话阶/家族顶点 → null</summary>
         public static PrototypeDef GetEvolveTarget(PrototypeDef def)
         {
             if (def == null) return null;
@@ -66,6 +68,10 @@ namespace Code.Realm.Prototype
                 case 3: return 0.12f;
                 case 4: return 0.04f;
                 case 5: return 0.015f;
+                case 6: return 0.006f;
+                case 7: return 0.002f;
+                case 8: return 0.0008f;
+                case 9: return 0.0003f;
                 default: return 1f;
             }
         }
@@ -107,7 +113,7 @@ namespace Code.Realm.Prototype
             var proto = PrototypeRegistry.GetForActor(actor);
             if (proto == null) return false;
             var target = GetEvolveTarget(proto);
-            if (target == null) return false;   // 已达家族顶点（概念级）不再进化
+            if (target == null) return false;   // 已达家族顶点（神话阶）不再进化
 
             int targetTier = GetTier(target);
 
@@ -120,6 +126,10 @@ namespace Code.Realm.Prototype
                 case 3: realmNeed = 5; break;   // →进化阶：需 5 阶
                 case 4: realmNeed = 7; break;   // →升维阶：需 7 阶
                 case 5: realmNeed = 9; break;   // →概念级：需 9 阶
+                case 6: realmNeed = 10; break;  // →超凡阶：需 10 阶
+                case 7: realmNeed = 11; break;  // →法则阶：需 11 阶
+                case 8: realmNeed = 12; break;  // →本源阶：需 12 阶
+                case 9: realmNeed = 13; break;  // →神话阶：需 13 阶（超神级）
             }
             if (realmTier < realmNeed) return false;
 
@@ -135,6 +145,10 @@ namespace Code.Realm.Prototype
                 case 3: yearsNeed = 5; break;
                 case 4: yearsNeed = 10; break;
                 case 5: yearsNeed = 20; break;
+                case 6: yearsNeed = 30; break;
+                case 7: yearsNeed = 40; break;
+                case 8: yearsNeed = 50; break;
+                case 9: yearsNeed = 60; break;
             }
             if (years < yearsNeed) return false;
 
@@ -146,6 +160,10 @@ namespace Code.Realm.Prototype
                 case 3: chance *= 0.6f; break;
                 case 4: chance *= 0.35f; break;
                 case 5: chance *= 0.15f; break;
+                case 6: chance *= 0.08f; break;
+                case 7: chance *= 0.04f; break;
+                case 8: chance *= 0.02f; break;
+                case 9: chance *= 0.01f; break;
             }
             if (UnityEngine.Random.value > chance) return false;
 
@@ -189,7 +207,7 @@ namespace Code.Realm.Prototype
             catch { return 0; }
         }
 
-        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖）</summary>
+        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖，1凡~9神话）</summary>
         public static string TierName(int tier)
         {
             switch (tier)
@@ -199,6 +217,10 @@ namespace Code.Realm.Prototype
                 case 3: return "进化阶";
                 case 4: return "升维阶";
                 case 5: return "概念级";
+                case 6: return "超凡阶";
+                case 7: return "法则阶";
+                case 8: return "本源阶";
+                case 9: return "神话阶";
                 default: return "";
             }
         }

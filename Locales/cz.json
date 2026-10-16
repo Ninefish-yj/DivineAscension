@@ -2335,5 +2335,9 @@
   "god_proto_na_heal_03": "回春元君",
   "god_proto_na_heal_03_west": "Spring-Renew Goddess",
   "god_proto_my_phoenix_01": "重生正神",
-  "god_proto_my_phoenix_01_west": "Rebirth God"
+  "god_proto_my_phoenix_01_west": "Rebirth God",
+  "proto_tier_6": "超凡阶",
+  "proto_tier_7": "法则阶",
+  "proto_tier_8": "本源阶",
+  "proto_tier_9": "神话阶"
 }

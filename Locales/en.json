@@ -2330,5 +2330,9 @@
   "god_proto_na_heal_03": "Spring-Renew Goddess",
   "god_proto_na_heal_03_west": "Spring-Renew Goddess",
   "god_proto_my_phoenix_01": "Rebirth God",
-  "god_proto_my_phoenix_01_west": "Rebirth God"
+  "god_proto_my_phoenix_01_west": "Rebirth God",
+  "proto_tier_6": "Transcendent",
+  "proto_tier_7": "Principle",
+  "proto_tier_8": "Origin",
+  "proto_tier_9": "Mythic"
 }

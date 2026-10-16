@@ -846,7 +846,7 @@ namespace Code.UI
                 GUI.color = DSUITheme.AccentGold;
                 GUI.Label(new Rect(x, y, w - 210f, 26f), def.NameZh, _detailNameStyle);
                 GUI.color = Color.white;
-                // 品质徽章（异能等级 1凡~5概念级）
+                // 品质徽章（异能等级 1凡~9神话；v0.18.61 起高档位≥6才随 zoom 展开显示）
                 int tier = PrototypeEvolution.GetTier(def);
                 Color tierColor = tier >= 5 ? new Color(1f, 0.82f, 0.35f, 1f)
                     : tier == 4 ? new Color(0.95f, 0.62f, 0.35f, 1f)
@@ -1131,7 +1131,7 @@ namespace Code.UI
             }
         }
 
-        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致）</summary>
+        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致，1凡~9神话）</summary>
         private static string TierNameText(int tier)
         {
             switch (tier)
@@ -1141,6 +1141,10 @@ namespace Code.UI
                 case 3: return GetText("proto_tier_3", "进化阶");
                 case 4: return GetText("proto_tier_4", "升维阶");
                 case 5: return GetText("proto_tier_5", "概念级");
+                case 6: return GetText("proto_tier_6", "超凡阶");
+                case 7: return GetText("proto_tier_7", "法则阶");
+                case 8: return GetText("proto_tier_8", "本源阶");
+                case 9: return GetText("proto_tier_9", "神话阶");
                 default: return "";
             }
         }
