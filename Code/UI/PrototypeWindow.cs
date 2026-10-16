@@ -1131,12 +1131,12 @@ namespace Code.UI
             }
         }
 
-        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致，1凡阶~9SSS级）</summary>
+        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致，1F级~9SSS级）</summary>
         private static string TierNameText(int tier)
         {
             switch (tier)
             {
-                case 1: return GetText("proto_tier_1", "凡阶");
+                case 1: return GetText("proto_tier_1", "F级");
                 case 2: return GetText("proto_tier_2", "E级");
                 case 3: return GetText("proto_tier_3", "D级");
                 case 4: return GetText("proto_tier_4", "C级");

@@ -2,7 +2,7 @@
 // 异能进阶（v0.18.22 新增系统）——异能的"宝可梦式进化"（与境界/阶位系统相互独立）
 //
 // 设计（用户确认）：
-//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2E级/3D级/4C级/5B级/6A级/7S级/8SS级/9SSS级）
+//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1F级/2E级/3D级/4C级/5B级/6A级/7S级/8SS级/9SSS级）
 //     从低到高排布；每个异能唯一上级 = 家族内第一个严格更高品质的异能（固定链、宝可梦式）
 //  2. 年度自动事件触发：境界达标 + 觉醒年限达标 + 低概率（难度极高，品质越高越难）
 //  3. 天生高品：觉醒抽签稀有度加权（SSS级极低），God 可从 UI 区分"觉醒"与"进阶"来源
@@ -207,12 +207,12 @@ namespace Code.Realm.Prototype
             catch { return 0; }
         }
 
-        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖，1凡阶~9SSS级，网文异能等级制）</summary>
+        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖，1F级~9SSS级，网文异能等级制）</summary>
         public static string TierName(int tier)
         {
             switch (tier)
             {
-                case 1: return "凡阶";
+                case 1: return "F级";
                 case 2: return "E级";
                 case 3: return "D级";
                 case 4: return "C级";
