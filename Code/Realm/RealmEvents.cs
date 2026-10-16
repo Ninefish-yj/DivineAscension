@@ -187,8 +187,8 @@ namespace Code.Realm
             }
             else
             {
-                // 普通事件：用突破格式
-                eventDesc = string.Format(UILocalization.Get("event_breakthrough"), actor.getName(), evt.RequiredTier, UILocalization.GetTierName(evt.RequiredTier));
+                // 普通事件：用突破格式（{2} 用突破名而非阶名，避免"超神级突破至超神级"同级观感）
+                eventDesc = string.Format(UILocalization.Get("event_breakthrough"), actor.getName(), evt.RequiredTier, UILocalization.Get($"Divine_{evt.RequiredTier}_breakthrough"));
             }
 
             DSEventManager.RecordEvent(
