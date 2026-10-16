@@ -1137,10 +1137,10 @@ namespace Code.UI
             switch (tier)
             {
                 case 1: return GetText("proto_tier_1", "凡阶");
-                case 2: return GetText("proto_tier_2", "奇阶");
+                case 2: return GetText("proto_tier_2", "玄阶");
                 case 3: return GetText("proto_tier_3", "灵阶");
                 case 4: return GetText("proto_tier_4", "圣阶");
-                case 5: return GetText("proto_tier_5", "概念级");
+                case 5: return GetText("proto_tier_5", "神阶");
                 default: return "";
             }
         }
