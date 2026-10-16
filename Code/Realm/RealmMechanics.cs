@@ -699,17 +699,18 @@ namespace Code.Realm
             return ChromosomeDefaultDomain[group];
         }
 
-        /// <summary>在指定域内尝试取空闲神位（域内6神位洗牌；东名或西名任一被占用即视为该神位已占用）</summary>
-        private static bool TryPickFromDomain(int domain, out string east, out string west)
+        /// <summary>在指定域内尝试取空闲神位（域内确定性选套；东名或西名任一被占用即视为该神位已占用）</summary>
+        private static bool TryPickFromDomain(int domain, out string east, out string west, int preferredSlot = -1)
         {
             east = west = null;
             if (domain < 0 || domain >= DivineDomains.Length) return false;
-            int[] slotOrder = ShuffleOrder(6);
+            // v0.18.58：确定性选套（preferredSlot 优先，占用则顺延），不再随机洗牌
+            int start = preferredSlot >= 0 ? preferredSlot : 0;
             string[] eastPool = DivineNamesByDomain[domain];
             string[] westPool = DivineNamesByDomainWest[domain];
             for (int k = 0; k < 6; k++)
             {
-                int slot = slotOrder[k];
+                int slot = (start + k) % 6;
                 string e = eastPool[slot];
                 string w = westPool[slot];
                 if (DivineNameRegistry.IsTaken(e) || DivineNameRegistry.IsTaken(w)) continue;
@@ -752,14 +753,81 @@ namespace Code.Realm
         /// 顺序：标签域内6神位 → 同大组借名 → 全域120神位 → 域内随机兜底。
         /// 唯一性按神位整体判定，跨存档由 DivineNameRegistry 保证；旧档单键神名自动纳入占用。
         /// </summary>
+        /// <summary>异能专属神名映射（v0.18.58）：按异能原型ID查固定神名（一一对应，意象随异能本体，品质不参与）</summary>
+        private static bool GetFixedPrototypeName(Actor god, out string east, out string west)
+        {
+            east = west = null;
+            try
+            {
+                var def = Code.Realm.Prototype.PrototypeRegistry.GetForActor(god);
+                if (def == null || string.IsNullOrEmpty(def.Id)) return false;
+                string keyE = "god_proto_" + def.Id;
+                string e = UILocalization.Get(keyE);
+                if (string.IsNullOrEmpty(e) || e == keyE) return false; // key 缺失（未登记的新异能）→ 走确定性兜底
+                string w = UILocalization.Get("god_proto_" + def.Id + "_west");
+                if (string.IsNullOrEmpty(w) || w == "god_proto_" + def.Id + "_west") w = e;
+                east = e; west = w;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>确定性套号：基于异能原型ID的稳定哈希（同异能永远同套，跨存档稳定）</summary>
+        private static int StableSlotFor(Actor god)
+        {
+            try
+            {
+                var def = Code.Realm.Prototype.PrototypeRegistry.GetForActor(god);
+                string seed = def != null && !string.IsNullOrEmpty(def.Id) ? def.Id : (god.getName() ?? "proto");
+                int h = 0;
+                for (int i = 0; i < seed.Length; i++) h = h * 31 + seed[i];
+                return ((h % 6) + 6) % 6;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>世系中文序号（同异能第N位登神者，东名后缀）</summary>
+        private static string GetSuffixCn(int gen)
+        {
+            string[] s = { "", "·贰", "·叁", "·肆", "·伍", "·陆", "·柒", "·捌", "·玖", "·拾" };
+            return gen < s.Length ? s[gen] : "·" + (gen + 1);
+        }
+
+        /// <summary>世系罗马序号（同异能第N位登神者，西名后缀）</summary>
+        private static string GetSuffixRoman(int gen)
+        {
+            string[] s = { "", "·II", "·III", "·IV", "·V", "·VI", "·VII", "·VIII", "·IX", "·X" };
+            return gen < s.Length ? s[gen] : "·" + (gen + 1);
+        }
+
         private static bool PickUniqueDivineNamePair(Actor god, out string east, out string west)
         {
             east = west = null;
             try
             {
+                // v0.18.58：异能专属神名——固定映射优先（一一对应）；同异能多单位登神 → 世系后缀（神名仍独属）
+                if (GetFixedPrototypeName(god, out east, out west))
+                {
+                    string baseEast = east, baseWest = west;
+                    int gen = 0;
+                    while (gen < 9 && (DivineNameRegistry.IsTaken(east) || DivineNameRegistry.IsTaken(west)))
+                    {
+                        gen++;
+                        east = baseEast + GetSuffixCn(gen);
+                        west = baseWest + GetSuffixRoman(gen);
+                    }
+                    return true;
+                }
+                // 未登记异能（用户后续新增）：域内确定性套号（ID哈希稳定），不再随机
                 DivineNameRegistry.EnsureSwept();
                 int domain = GetDivineDomainIndexByPrototype(god);
-                if (TryPickFromDomain(domain, out east, out west)) return true;
+                if (TryPickFromDomain(domain, out east, out west, StableSlotFor(god))) return true;
                 if (TryPickFromGroup(domain, out east, out west)) return true;
                 if (TryPickFromAll(out east, out west)) return true;
                 DSDebug.Warning("[GeneCultivation] 神名词库120神位已全部被占用，回退随机分配");
@@ -768,9 +836,9 @@ namespace Code.Realm
             {
                 DSDebug.Warning($"[GeneCultivation] 唯一神名对分配异常: {e.Message}");
             }
-            // 兜底：域内随机（仅全库耗尽时可能出现重名）
+            // 兜底：域内固定套（仅全库耗尽时可能出现重名）
             int fallbackDomain = GetDivineDomainIndexByPrototype(god);
-            int slot = UnityEngine.Random.Range(0, 6);
+            int slot = StableSlotFor(god);
             east = DivineNamesByDomain[fallbackDomain][slot];
             west = DivineNamesByDomainWest[fallbackDomain][slot];
             return true;
