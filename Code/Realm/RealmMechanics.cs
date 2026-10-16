@@ -480,6 +480,35 @@ namespace Code.Realm
             UILocalization.Get("god_name_concept_7"), UILocalization.Get("god_name_concept_8"), UILocalization.Get("god_name_concept_9"), UILocalization.Get("god_name_concept_10"), UILocalization.Get("god_name_concept_11"), UILocalization.Get("god_name_concept_12")
         };
 
+        /// <summary>神名词库·西方风格（96个，v0.18.40 东西方双风格：领主/君王/圣座/帝皇/大君系；与东方套之神/天尊/真君系区分）</summary>
+        private static readonly string[] DivineNamesWest = new string[]
+        {
+            // 物质染色体（0-11）
+            UILocalization.Get("god_name_matter_1_west"), UILocalization.Get("god_name_matter_2_west"), UILocalization.Get("god_name_matter_3_west"), UILocalization.Get("god_name_matter_4_west"), UILocalization.Get("god_name_matter_5_west"), UILocalization.Get("god_name_matter_6_west"),
+            UILocalization.Get("god_name_matter_7_west"), UILocalization.Get("god_name_matter_8_west"), UILocalization.Get("god_name_matter_9_west"), UILocalization.Get("god_name_matter_10_west"), UILocalization.Get("god_name_matter_11_west"), UILocalization.Get("god_name_matter_12_west"),
+            // 生命染色体（12-23）
+            UILocalization.Get("god_name_life_1_west"), UILocalization.Get("god_name_life_2_west"), UILocalization.Get("god_name_life_3_west"), UILocalization.Get("god_name_life_4_west"), UILocalization.Get("god_name_life_5_west"), UILocalization.Get("god_name_life_6_west"),
+            UILocalization.Get("god_name_life_7_west"), UILocalization.Get("god_name_life_8_west"), UILocalization.Get("god_name_life_9_west"), UILocalization.Get("god_name_life_10_west"), UILocalization.Get("god_name_life_11_west"), UILocalization.Get("god_name_life_12_west"),
+            // 能量染色体（24-35）
+            UILocalization.Get("god_name_energy_1_west"), UILocalization.Get("god_name_energy_2_west"), UILocalization.Get("god_name_energy_3_west"), UILocalization.Get("god_name_energy_4_west"), UILocalization.Get("god_name_energy_5_west"), UILocalization.Get("god_name_energy_6_west"),
+            UILocalization.Get("god_name_energy_7_west"), UILocalization.Get("god_name_energy_8_west"), UILocalization.Get("god_name_energy_9_west"), UILocalization.Get("god_name_energy_10_west"), UILocalization.Get("god_name_energy_11_west"), UILocalization.Get("god_name_energy_12_west"),
+            // 力场染色体（36-47）
+            UILocalization.Get("god_name_force_1_west"), UILocalization.Get("god_name_force_2_west"), UILocalization.Get("god_name_force_3_west"), UILocalization.Get("god_name_force_4_west"), UILocalization.Get("god_name_force_5_west"), UILocalization.Get("god_name_force_6_west"),
+            UILocalization.Get("god_name_force_7_west"), UILocalization.Get("god_name_force_8_west"), UILocalization.Get("god_name_force_9_west"), UILocalization.Get("god_name_force_10_west"), UILocalization.Get("god_name_force_11_west"), UILocalization.Get("god_name_force_12_west"),
+            // 时空染色体（48-59）
+            UILocalization.Get("god_name_time_1_west"), UILocalization.Get("god_name_time_2_west"), UILocalization.Get("god_name_time_3_west"), UILocalization.Get("god_name_time_4_west"), UILocalization.Get("god_name_time_5_west"), UILocalization.Get("god_name_time_6_west"),
+            UILocalization.Get("god_name_time_7_west"), UILocalization.Get("god_name_time_8_west"), UILocalization.Get("god_name_time_9_west"), UILocalization.Get("god_name_time_10_west"), UILocalization.Get("god_name_time_11_west"), UILocalization.Get("god_name_time_12_west"),
+            // 精神染色体（60-71）
+            UILocalization.Get("god_name_spirit_1_west"), UILocalization.Get("god_name_spirit_2_west"), UILocalization.Get("god_name_spirit_3_west"), UILocalization.Get("god_name_spirit_4_west"), UILocalization.Get("god_name_spirit_5_west"), UILocalization.Get("god_name_spirit_6_west"),
+            UILocalization.Get("god_name_spirit_7_west"), UILocalization.Get("god_name_spirit_8_west"), UILocalization.Get("god_name_spirit_9_west"), UILocalization.Get("god_name_spirit_10_west"), UILocalization.Get("god_name_spirit_11_west"), UILocalization.Get("god_name_spirit_12_west"),
+            // 信息染色体（72-83）
+            UILocalization.Get("god_name_info_1_west"), UILocalization.Get("god_name_info_2_west"), UILocalization.Get("god_name_info_3_west"), UILocalization.Get("god_name_info_4_west"), UILocalization.Get("god_name_info_5_west"), UILocalization.Get("god_name_info_6_west"),
+            UILocalization.Get("god_name_info_7_west"), UILocalization.Get("god_name_info_8_west"), UILocalization.Get("god_name_info_9_west"), UILocalization.Get("god_name_info_10_west"), UILocalization.Get("god_name_info_11_west"), UILocalization.Get("god_name_info_12_west"),
+            // 概念染色体（84-95）
+            UILocalization.Get("god_name_concept_1_west"), UILocalization.Get("god_name_concept_2_west"), UILocalization.Get("god_name_concept_3_west"), UILocalization.Get("god_name_concept_4_west"), UILocalization.Get("god_name_concept_5_west"), UILocalization.Get("god_name_concept_6_west"),
+            UILocalization.Get("god_name_concept_7_west"), UILocalization.Get("god_name_concept_8_west"), UILocalization.Get("god_name_concept_9_west"), UILocalization.Get("god_name_concept_10_west"), UILocalization.Get("god_name_concept_11_west"), UILocalization.Get("god_name_concept_12_west")
+        };
+
         /// <summary>异能标签 → 神名组映射（v0.18.32：神名与异能相符，大众认知；组号 0物质/1生命/2能量/3力场/4时空/5精神/6信息/7概念）</summary>
         private static readonly Dictionary<Code.Realm.Prototype.PrototypeTag, int> TagToDivineGroup = new Dictionary<Code.Realm.Prototype.PrototypeTag, int>
         {
@@ -548,17 +577,19 @@ namespace Code.Realm
             return GetDominantElementGroup(god);
         }
 
-        /// <summary>按主要基因染色体获取神名（每条染色体12个，染色体索引0-7）</summary>
-        private static string GetDivineNameByElementGroup(int elementGroup)
+        /// <summary>按主要基因染色体获取神名（每条染色体12个，染色体索引0-7；poolIndex 0=东方风格 1=西方风格）</summary>
+        private static string GetDivineNameByElementGroup(int elementGroup, int poolIndex = 0)
         {
             if (elementGroup < 0 || elementGroup > 7) elementGroup = UnityEngine.Random.Range(0, 8);
+            string[] pool = poolIndex == 0 ? DivineNames : DivineNamesWest;
             int startIndex = elementGroup * 12;
-            return DivineNames[startIndex + UnityEngine.Random.Range(0, 12)];
+            return pool[startIndex + UnityEngine.Random.Range(0, 12)];
         }
 
         /// <summary>
         /// 分配全局唯一神名（v0.18.39 神名独属单位，跨存档不重名）
-        /// 优先级：组内12名（异能相符）→ 全库96名（跨组借名，神名独属优先于同组）→ 全库耗尽随机兜底。
+        /// v0.18.40 东西方双风格：随机选风格池（东方=之神/天尊/真君系，西方=领主/君王/圣座系），
+        /// 池内 组内12名（异能相符）→ 全库96名（跨组借名，神名独属优先于同组）→ 换另一风格池 → 全耗尽随机兜底。
         /// 候选顺序洗牌，避免长期固定抽取前几名。
         /// </summary>
         private static string PickUniqueDivineName(int elementGroup)
@@ -568,31 +599,45 @@ namespace Code.Realm
                 // 旧档兼容：先扫描当前世界已有神名并登记，防止与旧档撞名
                 DivineNameRegistry.EnsureSwept();
 
-                // 1) 组内 12 名（随机顺序，保证神名与异能相符优先）
-                int start = elementGroup * 12;
-                int[] groupOrder = ShuffleOrder(12);
-                for (int k = 0; k < 12; k++)
-                {
-                    string candidate = DivineNames[start + groupOrder[k]];
-                    if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
-                }
+                // 1) 随机选风格池（东西方各半），池内 组内→全库 分配
+                int poolIndex = UnityEngine.Random.Range(0, 2);
+                string[] firstPool = poolIndex == 0 ? DivineNames : DivineNamesWest;
+                string[] secondPool = poolIndex == 0 ? DivineNamesWest : DivineNames;
 
-                // 2) 组内全被占用 → 全库 96 名（跨组借名：独属性优先于同组相符）
-                int[] allOrder = ShuffleOrder(96);
-                for (int k = 0; k < 96; k++)
-                {
-                    string candidate = DivineNames[allOrder[k]];
-                    if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
-                }
+                string name = TryPickUniqueFromPool(firstPool, elementGroup);
+                if (name != null) return name;
 
-                // 3) 全库耗尽（96个神名全部有主，极罕见）：随机兜底并警告
-                DSDebug.Warning("[GeneCultivation] 神名词库已全部被占用，回退随机分配");
+                // 2) 首选风格池耗尽 → 换另一风格池
+                name = TryPickUniqueFromPool(secondPool, elementGroup);
+                if (name != null) return name;
+
+                // 3) 两池全部占用（192个神名全有主，极罕见）：随机兜底并警告
+                DSDebug.Warning("[GeneCultivation] 东西方神名词库已全部被占用，回退随机分配");
             }
             catch (Exception e)
             {
                 DSDebug.Warning($"[GeneCultivation] 唯一神名分配异常: {e.Message}");
             }
-            return GetDivineNameByElementGroup(elementGroup);
+            return GetDivineNameByElementGroup(elementGroup, UnityEngine.Random.Range(0, 2));
+        }
+
+        /// <summary>在指定风格池内分配唯一神名：组内12名（异能相符）→ 全库96名（跨组借名）；池耗尽返回 null</summary>
+        private static string TryPickUniqueFromPool(string[] pool, int elementGroup)
+        {
+            int start = elementGroup * 12;
+            int[] groupOrder = ShuffleOrder(12);
+            for (int k = 0; k < 12; k++)
+            {
+                string candidate = pool[start + groupOrder[k]];
+                if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
+            }
+            int[] allOrder = ShuffleOrder(96);
+            for (int k = 0; k < 96; k++)
+            {
+                string candidate = pool[allOrder[k]];
+                if (!DivineNameRegistry.IsTaken(candidate)) return candidate;
+            }
+            return null;
         }
 
         /// <summary>生成 [0, count) 的随机排列（Fisher-Yates 洗牌，避免 Linq 依赖）</summary>
