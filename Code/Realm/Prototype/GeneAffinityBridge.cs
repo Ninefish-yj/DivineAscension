@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 基因亲和桥（v0.17.0 新增系统）——三系统联动的桥接层
 //
 //  原版基因 ──桥A──▶ 我的基因（觉醒定相：染色体亲和决定初始基因构成）
@@ -148,7 +148,7 @@ namespace Code.Realm.Prototype
                     w += GetChromosomeAffinity(actor, def.ChromosomePreference) * 1f;
                     w += GetTagAffinity(actor, def.MainTag) * 0.5f;
                     w += GetTagAffinity(actor, def.SubTag) * 0.25f;
-                    // 稀有度加权（v0.18.22）：品质越高越难天生觉醒（概念级约 1.5%）
+                    // 稀有度加权（v0.18.22）：品质越高越难天生觉醒（化神约 1.5%）
                     w *= PrototypeEvolution.GetRarityWeight(PrototypeEvolution.GetTier(def));
                     weights[i] = w;
                     totalWeight += w;

@@ -1584,10 +1584,10 @@
   "proto_path_btn": "Path Only",
   "proto_path_only": "Path",
   "proto_tier_1": "Mortal",
-  "proto_tier_2": "Awakened",
-  "proto_tier_3": "Evolved",
-  "proto_tier_4": "Ascended",
-  "proto_tier_5": "Conceptual",
+  "proto_tier_2": "E-Rank",
+  "proto_tier_3": "D-Rank",
+  "proto_tier_4": "C-Rank",
+  "proto_tier_5": "B-Rank",
   "proto_origin_label": "Origin: ",
   "proto_origin_awakened": "Awakened",
   "proto_origin_evolved": "Evolved×{0}",
@@ -2331,8 +2331,8 @@
   "god_proto_na_heal_03_west": "Spring-Renew Goddess",
   "god_proto_my_phoenix_01": "Rebirth God",
   "god_proto_my_phoenix_01_west": "Rebirth God",
-  "proto_tier_6": "Transcendent",
-  "proto_tier_7": "Principle",
-  "proto_tier_8": "Origin",
-  "proto_tier_9": "Mythic"
+  "proto_tier_6": "A-Rank",
+  "proto_tier_7": "S-Rank",
+  "proto_tier_8": "SS-Rank",
+  "proto_tier_9": "SSS-Rank"
 }

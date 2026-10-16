@@ -2,10 +2,10 @@
 // 异能进阶（v0.18.22 新增系统）——异能的"宝可梦式进化"（与境界/阶位系统相互独立）
 //
 // 设计（用户确认）：
-//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2觉醒阶/3进化阶/4升维阶/5概念级/6超凡阶/7法则阶/8本源阶/9神话阶）
+//  1. 独立进化链：同一"系→子类"家族内的异能按品质（1凡阶/2E级/3D级/4C级/5B级/6A级/7S级/8SS级/9SSS级）
 //     从低到高排布；每个异能唯一上级 = 家族内第一个严格更高品质的异能（固定链、宝可梦式）
 //  2. 年度自动事件触发：境界达标 + 觉醒年限达标 + 低概率（难度极高，品质越高越难）
-//  3. 天生高品：觉醒抽签稀有度加权（神话阶极低），God 可从 UI 区分"觉醒"与"进阶"来源
+//  3. 天生高品：觉醒抽签稀有度加权（SSS级极低），God 可从 UI 区分"觉醒"与"进阶"来源
 // 单一职责：品质推导 / 进化链查询 / 觉醒来源记录 / 年度进阶判定 / 年度扫描
 // v0.18.61：品质扩至 9 档（TIER_MAX=9）；GetTier 读 PrototypeDef.Tier 显式档位（缺省回退旧线性分档兼容旧数据）
 // ============================================================
@@ -46,7 +46,7 @@ namespace Code.Realm.Prototype
             return 1;
         }
 
-        /// <summary>进化目标（唯一上级）：同家族内第一个严格更高品质的异能；神话阶/家族顶点 → null</summary>
+        /// <summary>进化目标（唯一上级）：同家族内第一个严格更高品质的异能；SSS级/家族顶点 → null</summary>
         public static PrototypeDef GetEvolveTarget(PrototypeDef def)
         {
             if (def == null) return null;
@@ -113,7 +113,7 @@ namespace Code.Realm.Prototype
             var proto = PrototypeRegistry.GetForActor(actor);
             if (proto == null) return false;
             var target = GetEvolveTarget(proto);
-            if (target == null) return false;   // 已达家族顶点（神话阶）不再进化
+            if (target == null) return false;   // 已达家族顶点（SSS级）不再进化
 
             int targetTier = GetTier(target);
 
@@ -122,14 +122,14 @@ namespace Code.Realm.Prototype
             int realmNeed = 99;
             switch (targetTier)
             {
-                case 2: realmNeed = 3; break;   // →觉醒阶：需 3 阶境界
-                case 3: realmNeed = 5; break;   // →进化阶：需 5 阶
-                case 4: realmNeed = 7; break;   // →升维阶：需 7 阶
-                case 5: realmNeed = 9; break;   // →概念级：需 9 阶
-                case 6: realmNeed = 10; break;  // →超凡阶：需 10 阶
-                case 7: realmNeed = 11; break;  // →法则阶：需 11 阶
-                case 8: realmNeed = 12; break;  // →本源阶：需 12 阶
-                case 9: realmNeed = 13; break;  // →神话阶：需 13 阶（超神级）
+                case 2: realmNeed = 3; break;   // →E级：需 3 阶境界
+                case 3: realmNeed = 5; break;   // →D级：需 5 阶
+                case 4: realmNeed = 7; break;   // →C级：需 7 阶
+                case 5: realmNeed = 9; break;   // →B级：需 9 阶
+                case 6: realmNeed = 10; break;  // →A级：需 10 阶
+                case 7: realmNeed = 11; break;  // →S级：需 11 阶
+                case 8: realmNeed = 12; break;  // →SS级：需 12 阶
+                case 9: realmNeed = 13; break;  // →SSS级：需 13 阶（超神级）
             }
             if (realmTier < realmNeed) return false;
 
@@ -207,20 +207,20 @@ namespace Code.Realm.Prototype
             catch { return 0; }
         }
 
-        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖，1凡~9神话）</summary>
+        /// <summary>品质名（UI 展示默认名；汉化由 UI 侧按语言覆盖，1凡阶~9SSS级，网文异能等级制）</summary>
         public static string TierName(int tier)
         {
             switch (tier)
             {
                 case 1: return "凡阶";
-                case 2: return "觉醒阶";
-                case 3: return "进化阶";
-                case 4: return "升维阶";
-                case 5: return "概念级";
-                case 6: return "超凡阶";
-                case 7: return "法则阶";
-                case 8: return "本源阶";
-                case 9: return "神话阶";
+                case 2: return "E级";
+                case 3: return "D级";
+                case 4: return "C级";
+                case 5: return "B级";
+                case 6: return "A级";
+                case 7: return "S级";
+                case 8: return "SS级";
+                case 9: return "SSS级";
                 default: return "";
             }
         }

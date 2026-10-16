@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 全屏异能树窗口 · 树图渲染引擎（v0.18.0 重写）
 // 大众认知异能 = 异能体系 → 12 大类 → 小类 → 异能（196+ 异能叶子）
 // 引擎借鉴诸天神座道途树（DaoTuDiagram）：
@@ -787,7 +787,7 @@ namespace Code.UI
                     }
                 }
 
-                // 当前异能：右上角金色角标；非激活概念级异能：金色小星角标
+                // 当前异能：右上角金色角标；非激活化神异能：金色小星角标
                 if (isActive)
                 {
                     float dot = Mathf.Max(5f, 7f * _zoom);
@@ -1131,20 +1131,20 @@ namespace Code.UI
             }
         }
 
-        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致，1凡~9神话）</summary>
+        /// <summary>异能品质名（汉化优先，兜底业务层默认名；与 PrototypeEvolution.TierName 一致，1凡阶~9SSS级）</summary>
         private static string TierNameText(int tier)
         {
             switch (tier)
             {
                 case 1: return GetText("proto_tier_1", "凡阶");
-                case 2: return GetText("proto_tier_2", "觉醒阶");
-                case 3: return GetText("proto_tier_3", "进化阶");
-                case 4: return GetText("proto_tier_4", "升维阶");
-                case 5: return GetText("proto_tier_5", "概念级");
-                case 6: return GetText("proto_tier_6", "超凡阶");
-                case 7: return GetText("proto_tier_7", "法则阶");
-                case 8: return GetText("proto_tier_8", "本源阶");
-                case 9: return GetText("proto_tier_9", "神话阶");
+                case 2: return GetText("proto_tier_2", "E级");
+                case 3: return GetText("proto_tier_3", "D级");
+                case 4: return GetText("proto_tier_4", "C级");
+                case 5: return GetText("proto_tier_5", "B级");
+                case 6: return GetText("proto_tier_6", "A级");
+                case 7: return GetText("proto_tier_7", "S级");
+                case 8: return GetText("proto_tier_8", "SS级");
+                case 9: return GetText("proto_tier_9", "SSS级");
                 default: return "";
             }
         }

@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 异能注册表（v0.18.0 全量架构）
 // 大众认知异能 = 大类（元素系/自然系/精神系…）→ 小类（火/水/风…）→ 异能（火焰操控…）
 // 底层机制 = 30 个效果标签组合（PrototypeTags），一次实现、全异能复用。
@@ -22,7 +22,7 @@ namespace Code.Realm.Prototype
         public PrototypeTag MainTag;     // 主标签（觉醒时优先表现）
         public PrototypeTag SubTag;      // 副标签
         public int ChromosomePreference; // 染色体偏好（0力量1敏捷2体质3智力4感知5意志6异能7潜能）——桥A觉醒定相的加权依据
-        public int Tier;                 // 品质档位（1凡阶~9神话阶，v0.18.61 显式档位；进化链=同家族内下一更高档）
+        public int Tier;                 // 品质档位（1炼气~9渡劫，v0.18.61 显式档位；进化链=同家族内下一更高档）
 
         public PrototypeDef(string id, string nameZh, string descZh, string category, string subCategory,
             PrototypeTag mainTag, PrototypeTag subTag, int chromosomePref, int tier = 1)

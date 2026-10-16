@@ -1589,10 +1589,10 @@
   "proto_path_btn": "仅显路径",
   "proto_path_only": "仅路径",
   "proto_tier_1": "凡阶",
-  "proto_tier_2": "觉醒阶",
-  "proto_tier_3": "进化阶",
-  "proto_tier_4": "升维阶",
-  "proto_tier_5": "概念级",
+  "proto_tier_2": "E级",
+  "proto_tier_3": "D级",
+  "proto_tier_4": "C级",
+  "proto_tier_5": "B级",
   "proto_origin_label": "来源: ",
   "proto_origin_awakened": "觉醒",
   "proto_origin_evolved": "进阶×{0}",
@@ -2336,8 +2336,8 @@
   "god_proto_na_heal_03_west": "Spring-Renew Goddess",
   "god_proto_my_phoenix_01": "重生正神",
   "god_proto_my_phoenix_01_west": "Rebirth God",
-  "proto_tier_6": "超凡阶",
-  "proto_tier_7": "法则阶",
-  "proto_tier_8": "本源阶",
-  "proto_tier_9": "神话阶"
+  "proto_tier_6": "A级",
+  "proto_tier_7": "S级",
+  "proto_tier_8": "SS级",
+  "proto_tier_9": "SSS级"
 }
