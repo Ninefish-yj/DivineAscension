@@ -452,6 +452,40 @@ namespace Code.Realm
 			return returned;
 		}
 
+		/// <summary>
+		/// 神名念诵召唤（v0.18.86）：随机召回回归池 1 位神到当前世界（回归即出池，席位轮换）。
+		/// 返回召回单位名称（无神可召/失败返回 null）。
+		/// </summary>
+		public static string TrySummonRandomGod()
+		{
+			if (World.world == null) return null;
+			try
+			{
+				lock (_lock)
+				{
+					if (!_initialized) Init();
+					var pool = _globalData.Reincarnations;
+					if (pool.Count == 0) return null;
+
+					// 随机取 1 位（打乱，避免永远召唤同一批）
+					var god = pool.OrderBy(g => Guid.NewGuid()).First();
+					Actor spawned = SpawnTrueGod(god);
+					if (spawned != null && spawned.isAlive())
+					{
+						pool.Remove(god);
+						SaveGlobalData();
+						DSDebug.Verbose($"[GeneCultivation] 神名念诵：{god.Name} 应召降临（出池，席位流转）");
+						return god.Name;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[GeneCultivation] 神名念诵召唤异常: {e.Message}");
+			}
+			return null;
+		}
+
 		/// <summary>获取回归池全部单位（UI 展示用）</summary>
 		public static List<TrueGodData> GetReincarnations()
 		{

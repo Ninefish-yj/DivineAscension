@@ -233,6 +233,10 @@ namespace Code.Core
                 // 步骤0.5：战乱+地形破坏失控指数结算
                 Events.EventHooks.OnAnnualTick();
 
+                // 步骤0.7：神名念诵——登神级单位年度仪式，召唤回归池之神降临（v0.18.86）
+                try { Code.Realm.PantheonSummon.AnnualSummonCheck(); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 神名念诵异常: " + dsEx.Message); }
+
                 // 步骤1：凡人觉醒（全局抽样，不遍历全部单位）
                 AwakenMortals();
 
