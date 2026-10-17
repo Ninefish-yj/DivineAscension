@@ -422,12 +422,13 @@ namespace Code.Realm
                                 {
                                     if (method.Name == "spawn" && method.GetParameters().Length == 8)
                                     {
-                                        // 播放多个风/风暴相关特效
+                                        // 播放多个风/风暴相关特效（v0.18.67: spawn后按0.5压尺寸）
                                         string[] stormEffects = { "fx_storm", "fx_wind_trail_t", "fx_cast_top_purple", "fx_explosion" };
                                         foreach (var fx in stormEffects)
                                         {
                                             try {
-                                                method.Invoke(null, new object[] { fx, stormTile, null, null, 2.0f, -1f, -1f, null });
+                                                var r = method.Invoke(null, new object[] { fx, stormTile, null, null, 2.0f, -1f, -1f, null });
+                                                if (r is BaseEffect be && be != null) be.prepare(stormPos, 0.5f);
                                             } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                                         }
                                         break;

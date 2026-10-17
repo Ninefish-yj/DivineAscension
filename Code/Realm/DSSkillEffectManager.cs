@@ -353,7 +353,8 @@ namespace Code.Realm
                     WorldTile tile = World.world.GetTileSimple((int)pos.x, (int)pos.y);
                     if (tile != null)
                     {
-                        EffectsLibrary.spawn(cfg.EffectName, tile, null, null, 0f, -1f, -1f, null);
+                        var fx = EffectsLibrary.spawn(cfg.EffectName, tile, null, null, 0f, -1f, -1f, null);
+                        if (fx != null) fx.prepare(pos, 0.5f); // v0.18.67: 压到原版默认一半
                     }
                 }
                 catch (Exception e)

@@ -114,7 +114,8 @@ namespace Code.Realm.Prototype
             PlayAt(defender, fx);
         }
 
-        /// <summary>在单位位置播放原版特效（模组已验证模式：DisasterManager.cs）</summary>
+        /// <summary>在单位位置播放原版特效（模组已验证模式：DisasterManager.cs）。
+        /// v0.18.67：spawn 后按单位体型缩放（原版资产默认 1.0 偏大，压到 0.5×体型）。</summary>
         private static void PlayAt(Actor actor, string fxId)
         {
             if (actor == null || !actor.isAlive() || World.world == null) return;
@@ -123,7 +124,12 @@ namespace Code.Realm.Prototype
                 var pos = actor.current_position;
                 WorldTile tile = World.world.GetTileSimple((int)pos.x, (int)pos.y);
                 if (tile == null) return;
-                EffectsLibrary.spawn(fxId, tile, null, null, 0f, -1f, -1f, null);
+                var fx = EffectsLibrary.spawn(fxId, tile, null, null, 0f, -1f, -1f, null);
+                if (fx != null)
+                {
+                    float unitScale = Mathf.Max(0.3f, (float)actor.asset.actor_size / 13f);
+                    fx.prepare(pos, 0.5f * unitScale);
+                }
             }
             catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能特效失败 " + fxId + ": " + dsEx.Message); }
         }

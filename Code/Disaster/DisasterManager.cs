@@ -244,11 +244,15 @@ namespace Code.Disaster
                 WorldTile tile = World.world.GetTileSimple((int)position.x, (int)position.y);
                 if (tile == null) return;
 
-                // 使用spawnAtTile方法（正确的参数顺序，内部会调用prepare设置缩放）
+                // spawn 后按传入 scale 缩放（v0.18.67 修复：原实现忽略 scale 参数，特效恒为原版默认尺寸）
                 BaseEffect effect = EffectsLibrary.spawn(effectName, tile, null, null, 0f, -1f, -1f, null);
                 if (effect == null)
                 {
                     DSDebug.Verbose($"[灾变特效] EffectsLibrary.spawnAtTile返回null（可能达到同屏上限），特效: {effectName}");
+                }
+                else
+                {
+                    effect.prepare(position, scale);
                 }
             }
             catch (System.Exception e)
