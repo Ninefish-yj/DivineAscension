@@ -50,47 +50,47 @@ namespace Code.Realm
             {
                 // 6阶 能量弹：投射物特效
                 { "ds_ability_energy_bolt",
-                    new SkillEffectConfig("skill/energy_bolt", 0.1f, 0.05f, followActor: true, offsetY: 0.2f) },
+                    new SkillEffectConfig("skill/energy_bolt", 0.35f, 0.05f, followActor: true, offsetY: 0.2f) },
 
                 // 7阶 能量刃（虚拟武器）：跟随施法者
                 { "ds_ability_energy_blade",
-                    new SkillEffectConfig("skill/energy_blade", 0.15f, 0.08f, followActor: true, offsetY: 0.2f) },
+                    new SkillEffectConfig("skill/energy_blade", 0.4f, 0.08f, followActor: true, offsetY: 0.2f) },
 
                 // 7阶 治疗之光：跟随施法者，持续3秒
                 { "ds_ability_healing_light",
-                    new SkillEffectConfig("skill/healing_light", 0.2f, 0.1f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
+                    new SkillEffectConfig("skill/healing_light", 0.4f, 0.1f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
 
                 // 8阶 能量风暴：范围伤害
                 { "ds_ability_energy_storm",
-                    new SkillEffectConfig("skill/energy_storm", 0.25f, 0.12f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
+                    new SkillEffectConfig("skill/energy_storm", 8f, 0.12f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
 
                 // 9阶 领域展开：跟随施法者，持续5秒
                 { "ds_ability_domain_expand",
-                    new SkillEffectConfig("skill/domain_expand", 0.25f, 0.15f, followActor: true, offsetY: 0.3f, duration: 5.0f) },
+                    new SkillEffectConfig("skill/domain_expand", 5f, 0.15f, followActor: true, offsetY: 0.3f, duration: 5.0f) },
 
                 // 9阶 法则压制：目标位置
                 { "ds_ability_law_suppress",
-                    new SkillEffectConfig("skill/law_suppress", 0.25f, 0.1f, followActor: true, offsetY: 0.3f, duration: 2.0f) },
+                    new SkillEffectConfig("skill/law_suppress", 2.5f, 0.1f, followActor: true, offsetY: 0.3f, duration: 2.0f) },
 
                 // 10阶 本源汲取：目标位置
                 { "ds_ability_origin_drain",
-                    new SkillEffectConfig("skill/origin_drain", 0.3f, 0.12f, followActor: false, duration: 2.5f) },
+                    new SkillEffectConfig("skill/origin_drain", 3f, 0.12f, followActor: false, duration: 2.5f) },
 
                 // 10阶 空间撕裂：目标位置
                 { "ds_ability_space_tear",
-                    new SkillEffectConfig("skill/space_tear", 0.35f, 0.1f, followActor: false, duration: 2.5f) },
+                    new SkillEffectConfig("skill/space_tear", 2f, 0.1f, followActor: false, duration: 2.5f) },
 
                 // 11阶 圣域：跟随施法者，持续10秒
                 { "ds_ability_sanctuary",
-                    new SkillEffectConfig("skill/sanctuary", 0.4f, 0.12f, followActor: true, offsetY: 0.3f, duration: 10.0f) },
+                    new SkillEffectConfig("skill/sanctuary", 1.5f, 0.12f, followActor: true, offsetY: 0.3f, duration: 10.0f) },
 
                 // 12阶 维度打击：大范围
                 { "ds_ability_dimensional_strike",
-                    new SkillEffectConfig("skill/dimensional_strike", 0.45f, 0.08f, followActor: false, duration: 3.0f) },
+                    new SkillEffectConfig("skill/dimensional_strike", 12f, 0.08f, followActor: false, duration: 3.0f) },
 
                 // 13阶 神罚：全屏，超大
                 { "ds_ability_divine_punishment",
-                    new SkillEffectConfig("skill/divine_punishment", 0.5f, 0.05f, followActor: false, duration: 4.0f) },
+                    new SkillEffectConfig("skill/divine_punishment", 12f, 0.05f, followActor: false, duration: 4.0f) },
             };
 
         // ============================================================
@@ -279,16 +279,28 @@ namespace Code.Realm
                 BaseEffect effect = EffectsLibrary.spawn("fx_slash", tile, null, null, 0f, -1f, -1f, null);
                 if (effect == null) return null;
 
+                // 加载帧序列（带缓存）——提前加载以取帧宽做尺寸归一化
+                var sprites = LoadSprites(config.AnimationPath);
+                // v0.18.69：尺寸按帧宽归一化——原版 prepare 的 scale 是精灵缩放倍数（世界宽=scale×帧宽/100），
+                // 技能素材 64/128px 混用导致同 scale 下世界尺寸漂移近一倍（"大小不对"同源根因）。
+                // scale' = Scale×100/帧宽 → 世界宽恒等于 Scale（Scale 语义=期望世界宽）。
+                float frameW = sprites != null && sprites.Length > 0 ? sprites[0].rect.width : 128f;
+                if (frameW <= 0f) frameW = 128f;
+                float worldScale = config.Scale * 100f / frameW;
+
+                // 非跟随技能播在目标/AOE 中心脚底，中心上移对准目标身体（同 AbilityFx 位置修复）
+                Vector2 spawnPos = position;
+                if (!config.FollowActor) spawnPos.y += 0.3f;
+
                 // 清理对象池残留
                 effect.transform.localScale = Vector3.one;
-                effect.prepare(position, config.Scale);
+                effect.prepare(spawnPos, worldScale);
 
                 SpriteAnimation anim = effect.GetComponent<SpriteAnimation>();
                 SpriteRenderer spriteRenderer = effect.GetComponent<SpriteRenderer>();
                 if (anim == null) return effect;
 
-                // 加载帧序列（带缓存）
-                var sprites = LoadSprites(config.AnimationPath);
+                // 帧序列（已在上方加载，此处直接用）
                 if (sprites != null && sprites.Length > 0)
                 {
                     anim.setFrames(sprites);
