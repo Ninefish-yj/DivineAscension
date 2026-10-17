@@ -90,6 +90,19 @@ namespace Code.Realm.Prototype
             {
                 AbilityFx.PlayAbilityFx(attacker, target, def, true, force);
                 CombatFxDirector.DashStrike(attacker, target.current_position);   // 突进拖影+残影+命中环
+                // v0.18.70 战斗动作：斩系标签=御剑剑气斩，重击系标签=震地重击
+                if (def.MainTag == PrototypeTag.MultiShot || def.MainTag == PrototypeTag.Execute
+                    || def.SubTag == PrototypeTag.MultiShot || def.SubTag == PrototypeTag.Execute)
+                {
+                    CombatFxDirector.SlashArc(attacker, target.current_position);
+                }
+                else if (def.MainTag == PrototypeTag.Knockback || def.MainTag == PrototypeTag.Gravity
+                    || def.MainTag == PrototypeTag.Petrify
+                    || def.SubTag == PrototypeTag.Knockback || def.SubTag == PrototypeTag.Gravity
+                    || def.SubTag == PrototypeTag.Petrify)
+                {
+                    CombatFxDirector.GroundSlam(attacker, target.current_position);
+                }
                 return;
             }
             string fx = GetAttackFx(tag);

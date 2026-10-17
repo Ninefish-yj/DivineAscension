@@ -261,6 +261,17 @@ namespace Code.Realm
                 position.x += actor.is_looking_left ? -3f : 3f;
             }
 
+            // v0.18.70 领域展开：范围技能（Scale≥2 世界宽，即影响范围）释放时加符文法阵演出
+            try
+            {
+                if (config.Scale >= 2f)
+                {
+                    Code.Combat.Fx.CombatFxDirector.DomainCircle(position, config.Scale,
+                        new Color(0.55f, 0.62f, 1f));
+                }
+            }
+            catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 领域法阵演出失败: " + dsEx.Message); }
+
             return PlayEffectAtPosition(position, config, actor, target);
         }
 

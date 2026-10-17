@@ -124,6 +124,18 @@ namespace Code.Combat
                     // 异能攻击标签（v0.17.0）：灼烧/减速/麻痹/毒蚀/溅射/吸血/暴击/治疗（读 ds_prototype 异能标签）
                     try { Code.Realm.Prototype.PrototypeEffectEngine.OnAttack(from, __instance, ref damage); }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能攻击效果失败: " + dsEx.Message); }
+
+                    // v0.18.70 雷法电链：攻击者含 Chain（溅射连锁）标签 → 命中处放射电弧（溅射视觉）
+                    try
+                    {
+                        var pDef = Code.Realm.Prototype.PrototypeRegistry.GetForActor(from);
+                        if (pDef != null && (pDef.MainTag == Code.Realm.Prototype.PrototypeTag.Chain
+                            || pDef.SubTag == Code.Realm.Prototype.PrototypeTag.Chain))
+                        {
+                            Code.Combat.Fx.CombatFxDirector.ChainArc(__instance);
+                        }
+                    }
+                    catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 电链演出失败: " + dsEx.Message); }
                 }
 
                 if (__instance != null && CultivationData.IsAscended(__instance))
