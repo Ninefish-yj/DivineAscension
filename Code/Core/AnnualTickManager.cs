@@ -285,19 +285,12 @@ namespace Code.Core
                 DSDebug.Verbose($"活跃异能者年度结算: {settledCount}人");
 
                 // 异能补发通知（v0.17.1）：首次补发才通知，限流——≤3条逐条，更多则汇总一条（防刷屏）
+                // v0.18.96 不再全局播报（存量补齐属系统静默维护，避免刷屏）
                 if (prototypeBackfilled != null && prototypeBackfilled.Count > 0)
                 {
                     try
                     {
-                        if (prototypeBackfilled.Count <= 3)
-                        {
-                            foreach (string backfill in prototypeBackfilled)
-                                Code.Core.DSNotificationManager.NotifyInfo(backfill + " 觉醒元素异能");
-                        }
-                        else
-                        {
-                            Code.Core.DSNotificationManager.NotifyInfo(prototypeBackfilled.Count + " 位觉醒者觉醒了元素异能");
-                        }
+                        Code.Core.DSDebug.Verbose("[GeneCultivation] 异能定相补齐: " + string.Join("、", prototypeBackfilled.ToArray()));
                     }
                     catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 异能补发通知异常: " + dsEx.Message); }
                 }
@@ -972,6 +965,8 @@ namespace Code.Core
                     try
                     {
                         if (CultivationData.IsAscended(actor)) continue;
+                        // v0.18.96 圣所派遣单位：即使境界意外丢失也不当凡人重新觉醒（防"放置登神被播报觉醒"）
+                        if (Code.Realm.TrueGodManager.IsSanctuaryBorn(actor)) continue;
 
                         // 动物也可以觉醒异能（现代异能体系特色），达到3阶后自动获得高级脑功能区·文明化
                         if (actor.isAnimal() && !Code.Core.GeneCultivationConfig.EnableAnimalAwakening) continue;
@@ -1011,6 +1006,8 @@ namespace Code.Core
         {
             if (actor == null || !actor.isAlive()) return;
             if (CultivationData.IsAscended(actor)) return;
+            // v0.18.96 圣所派遣单位：即使境界意外丢失也不当凡人重新觉醒
+            if (Code.Realm.TrueGodManager.IsSanctuaryBorn(actor)) return;
 
             // 检查是否是智慧生物（有种族脑属性或高级脑功能区·文明化特质）
             bool isIntelligent = IsHumanoidCivilized(actor);

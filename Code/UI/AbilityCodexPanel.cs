@@ -1645,9 +1645,8 @@ public class AbilityCodexPanel : MonoBehaviour
 							Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod);
 							if (dsPlaced != null && dsPlaced.isAlive())
 							{
-								// v0.18.52 移动语义：放置成功=移动完成，删除圣所记录（该单位只存在于新存档）
-								Code.Realm.TrueGodManager.DeleteTrueGod(dsGod.Name, dsGod.OriginWorld);
-								Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+								// v0.18.96 派遣语义：圣所记录保留（杀一次不会没；同名查重保证同时只有一份在世，战死后可再次派遣）
+								Code.Core.DSNotificationManager.NotifyInfo("已派遣「" + dsGod.Name + "」降临当前世界（圣所记录保留，陨落后可再次派遣）");
 							}
 							else
 							{

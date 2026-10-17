@@ -143,6 +143,20 @@ namespace Code.Events
         {
             if (deadActor == null) return;
 
+            // v0.18.96 圣所派遣单位死亡：魂归圣所（圣所记录保留，可再次派遣；同名查重防重复实例）
+            try
+            {
+                if (Code.Realm.TrueGodManager.IsSanctuaryBorn(deadActor))
+                {
+                    string deadName = deadActor.getName();
+                    if (Code.Realm.TrueGodManager.HasSanctuaryRecord(deadName))
+                    {
+                        Code.Core.DSNotificationManager.NotifyInfo(deadName + " 陨落，魂归圣所——可在异能图鉴·维度页再次派遣");
+                    }
+                }
+            }
+            catch (System.Exception ex) { DSDebug.Verbose("[GeneCultivation] 圣所派遣死亡回归提示失败: " + ex.Message); }
+
             // 标记境界计数缓存为脏（单位死亡时更新缓存）
             try { Code.Realm.RealmJudge.MarkTierCacheDirty(); } catch (System.Exception ex) { DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
 

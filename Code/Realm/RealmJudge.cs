@@ -958,8 +958,8 @@ namespace Code.Realm
                         var protoDef = Code.Realm.Prototype.PrototypeRegistry.Get(newProto);
                         if (protoDef != null)
                         {
-                            Code.Core.DSNotificationManager.NotifyInfo(actor.getName() + " 觉醒异能：" + protoDef.NameZh);
-                            DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 觉醒异能=" + protoDef.NameZh);
+                            // v0.18.96 觉醒不再全局播报（凡人觉醒不构成世界事件，避免刷屏）
+                            Code.Core.DSDebug.Verbose("[GeneCultivation] " + actor.getName() + " 觉醒异能=" + protoDef.NameZh);
                         }
                     }
                 }

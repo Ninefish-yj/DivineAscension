@@ -855,7 +855,8 @@ namespace Code.Realm
                 // 场域展开通知（宏大叙事风格）—— 至少压制1个敌人才弹全局通知，0个不刷屏
                 if (suppressed >= 1)
                 {
-                    DSNotificationManager.NotifyInfo(string.Format(UILocalization.Get("ability_domain_effect"), actor.getName(), suppressed));
+                    // v0.18.96 不再全局播报（技能释放非世界事件，避免刷屏；保留日志可查）
+                    DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 场域展开！压制{suppressed}个敌人");
                 }
                 DSDebug.Verbose($"[GeneCultivation] {actor.getName()} 场域展开！半径8格，压制{suppressed}个敌人");
             }

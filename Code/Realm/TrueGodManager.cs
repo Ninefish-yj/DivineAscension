@@ -624,10 +624,12 @@ namespace Code.Realm
 
 			try
 			{
+				Actor god = null;
+
 				// 整档快照优先：所有数据完整保留（v0.18.52）
 				if (godData.ActorSnapshot != null)
 				{
-					Actor god = RestoreFullSnapshot(godData);
+					god = RestoreFullSnapshot(godData);
 					if (god != null && god.isAlive())
 					{
 						// 神名注册表一致性：整档已含神名（custom_data_string），按现存神名登记（同角色跨存档复刻放行）
@@ -635,6 +637,7 @@ namespace Code.Realm
 						string west = ReadDivineName(god, "divine_name_west");
 						Code.Realm.RealmMechanics.RestoreSpawnedGodDivineName(god, east, west);
 
+						FinalizeSpawnedGod(god, godData); // v0.18.96 境界/异能/觉醒兜底 + 派遣标记
 						DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已整档恢复（移动完成）");
 						return god;
 					}
@@ -642,13 +645,123 @@ namespace Code.Realm
 				}
 
 				// 旧记录降级：业务字段重建（登神亚种基因+境界+特质+神名）
-				return SpawnTrueGodLegacy(godData);
+				god = SpawnTrueGodLegacy(godData);
+				if (god != null && god.isAlive())
+				{
+					FinalizeSpawnedGod(god, godData); // v0.18.96 境界/异能/觉醒兜底 + 派遣标记
+				}
+				return god;
 			}
 			catch (Exception e)
 			{
 				DSDebug.Warning($"[TrueGodManager] 生成真神失败: {e.Message}");
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// 放置收尾（v0.18.96）：
+		/// ①境界兜底恢复（快照境界强制写回——防 custom_data 载入丢失后单位被当凡人重新觉醒/重新突破）；
+		/// ②异能恢复（快照有异能→写回；无→按基因静默定相，不播报，杜绝"播报觉醒但异能不符"）；
+		/// ③觉醒状态补全（境界≥1 即觉醒者）；
+		/// ④圣所派遣标记（死亡时据此识别"魂归圣所，可再次派遣"）。
+		/// </summary>
+		private static void FinalizeSpawnedGod(Actor god, TrueGodData godData)
+		{
+			if (god == null || !god.isAlive()) return;
+			try
+			{
+				// 1. 境界兜底：快照境界必须恢复（RestoreFullSnapshot 载入异常 / Legacy 旧值均可能丢境界）
+				int tier = CultivationData.GetRealmTier(god);
+				int wantTier = (godData.RealmTier >= 1 && godData.RealmTier <= 13) ? godData.RealmTier : 11;
+				if (tier < wantTier)
+				{
+					CultivationData.SetRealmTier(god, wantTier, allowBigJump: true, suppressBirth: true);
+				}
+
+				// 2. 异能恢复：快照有异能→写回（与快照一致）；无→按基因静默定相（不全局播报）
+				bool hasProto = Code.Realm.Prototype.PrototypeRegistry.HasPrototype(god);
+				try
+				{
+					if (!hasProto && godData.ActorSnapshot?.custom_data_string != null)
+					{
+						string protoId = null;
+						godData.ActorSnapshot.custom_data_string.TryGetValue("ds_prototype", out protoId);
+						if (!string.IsNullOrEmpty(protoId))
+						{
+							var data = Code.Data.ActorDataAccessor.GetData(god);
+							if (data != null)
+							{
+								Code.Data.CultivationData.EnsureCustomDataInitialized(god);
+								if (data.custom_data_string != null)
+								{
+									data.custom_data_string["ds_prototype"] = protoId;
+									foreach (string k in new[] { "ds_prototype_origin", "ds_prototype_evolve_count", "ds_prototype_awaken_year" })
+									{
+										string v = null;
+										string existing = null;
+										if (godData.ActorSnapshot.custom_data_string.TryGetValue(k, out v) && !string.IsNullOrEmpty(v) && !data.custom_data_string.TryGetValue(k, out existing))
+											data.custom_data_string[k] = v;
+									}
+									hasProto = true;
+								}
+							}
+						}
+					}
+					if (!hasProto && godData.UnlockedElements != null && godData.UnlockedElements.Count > 0)
+					{
+						// 旧记录（无快照异能数据）：按恢复的基因静默定相，与基因一致（不播报）
+						Code.Realm.Prototype.GeneAffinityBridge.SyncAffinities(god);
+						Code.Realm.Prototype.GeneAffinityBridge.RollPrototype(god);
+					}
+				}
+				catch (System.Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 放置异能恢复异常: " + ex.Message); }
+
+				// 3. 觉醒状态：境界≥1 即觉醒者（防被当凡人重新觉醒）
+				try { if (!CultivationData.IsAwakened(god)) CultivationData.SetAwakened(god, true); } catch { }
+
+				// 4. 圣所派遣标记：死亡自动回归判定
+				try
+				{
+					var data = Code.Data.ActorDataAccessor.GetData(god);
+					if (data != null)
+					{
+						Code.Data.CultivationData.EnsureCustomDataInitialized(god);
+						if (data.custom_data_string != null) data.custom_data_string["ds_sanctuary_born"] = "1";
+					}
+				}
+				catch { }
+			}
+			catch (System.Exception ex)
+			{
+				Code.Core.DSDebug.Warning("[GeneCultivation] 放置收尾异常: " + ex.Message);
+			}
+		}
+
+		/// <summary>圣所是否存在该名字的记录（派遣单位死亡回归判定：有记录→可再次派遣）</summary>
+		public static bool HasSanctuaryRecord(string name)
+		{
+			if (string.IsNullOrEmpty(name)) return false;
+			try
+			{
+				lock (_lock) { if (!_initialized) Init(); }
+				return _globalData.TrueGods.Any(g => g.Name == name);
+			}
+			catch (Exception) { return false; }
+		}
+
+		/// <summary>是否圣所派遣单位（带派遣标记：死亡自动回归提示；免被当凡人重新觉醒）</summary>
+		public static bool IsSanctuaryBorn(Actor actor)
+		{
+			if (actor == null) return false;
+			try
+			{
+				var data = Code.Data.ActorDataAccessor.GetData(actor);
+				if (data == null || data.custom_data_string == null) return false;
+				string v = null;
+				return data.custom_data_string.TryGetValue("ds_sanctuary_born", out v) && v == "1";
+			}
+			catch { return false; }
 		}
 
 		/// <summary>
@@ -763,9 +876,12 @@ namespace Code.Realm
 				// 真·复刻：先重建基因序列（专属亚种），再登神升华（升华会基于恢复后的基因做协调效应）
 				RestoreGenome(god, godData.Genome);
 
-				// 恢复境界：allowBigJump 跳过跳阶限制（放置=直接恢复 13 阶，不是从 0 突破）；
+				// 恢复境界：按快照恢复（登神=11/真神=12/超神=13），不再硬编码 13——v0.18.96 修复
+				// "登神放出来变超神"（旧代码一律 SetRealmTier(god,13)，登神放置后跳到超神、真神阶被跳过）；
+				// allowBigJump 跳过跳阶限制（放置=直接恢复，不是从 0 突破）；
 				// suppressBirth 跳过完整诞生链（切纪元/弹通知/重复存档在 OnGUI 点击帧内执行易原生崩溃）
-				CultivationData.SetRealmTier(god, 13, allowBigJump: true, suppressBirth: true);
+				int restoreTier = (godData.RealmTier >= 11 && godData.RealmTier <= 13) ? godData.RealmTier : 11;
+				CultivationData.SetRealmTier(god, restoreTier, allowBigJump: true, suppressBirth: true);
 				CultivationData.SetEnergy(god, godData.Qi);
 				CultivationData.SetMastery(god, godData.Mastery);
 				CultivationData.SetTurbulence(god, godData.Turbulence);

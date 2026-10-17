@@ -1,8 +1,14 @@
 // ============================================================
-// 神名念诵·召唤回归（v0.18.86）
+// 神名念诵·召唤回归（v0.18.86，v0.18.96 传承语义重构）
 // 世界观：登神级单位（11阶+）每年有概率"念诵神名"沟通上代强者，
 // 将回归池中的神应召降临当前世界（回归即出池，席位轮换）。
-// 约束：无念诵者不触发；世界内该段位名额已满不召唤（防爆满）。
+//
+// v0.18.96 传承绑定（修复"跨存档神在本世界无信息却被念诵"的逻辑漏洞）：
+//   念诵的前提是"知道神名"= 族裔传承记忆。只有与目标神同族（Race 相同）的
+//   登神级单位才继承该族裔的上代强者传说，得以念诵其神名。
+//   跨存档降临的神若在本世界没有同族登神者，其神名在本世界失传——无人能念诵。
+//
+// 约束：无传承念诵者不触发；世界内该段位名额已满不召唤（防爆满）。
 // ============================================================
 
 using System.Collections.Generic;
@@ -24,7 +30,8 @@ namespace Code.Realm
         private const int CAP_T11 = 16;
 
         /// <summary>
-        /// 年度念诵检查（挂全局年度结算）：世界内有登神级单位时，按概率念诵神名召唤回归池之神。
+        /// 年度念诵检查（挂全局年度结算）：遍历回归池，找"有同族传承念诵者"的池神，
+        /// 随机选一位有传承者的神，由传承者按概率念诵其神名召唤降临。
         /// </summary>
         public static void AnnualSummonCheck()
         {
@@ -32,18 +39,23 @@ namespace Code.Realm
 
             try
             {
-                // 念诵者：世界内随机一位 11 阶+ 单位（登神者才有沟通上代神的神格）
-                Actor summoner = FindSummoner();
-                if (summoner == null) return;
+                // v0.18.96 传承念诵：只有同族登神者才"认识"该神的神名（族裔传说）
+                List<TrueGodManager.TrueGodData> invocable = CollectInvocableGods();
+                if (invocable == null || invocable.Count == 0) return; // 无传承者：神名在本世界失传
 
                 // 概率触发（避免每年轻松爆满）
                 if (Random.value >= SUMMON_CHANCE) return;
 
+                // 随机挑一位有传承者的神
+                TrueGodManager.TrueGodData target = invocable[Random.Range(0, invocable.Count)];
+
                 // 名额约束：世界内该段位已达上限则不召唤（保持世界平衡）
+                Actor summoner = FindSummonerForGod(target);
+                if (summoner == null) return;
                 if (WorldSlotFull(summoner)) return;
 
-                // v0.18.87 指定神名念诵：随机挑回归池一位神，念诵者念其神名精确召回
-                string invokedGodName = TryPickPoolGodName();
+                // 指定神名念诵：传承者念其神名精确召回
+                string invokedGodName = target.Name;
                 if (invokedGodName != null)
                 {
                     // v0.18.95 神已在世间：记录由 TrueGodManager 出池流转席位，念诵无应（不重复降临）
@@ -54,11 +66,11 @@ namespace Code.Realm
                         string divineTitle = !string.IsNullOrEmpty(returned.DivineName)
                             ? returned.DivineName
                             : returned.Name;
-                        DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名「" + divineTitle + "」，上代强者「" + returned.Name + "」应召降临！");
+                        DSNotificationManager.NotifyInfo("族裔传承者 " + summoner.getName() + " 念诵族神名「" + divineTitle + "」，上代强者「" + returned.Name + "」应召降临！");
                     }
                     else if (alreadyPresent)
                     {
-                        DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名「" + invokedGodName + "」，但该神已在世间，无需重复降临。");
+                        DSNotificationManager.NotifyInfo("族裔传承者 " + summoner.getName() + " 念诵神名「" + invokedGodName + "」，但该神已在世间，无需重复降临。");
                     }
                 }
             }
@@ -68,17 +80,25 @@ namespace Code.Realm
             }
         }
 
-        /// <summary>从回归池随机挑一位神（返回其单位名，池空返回 null）</summary>
-        private static string TryPickPoolGodName()
+        /// <summary>收集"本世界有同族传承念诵者"的回归池神（无传承者的神名在本世界失传）</summary>
+        private static List<TrueGodManager.TrueGodData> CollectInvocableGods()
         {
             var pool = TrueGodManager.GetReincarnations();
             if (pool == null || pool.Count == 0) return null;
-            return pool[Random.Range(0, pool.Count)].Name;
+
+            List<TrueGodManager.TrueGodData> invocable = new List<TrueGodManager.TrueGodData>();
+            foreach (var god in pool)
+            {
+                if (god == null) continue;
+                if (FindSummonerForGod(god) != null) invocable.Add(god);
+            }
+            return invocable;
         }
 
-        /// <summary>随机找一位登神级（11阶+）单位作为念诵者，无则返回 null</summary>
-        private static Actor FindSummoner()
+        /// <summary>找一位与该神同族（Race 相同）的登神级（11-13阶）单位作为传承念诵者，无则返回 null</summary>
+        private static Actor FindSummonerForGod(TrueGodManager.TrueGodData god)
         {
+            if (god == null) return null;
             var alive = World.world.units?.units_only_alive;
             if (alive == null) return null;
 
@@ -87,7 +107,17 @@ namespace Code.Realm
             {
                 if (actor == null || !actor.isAlive()) continue;
                 int tier = CultivationData.GetRealmTier(actor);
-                if (tier >= 11 && tier <= 13) candidates.Add(actor);
+                if (tier < 11 || tier > 13) continue;
+                // 族裔传承：同族（asset_id 相同）才继承该神的神名传说
+                string actorRace = null;
+                try
+                {
+                    var d = actor.getData() as ActorData;
+                    actorRace = (d != null) ? d.asset_id : null;
+                }
+                catch { }
+                if (!string.IsNullOrEmpty(actorRace) && string.Equals(actorRace, god.Race, System.StringComparison.OrdinalIgnoreCase))
+                    candidates.Add(actor);
             }
             if (candidates.Count == 0) return null;
             return candidates[Random.Range(0, candidates.Count)];
