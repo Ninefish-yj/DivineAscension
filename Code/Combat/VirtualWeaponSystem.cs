@@ -27,6 +27,11 @@ namespace Code.Combat
 
         // 能量刃投射物ID
         private const string ENERGY_BLADE_PROJECTILE_ID = "ds_energy_blade_projectile";
+        // 能量刃真实武器ID（v0.18.77：虚拟武器真实化——注册为原版武器资产，觉醒单位真实装备，AI自动发射投射物）
+        private const string WEAPON_ITEM_ID = "ds_energy_blade";
+
+        // 武器资产是否已注册
+        private static bool _weaponInitialized = false;
 
         // 投射物是否已初始化
         private static bool _projectileInitialized = false;
@@ -52,8 +57,9 @@ namespace Code.Combat
             try
             {
                 DSDebug.Verbose("[GeneCultivation] 虚拟武器系统初始化（伤害加成已合并到AbilityStatusPatch）");
-                // 初始化能量刃投射物
+                // 初始化能量刃投射物 + 注册真实武器资产
                 InitEnergyBladeProjectile();
+                InitEnergyBladeWeapon();
                 DSDebug.Verbose("[GeneCultivation] 虚拟武器系统初始化完成");
             }
             catch (Exception e)
@@ -106,6 +112,76 @@ namespace Code.Combat
             catch (Exception e)
             {
                 DSDebug.Verbose($"[虚拟武器] 能量刃投射物初始化失败: {e.Message}，使用延迟特效模拟远程攻击");
+            }
+        }
+
+        /// <summary>
+        /// 注册能量刃真实武器（v0.18.77）
+        /// 参考原版 $range 武器模板（ItemLibrary.initTemplatesWeapons）：Range 型 + projectile 绑定能量刃投射物，
+        /// 单位装备后原版 AI 攻击自动发射投射物（Actor攻击逻辑 getWeaponAsset().projectile + hasRangeAttack()），
+        /// 不再需要反射 hack；武器持握贴图 items/weapons/w_ds_energy_blade。
+        /// </summary>
+        private static void InitEnergyBladeWeapon()
+        {
+            if (_weaponInitialized) return;
+            _weaponInitialized = true;
+            try
+            {
+                if (AssetManager.items.get(WEAPON_ITEM_ID) != null) return; // 已注册（重载/多次Init）
+
+                EquipmentAsset blade = new EquipmentAsset();
+                blade.id = WEAPON_ITEM_ID;
+                blade.equipment_type = EquipmentType.Weapon;
+                blade.equipment_subtype = "sword";
+                blade.attack_type = WeaponType.Range;          // 远程：AI自动发射投射物
+                blade.projectile = ENERGY_BLADE_PROJECTILE_ID; // 绑定能量刃投射物
+                blade.path_slash_animation = "effects/slashes/slash_sword";
+                blade.path_gameplay_sprite = "items/weapons/w_ds_energy_blade";
+                blade.has_locales = false;
+                blade.base_stats["damage"] = 6f;               // 武器基础伤害（特质加成在AbilityStatusPatch叠加，不冲突）
+                blade.base_stats["damage_range"] = 0.8f;
+                blade.base_stats["range"] = 14f;               // 能量刃射程
+                blade.base_stats["projectiles"] = 1f;
+                blade.base_stats["critical_chance"] = 0.1f;
+                blade.base_stats["critical_damage_multiplier"] = 0.5f;
+                AssetManager.items.add(blade);
+                DSDebug.Verbose("[虚拟武器] 能量刃真实武器注册成功 " + WEAPON_ITEM_ID);
+            }
+            catch (Exception e)
+            {
+                DSDebug.Verbose($"[虚拟武器] 能量刃武器注册失败: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 确保能量武器单位装备真实能量刃（v0.18.77）
+        /// 觉醒能量武器特质但未装备时，用原版 createNewWeapon 创建并装备到武器槽——
+        /// 武器真实可见、可被单位窗查看，AI 使用原版武器攻击链（Range→自动发射投射物）。
+        /// </summary>
+        public static void EnsureEnergyWeapon(Actor actor)
+        {
+            try
+            {
+                if (actor == null || !actor.isAlive()) return;
+                if (!HasVirtualEnergyWeapon(actor)) return;    // 无特质不干预
+                if (actor.equipment == null) return;
+                // 已装备能量刃则不动（保留玩家自定义武器）
+                if (!actor.equipment.weapon.isEmpty())
+                {
+                    var cur = actor.equipment.weapon.getItem();
+                    if (cur != null && cur.getAsset() != null && cur.getAsset().id == WEAPON_ITEM_ID) return;
+                    return; // 有其他武器：尊重现状，不强行替换
+                }
+                // 空槽才装备能量刃
+                if (actor.canUseItems())
+                {
+                    actor.createNewWeapon(WEAPON_ITEM_ID);
+                    DSDebug.Verbose($"[虚拟武器] {actor.getName()} 装备能量刃");
+                }
+            }
+            catch (Exception e)
+            {
+                DSDebug.Verbose($"[虚拟武器] EnsureEnergyWeapon 异常: {e.Message}");
             }
         }
 
@@ -169,8 +245,10 @@ namespace Code.Combat
         }
 
         /// <summary>
-        /// 播放虚拟武器攻击视觉效果
-        /// 在单位攻击时调用，使用原版投射物系统发射能量刃（参考红袍法师的火球攻击）
+        /// 虚拟武器攻击演出（v0.18.77 重构）
+        /// 真实武器化后：命中时仅确保单位装备能量刃（原版 AI 攻击链会自动发射投射物，命中端特效由投射物
+        /// end_effect=fx_explosion 播放），这里不再反射发射投射物——旧实现每次 getHit 都反射 spawn，
+        /// 与原版武器发射叠加造成投射物泛滥/双发。
         /// </summary>
         public static void PlayWeaponAttackEffect(Actor attacker, Actor target)
         {
@@ -179,22 +257,14 @@ namespace Code.Combat
                 if (attacker == null || target == null) return;
                 if (!HasVirtualEnergyWeapon(attacker)) return;
 
-                // 尝试使用原版投射物系统发射能量刃
-                if (TrySpawnProjectile(attacker, target))
-                {
-                    DSDebug.Verbose($"[虚拟武器] {attacker.getName()} 发射能量刃投射物（远程攻击）");
-                    return;
-                }
+                // 1. 保证真实武器（空武器槽才装备，尊重玩家已装武器）
+                EnsureEnergyWeapon(attacker);
 
-                // 回退：使用延迟特效模拟远程攻击
-                // 1. 在施法者位置播放能量刃发射特效
+                // 2. 施法演出（能量刃出鞘特效；投射物飞行动画由原版投射物系统负责）
                 if (DSSkillEffectManager.HasEffect(VIRTUAL_WEAPON_EFFECT_ID))
                 {
                     DSSkillEffectManager.PlayEffect(attacker, VIRTUAL_WEAPON_EFFECT_ID, null);
                 }
-
-                // 2. 延迟一段时间后，在目标位置播放能量刃命中特效
-                ScheduleDelayedEffect(target, 0.3f);
             }
             catch (Exception e)
             {
@@ -203,134 +273,11 @@ namespace Code.Combat
         }
 
         /// <summary>
-        /// 尝试使用原版投射物系统发射能量刃
-        /// </summary>
-        private static bool TrySpawnProjectile(Actor attacker, Actor target)
-        {
-            try
-            {
-                if (World.world == null || World.world.projectiles == null) return false;
-                // v0.18.76：帧缺失时绝不发射（避免空帧投射物进渲染队列刷 ArgumentOutOfRange），走回退延迟特效
-                if (!_projectileFramesReady) return false;
-
-                // 获取发射位置和目标位置
-                Vector2 launchPos = attacker.current_position;
-                Vector2 targetPos = target.current_position;
-
-                // 真实签名（反编译 ProjectileManager.cs:90）：
-                //   spawn(BaseSimObject pInitiator, BaseSimObject pTargetObject, string pAssetID,
-                //        Vector3 pLaunchPosition, Vector3 pTargetPosition, float pTargetZ=0f,
-                //        float pStartPosZ=0.25f, Action pKillAction=null, Kingdom pForcedKingdom=null)
-                // 反射 Invoke 必须提供全部参数（含可选参数），且位置参数为 Vector3。
-                // 此前按参数个数猜参数并传 Vector2，导致 TargetParameterCount/类型不匹配（"发射投射物参数不匹配"）。
-                var projectiles = World.world.projectiles;
-                var spawnMethod = typeof(ProjectileManager).GetMethod("spawn",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
-                    null,
-                    new[] { typeof(BaseSimObject), typeof(BaseSimObject), typeof(string), typeof(Vector3), typeof(Vector3), typeof(float), typeof(float), typeof(Action), typeof(Kingdom) },
-                    null);
-                if (spawnMethod == null) return false;
-
-                Vector3 launchPos3 = new Vector3(launchPos.x, launchPos.y, 0f);
-                Vector3 targetPos3 = new Vector3(targetPos.x, targetPos.y, 0f);
-                spawnMethod.Invoke(projectiles, new object[] {
-                    attacker, target, ENERGY_BLADE_PROJECTILE_ID, launchPos3, targetPos3, 0f, 0.25f, null, null
-                });
-                return true;
-            }
-            catch (Exception e)
-            {
-                // 只输出一次，避免刷屏
-                if (!_projectileErrorLogged)
-                {
-                    DSDebug.Warning($"[虚拟武器] 发射投射物失败: {e.Message}（后续不再重复输出）");
-                    _projectileErrorLogged = true;
-                }
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 待播放的延迟特效列表
-        /// </summary>
-        private static readonly List<DelayedEffect> _delayedEffects = new List<DelayedEffect>();
-
-        /// <summary>
-        /// 延迟特效数据
-        /// </summary>
-        private class DelayedEffect
-        {
-            public Actor Target;
-            public float RemainingTime;
-        }
-
-        /// <summary>
-        /// 调度延迟特效
-        /// </summary>
-        private static void ScheduleDelayedEffect(Actor target, float delay)
-        {
-            _delayedEffects.Add(new DelayedEffect
-            {
-                Target = target,
-                RemainingTime = delay
-            });
-        }
-
-        /// <summary>
-        /// 更新延迟特效（由ModClass.Update调用）
+        /// 更新延迟特效（v0.18.77 保留空壳：真实武器化后原版武器系统自动发射投射物，
+        /// 命中特效由投射物 end_effect 播放，不再需要延迟模拟。框架仍调用本方法，保持空转无害）
         /// </summary>
         public static void UpdateDelayedEffects(float deltaTime)
         {
-            if (_delayedEffects.Count == 0) return;
-
-            for (int i = _delayedEffects.Count - 1; i >= 0; i--)
-            {
-                var delayed = _delayedEffects[i];
-                delayed.RemainingTime -= deltaTime;
-                if (delayed.RemainingTime <= 0f)
-                {
-                    // 在目标位置播放能量刃命中特效
-                    if (delayed.Target != null && delayed.Target.isAlive())
-                    {
-                        try
-                        {
-                            // 播放命中特效（使用原版爆炸特效）
-                            Vector2 pos = delayed.Target.current_position;
-                            PlayHitEffect(pos);
-                        }
-                        catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] UpdateDelayedEffects 异常: " + dsEx.Message); }
-                    }
-                    _delayedEffects.RemoveAt(i);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 播放能量刃命中特效
-        /// </summary>
-        private static void PlayHitEffect(Vector2 position)
-        {
-            try
-            {
-                if (World.world == null) return;
-                WorldTile tile = World.world.GetTileSimple((int)position.x, (int)position.y);
-                if (tile == null) return;
-
-                // 使用原版爆炸特效作为命中特效
-                var spawnMethods = typeof(EffectsLibrary).GetMethods(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                foreach (var method in spawnMethods)
-                {
-                    if (method.Name == "spawn" && method.GetParameters().Length == 8)
-                    {
-                        method.Invoke(null, new object[] {
-                            "fx_explosion", tile, null, null, 0f, 1.5f, -1f, null
-                        });
-                        return;
-                    }
-                }
-            }
-            catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] PlayHitEffect 异常: " + dsEx.Message); }
         }
     }
 }

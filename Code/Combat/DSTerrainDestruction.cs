@@ -131,48 +131,49 @@ namespace Code.Combat
 
         /// <summary>
         /// 构建地形改造配置
+        /// v0.18.77：爆炸化——explode_tile 炸树/炸坑、damage_buildings 炸全部建筑（原版 applyTileDamage 处理），
+        /// damage>0 对单位造成爆炸伤害。旧版只烧焦+加热(damage=0)，树/非城市建筑/坑都不破坏，配不上炫特效。
         /// </summary>
         private static TerraformOptions BuildTerraformOptions(TerrainDestructionType type)
         {
             TerraformOptions options = new TerraformOptions();
+            options.explode_tile = true;        // 炸树/炸可爆地块/炸坑
+            options.damage_buildings = true;    // 炸建筑（含非城市建筑）
+            options.add_burned = true;          // 烧焦
+            options.shake = true;               // 屏幕震动（视觉匹配）
+            options.shake_duration = 0.4f;
+            options.shake_interval = 0.04f;
+            options.shake_intensity = 0.25f;
 
             switch (type)
             {
                 case TerrainDestructionType.EnergyStorm:
-                    // 能量风暴：烧焦+点火+加热+移除龙卷风
-                    options.add_burned = true;
+                    // 能量风暴：烧焦+点火+加热+移除龙卷风+爆炸伤害
                     options.set_fire = true;
                     options.add_heat = 15;
                     options.remove_tornado = true;
                     options.lightning_effect = false;
-                    options.damage = 0;
+                    options.damage = 20;
                     break;
 
                 case TerrainDestructionType.DimensionalStrike:
-                    // 维度打击：烧焦+少量加热（高度变化在ApplyDestructionToTile中处理）
-                    options.add_burned = true;
+                    // 维度打击：烧焦+少量加热+爆炸伤害（高度变化在ApplyDestructionToTile中处理）
                     options.add_heat = 5;
-                    options.damage = 0;
+                    options.damage = 35;
                     break;
 
                 case TerrainDestructionType.DivinePunishment:
-                    // 神罚：烧焦+点火+加热+屏幕震动
-                    options.add_burned = true;
+                    // 神罚：烧焦+点火+强加热+高爆炸伤害
                     options.set_fire = true;
                     options.add_heat = 25;
-                    options.shake = true;
-                    options.shake_duration = 0.5f;
-                    options.shake_interval = 0.05f;
-                    options.shake_intensity = 0.3f;
-                    options.damage = 0;
+                    options.damage = 60;
                     break;
 
                 case TerrainDestructionType.Generic:
                 default:
-                    // 通用型：烧焦+少量加热
-                    options.add_burned = true;
+                    // 通用型：烧焦+少量加热+基础爆炸伤害
                     options.add_heat = 5;
-                    options.damage = 0;
+                    options.damage = 8;
                     break;
             }
 
@@ -216,18 +217,32 @@ namespace Code.Combat
                     }
                 }
 
-                // 应用通用地形改造效果（烧焦、点火、加热等）
-                ApplyCommonTerraformEffects(tile, options, caster);
+                // 应用地形破坏（v0.18.77：原版 explodeTile 中心格全强度——
+                // 单位爆炸伤害 + 炸树(explodable) + 炸坑(decreaseTile) + 烧焦 + 随机火）
+                MapAction.explodeTile(tile, 0f, 1f, tile, options);
 
-                // 强制点火（参考西幻世界：fire_timestamp + setFireData）
+                // 建筑伤害（explodeTile 只炸液体建筑；applyTileDamage 的 damage_buildings 逻辑手动补，含非城市建筑）
+                if (options.damage_buildings && tile.hasBuilding() && tile.building.isAlive())
+                {
+                    try { tile.building.getHit(options.damage); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
+                }
+
+                // 固定点火（参考西幻世界：fire_timestamp + setFireData）
                 if (options.set_fire && !tile.Type.liquid)
                 {
-                    try
-                    {
-                        tile.data.fire_timestamp = World.world.getCurWorldTime();
-                        tile.setFireData(true);
-                    }
-                    catch { }
+                    try { tile.data.fire_timestamp = World.world.getCurWorldTime(); tile.setFireData(true); } catch { }
+                }
+
+                // 加热
+                if (options.add_heat != 0)
+                {
+                    try { World.world.heat.addTile(tile, options.add_heat); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
+                }
+
+                // 移除龙卷风
+                if (options.remove_tornado)
+                {
+                    try { MapAction.tryRemoveTornadoFromTile(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
                 }
 
                 // 应用特定类型的额外效果
@@ -250,79 +265,6 @@ namespace Code.Combat
             {
                 Code.Core.DSDebug.Verbose($"[地形破坏] ApplyDestructionToTile 异常: {e.Message}");
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// 应用通用地形改造效果
-        /// </summary>
-        private static void ApplyCommonTerraformEffects(WorldTile tile, TerraformOptions options, Actor caster)
-        {
-            if (tile == null || options == null) return;
-
-            try
-            {
-                // 烧焦
-                if (options.add_burned && tile.Type != null && !tile.Type.liquid)
-                {
-                    try { tile.setBurned(-1); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
-                }
-
-                // 点火（烧焦的地块在原版游戏中可能会自动着火，这里不强制点火）
-                // 如需强制点火，可使用 TerraformOptions.set_fire + ApplyTerraformArea
-
-                // 加热
-                if (options.add_heat != 0)
-                {
-                    try { World.world.heat.addTile(tile, options.add_heat); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
-                }
-
-                // 移除龙卷风（已恢复——Harmony patch修复了TornadoEffect的null key bug）
-                if (options.remove_tornado)
-                {
-                    try { MapAction.tryRemoveTornadoFromTile(tile); } catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
-                }
-
-                // 屏幕震动（只在中心地块触发一次，避免重复）
-                if (options.shake)
-                {
-                    // 屏幕震动在DestroyTerrain中统一处理，这里不重复触发
-                }
-
-                // 物理力
-                if (options.apply_force)
-                {
-                    try
-                    {
-                        World.world.applyForceOnTile(
-                            tile, 1, options.force_power, true, 
-                            options.damage, options.ignore_kingdoms, caster, options, false);
-                    }
-                    catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
-                }
-
-                // 破坏建筑（如果有建筑且是敌方城市）
-                if (tile.hasBuilding() && tile.building.hasCity())
-                {
-                    try
-                    {
-                        if (caster != null && caster.kingdom != null && 
-                            tile.building.city.kingdom != null &&
-                            caster.kingdom.isEnemy(tile.building.city.kingdom))
-                        {
-                            if (tile.building.asset.spawn_drops)
-                            {
-                                tile.building.spawnBurstSpecial(10);
-                            }
-                            tile.building.startDestroyBuilding();
-                        }
-                    }
-                    catch (Exception ex) { Code.Core.DSDebug.Warning("[GeneCultivation] 操作失败: " + ex.Message); }
-                }
-            }
-            catch (Exception e)
-            {
-                Code.Core.DSDebug.Verbose($"[地形破坏] ApplyCommonTerraformEffects 异常: {e.Message}");
             }
         }
     }
