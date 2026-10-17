@@ -99,9 +99,11 @@ namespace Code.Combat.Fx
         // ----------------------------------------------------- 伤害命中 --
 
         /// <summary>
-        /// 伤害命中演出：足够大的伤害才触发（防普攻刷屏），规模随伤害上升。
+        /// 伤害命中演出：低阈值（>20）+ 频率冷却防刷屏（同一单位 0.12s 内至多一次），规模随伤害上升。
         /// 在 Actor.getHit 前缀内调用（此时伤害尚未结算）。
         /// </summary>
+        private static readonly Dictionary<Actor, float> _hitCooldown = new Dictionary<Actor, float>();
+
         public static void HitImpact(Actor victim, float damage)
         {
             try
@@ -110,10 +112,16 @@ namespace Code.Combat.Fx
                 if (victim == null || !victim.isAlive()) return;
                 Vector2 pos = victim.current_position;
                 if (!CanFull(pos)) return;
-                if (damage < 150f) return; // 阈值：避免每帧普攻刷屏
+                if (damage < 20f) return;  // 低阈值：普通伤害也有受击火花
+                // 频率冷却：防普攻每帧刷屏
+                if (_hitCooldown.TryGetValue(victim, out float last))
+                {
+                    if (Time.unscaledTime - last < 0.12f) return;
+                }
+                _hitCooldown[victim] = Time.unscaledTime;
                 float scale = Mathf.Min(1f, damage / 3000f);
                 Color c = new Color(1f, 0.9f, 0.55f);
-                // 命中星（1-2 颗）
+                // 命中星（低伤害 1 颗，高伤害 2 颗）
                 int stars = scale > 0.4f ? 2 : 1;
                 for (int i = 0; i < stars; i++)
                 {
@@ -122,8 +130,8 @@ namespace Code.Combat.Fx
                         .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1f, 0.25f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * 6f, 0f, 2f, 0f);
                 }
-                // 火花（规模线性）
-                int sparks = 2 + (int)(scale * 5f);
+                // 火花（低伤害 1-2 颗，规模线性）
+                int sparks = 1 + (int)(scale * 6f);
                 for (int i = 0; i < sparks; i++)
                 {
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
@@ -389,6 +397,7 @@ namespace Code.Combat.Fx
                     kv.Key.move_jump_offset = new Vector2(kv.Value.OriginX, kv.Key.move_jump_offset.y);
             }
             _dashes.Clear();
+            _hitCooldown.Clear();
             _ascendVeilTimer = 0f;
         }
     }
