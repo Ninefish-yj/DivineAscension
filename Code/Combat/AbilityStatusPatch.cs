@@ -222,6 +222,16 @@ namespace Code.Combat
                     }
                 }
 
+                // 副手武器槽（v0.18.78）：副手能量刃每击追加固定能量伤害（不随特质翻倍）
+                if (from != null)
+                {
+                    float offhandBonus = Code.Combat.OffhandWeaponSystem.GetOffhandBonusDamage(from);
+                    if (offhandBonus > 0f)
+                    {
+                        damage += offhandBonus;
+                    }
+                }
+
                 // 战斗表现层（v0.18.47）：伤害命中演出——登神单位出手时触发星形/火花/碎片/音效，大伤害追加击停
                 // （仅登神攻击者触发，避免原版生物互殴被演出刷屏）
                 try

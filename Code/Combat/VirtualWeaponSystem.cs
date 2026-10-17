@@ -260,7 +260,10 @@ namespace Code.Combat
                 // 1. 保证真实武器（空武器槽才装备，尊重玩家已装武器）
                 EnsureEnergyWeapon(attacker);
 
-                // 2. 施法演出（能量刃出鞘特效；投射物飞行动画由原版投射物系统负责）
+                // 2. 副手武器槽（v0.18.78）：主手武器保持玩家已有，能量刃自动入副手 → 双持共存
+                OffhandWeaponSystem.EnsureEnergyBladeOffhand(attacker);
+
+                // 3. 施法演出（能量刃出鞘特效；投射物飞行动画由原版投射物系统负责）
                 if (DSSkillEffectManager.HasEffect(VIRTUAL_WEAPON_EFFECT_ID))
                 {
                     DSSkillEffectManager.PlayEffect(attacker, VIRTUAL_WEAPON_EFFECT_ID, null);

@@ -128,6 +128,8 @@ namespace Code.Core
 			try { Code.Realm.DSSkillEffectManager.UpdatePendingEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
 			try { Code.Realm.DSSkillEffectManager.UpdateScheduledStops(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
 			try { Code.Combat.VirtualWeaponSystem.UpdateDelayedEffects(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
+			//  每帧副手武器槽清理（60秒节流全遍历，清除死亡单位条目）
+			try { Code.Combat.OffhandWeaponSystem.UpdateCleanup(Time.deltaTime); } catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] Anonymous 异常: " + dsEx.Message); }
 
 
 
