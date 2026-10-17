@@ -1642,7 +1642,7 @@ public class AbilityCodexPanel : MonoBehaviour
 						else
 						{
 							Code.Realm.TrueGodManager.TrueGodData dsGod = g;
-							Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod);
+							Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod, "sanctuary");
 							if (dsPlaced != null && dsPlaced.isAlive())
 							{
 								// v0.18.96 派遣语义：圣所记录保留（杀一次不会没；同名查重保证同时只有一份在世，战死后可再次派遣）

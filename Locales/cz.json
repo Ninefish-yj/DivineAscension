@@ -1,4 +1,4 @@
-﻿{
+{
   "turb_warning": "失控警告",
   "ability_telekinesis": "念动力",
   "realm_abilities_title": "阶位专属技能",
@@ -1934,8 +1934,8 @@
   "god_domain_death_4_west": "归冥之神",
   "god_domain_death_5_west": "渡亡之主",
   "god_domain_death_6_west": "望乡女神",
-  "codex_spawn_ok": "已从圣所放置（移动完成）",
-  "codex_spawn_fail": "放置失败（圣所记录已保留）",
+  "codex_spawn_ok": "已应召降临（回归池席位已流转）",
+  "codex_spawn_fail": "降临失败（记录已保留）",
   "unit_move_to_sanctuary": "移入圣所",
   "unit_move_to_sanctuary_ok": "已移入圣所，离开当前世界（可在其他存档放置）",
   "unit_move_to_sanctuary_fail": "移入圣所失败",

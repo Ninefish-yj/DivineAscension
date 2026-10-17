@@ -54,6 +54,9 @@ namespace Code.Realm
 			// v0.18.83 神系回归池字段（旧存档缺省：0/null 兼容）
 			public long EnshrineTime;            // 入池时间（Ticks，轮换顶替依据）
 			public int ReturnCount;              // 已回归次数（预留：多段轮换用，当前回归即出池）
+
+			// v0.18.96 本世界留痕：念诵降临过的世界名列表（旧存档缺省 null = 无降临记录）
+			public List<string> SummonedWorlds;
 		}
 
 		/// <summary>
@@ -515,6 +518,7 @@ namespace Code.Realm
 					Actor spawned = SpawnTrueGod(god);
 					if (spawned != null && spawned.isAlive())
 					{
+						RecordSummonedWorld(god); // v0.18.96 本世界留痕：曾降临此世界
 						pool.Remove(god);
 						SaveGlobalData();
 						DSDebug.Verbose($"[GeneCultivation] 神名念诵：{god.Name} 应召降临（出池，席位流转）");
@@ -565,6 +569,7 @@ namespace Code.Realm
 					Actor spawned = SpawnTrueGod(god);
 					if (spawned != null && spawned.isAlive())
 					{
+						RecordSummonedWorld(god); // v0.18.96 本世界留痕：曾降临此世界
 						pool.Remove(god);
 						SaveGlobalData();
 						DSDebug.Verbose($"[GeneCultivation] 神名念诵：{god.Name} 应召降临（出池，席位流转）");
@@ -577,6 +582,16 @@ namespace Code.Realm
 				DSDebug.Warning($"[GeneCultivation] 指定神名召唤异常: {e.Message}");
 			}
 			return null;
+		}
+
+		/// <summary>记录降临留痕：把当前世界名写入神的数据（v0.18.96 本世界留痕判定用）</summary>
+		private static void RecordSummonedWorld(TrueGodData god)
+		{
+			if (god == null || World.world == null) return;
+			string worldName = World.world.name;
+			if (string.IsNullOrEmpty(worldName)) return;
+			if (god.SummonedWorlds == null) god.SummonedWorlds = new List<string>();
+			if (!god.SummonedWorlds.Contains(worldName)) god.SummonedWorlds.Add(worldName);
 		}
 
 		/// <summary>获取回归池全部单位（UI 展示用）</summary>
@@ -618,7 +633,7 @@ namespace Code.Realm
 		/// 整档快照优先：loadObject 全量恢复（所有数据原样，含境界/神名/基因/氏族/文化/语言）；
 		/// 旧记录（升级前，无整档）降级：业务字段重建。
 		/// </summary>
-		public static Actor SpawnTrueGod(TrueGodData godData)
+		public static Actor SpawnTrueGod(TrueGodData godData, string bornSource = "summon")
 		{
 			if (godData == null || World.world == null) return null;
 
@@ -637,7 +652,7 @@ namespace Code.Realm
 						string west = ReadDivineName(god, "divine_name_west");
 						Code.Realm.RealmMechanics.RestoreSpawnedGodDivineName(god, east, west);
 
-						FinalizeSpawnedGod(god, godData); // v0.18.96 境界/异能/觉醒兜底 + 派遣标记
+						FinalizeSpawnedGod(god, godData, bornSource); // v0.18.96 境界/异能/觉醒兜底 + 来源标记
 						DSDebug.Verbose($"[TrueGodManager] 真神 {godData.Name} 已整档恢复（移动完成）");
 						return god;
 					}
@@ -648,7 +663,7 @@ namespace Code.Realm
 				god = SpawnTrueGodLegacy(godData);
 				if (god != null && god.isAlive())
 				{
-					FinalizeSpawnedGod(god, godData); // v0.18.96 境界/异能/觉醒兜底 + 派遣标记
+					FinalizeSpawnedGod(god, godData, bornSource); // v0.18.96 境界/异能/觉醒兜底 + 来源标记
 				}
 				return god;
 			}
@@ -664,9 +679,9 @@ namespace Code.Realm
 		/// ①境界兜底恢复（快照境界强制写回——防 custom_data 载入丢失后单位被当凡人重新觉醒/重新突破）；
 		/// ②异能恢复（快照有异能→写回；无→按基因静默定相，不播报，杜绝"播报觉醒但异能不符"）；
 		/// ③觉醒状态补全（境界≥1 即觉醒者）；
-		/// ④圣所派遣标记（死亡时据此识别"魂归圣所，可再次派遣"）。
+		/// ④来源标记（sanctuary=圣所派遣/死亡可回归；summon=回归池念诵召回/记录已出池）。
 		/// </summary>
-		private static void FinalizeSpawnedGod(Actor god, TrueGodData godData)
+		private static void FinalizeSpawnedGod(Actor god, TrueGodData godData, string bornSource)
 		{
 			if (god == null || !god.isAlive()) return;
 			try
@@ -720,14 +735,18 @@ namespace Code.Realm
 				// 3. 觉醒状态：境界≥1 即觉醒者（防被当凡人重新觉醒）
 				try { if (!CultivationData.IsAwakened(god)) CultivationData.SetAwakened(god, true); } catch { }
 
-				// 4. 圣所派遣标记：死亡自动回归判定
+				// 4. 来源标记（sanctuary=圣所派遣/死亡可回归；summon=回归池召回/记录已出池）
 				try
 				{
 					var data = Code.Data.ActorDataAccessor.GetData(god);
 					if (data != null)
 					{
 						Code.Data.CultivationData.EnsureCustomDataInitialized(god);
-						if (data.custom_data_string != null) data.custom_data_string["ds_sanctuary_born"] = "1";
+						if (data.custom_data_string != null)
+						{
+							string mark = string.IsNullOrEmpty(bornSource) ? "summon" : bornSource;
+							data.custom_data_string["ds_sanctuary_born"] = mark;
+						}
 					}
 				}
 				catch { }
@@ -750,7 +769,7 @@ namespace Code.Realm
 			catch (Exception) { return false; }
 		}
 
-		/// <summary>是否圣所派遣单位（带派遣标记：死亡自动回归提示；免被当凡人重新觉醒）</summary>
+		/// <summary>是否圣所派遣单位（仅 sanctuary 来源：死亡回归提示；免被当凡人重新觉醒）</summary>
 		public static bool IsSanctuaryBorn(Actor actor)
 		{
 			if (actor == null) return false;
@@ -759,7 +778,7 @@ namespace Code.Realm
 				var data = Code.Data.ActorDataAccessor.GetData(actor);
 				if (data == null || data.custom_data_string == null) return false;
 				string v = null;
-				return data.custom_data_string.TryGetValue("ds_sanctuary_born", out v) && v == "1";
+				return data.custom_data_string.TryGetValue("ds_sanctuary_born", out v) && v == "sanctuary";
 			}
 			catch { return false; }
 		}
