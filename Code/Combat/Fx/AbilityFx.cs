@@ -300,7 +300,8 @@ namespace Code.Combat.Fx
                 || id == "vfx_fastfire" || id == "vfx_ditheredfire";
         }
 
-        /// <summary>投射物：自 from 飞向 to（FaceVel 朝向 + 自旋），飞行 0.26s 恰好到点</summary>
+        /// <summary>投射物：自 from 飞向 to（FaceVel 朝向 + 自旋），飞行 0.26s 恰好到点。
+        /// v0.18.69：px=1/帧宽归一化（世界尺寸=Size 参数，不再随素材帧宽漂移）；起点从单位身体中部飞出。</summary>
         private static void SpawnProjectile(string id, Vector2 from, Vector2 to, float scale)
         {
             var frames = Load(id);
@@ -309,7 +310,10 @@ namespace Code.Combat.Fx
             float dist = Mathf.Max(0.5f, dir.magnitude);
             dir /= dist;
             float fly = 0.26f;
-            var p = CombatFxCore.Spawn(frames, from, 0.012f, fly, FxLayer.Top, 34);
+            float frameW = frames[0].rect.width;
+            if (frameW <= 0f) frameW = 128f;
+            float px = 1f / frameW;
+            var p = CombatFxCore.Spawn(frames, from + new Vector2(0f, 0.3f * scale), px, fly, FxLayer.Top, 34);
             if (p == null) return;
             p.Sized(0.45f * scale, 0.28f * scale)
              .Color(new Color(1f, 1f, 1f, 0.7f), new Color(1f, 1f, 1f, 0f))
@@ -335,7 +339,7 @@ namespace Code.Combat.Fx
                     if (tile != null)
                     {
                         var fx = EffectsLibrary.spawn(id, tile, null, null, 0f, -1f, -1f, null);
-                        if (fx != null) fx.prepare(pos, 0.5f * scale);
+                        if (fx != null) fx.prepare(pos + new Vector2(0f, 0.3f * scale), 0.5f * scale);
                     }
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[AbilityFx] 原版特效 " + id + ": " + dsEx.Message); }
@@ -344,11 +348,19 @@ namespace Code.Combat.Fx
             var frames = Load(id);
             if (frames == null || frames.Length == 0) return;
             Style(id, out float size, out float life);
-            var p = CombatFxCore.Spawn(frames, pos, 0.01f, life, layer, order);
+            // v0.18.69：尺寸按帧宽归一化——世界宽 = px×帧宽×s，素材帧宽 55~140px 差异巨大，
+            // 固定 px 会导致同 size 的特效世界尺寸漂移近一倍（"好多大小不对"根因）。
+            // px = 1/帧宽 → 世界宽恒等于 s（s 即期望世界宽，≈人类单位 0.55）。
+            float frameW = frames[0].rect.width;
+            if (frameW <= 0f) frameW = 128f;
+            float px = 1f / frameW;
+            // 特效中心对准单位身体中部（单位 current_position 是脚底，直接播会整体偏下/贴地）
+            Vector2 center = pos + new Vector2(0f, 0.3f * scale);
+            var p = CombatFxCore.Spawn(frames, center, px, life, layer, order);
             if (p == null) return;
             p.Delay = delay;
             p.FollowActor = follow;
-            p.FollowOffset = Vector2.zero;
+            p.FollowOffset = new Vector2(0f, 0.3f * scale);   // 跟随单位时同样上移，护盾/光环套在身体上
             float s = (strong ? size : size * 0.55f) * scale;
             p.Sized(s, s * 0.72f);
             if (strong)
