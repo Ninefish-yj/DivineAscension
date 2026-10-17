@@ -272,6 +272,14 @@ namespace Code.UI
         {
             if (!_visible) return;
 
+            // Android返回键(=Esc)关闭全屏界面
+            if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+            {
+                Hide();
+                Event.current.Use();
+                return;
+            }
+
             try
             {
                 // 更新星星动画时间

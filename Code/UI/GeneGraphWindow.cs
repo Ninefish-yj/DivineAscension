@@ -169,6 +169,15 @@ namespace Code.UI
 				return;
 			}
 
+			// Android返回键(=Esc)关闭
+			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+			{
+				if (_visible) MouseOverlayBlocker.ReleaseBlock();
+				_visible = false;
+				Event.current.Use();
+				return;
+			}
+
 			InitTextures();
 			EnsureStyles();   // GUI.skin 样式必须在 OnGUI 内惰性创建
 

@@ -126,6 +126,11 @@ public class AbilityCodexPanel : MonoBehaviour
 
 	private void Update()
 	{
+		// Android返回键(=Esc)关闭（优先于其他快捷键，避免返回键误触开关）
+		if (Input.GetKeyDown(KeyCode.Escape) && _visible)
+		{
+			_visible = false;
+		}
 		if ((Input.GetKey((KeyCode)304) || Input.GetKey((KeyCode)303)) && Input.GetKeyDown((KeyCode)108))
 		{
 			_visible = !_visible;
