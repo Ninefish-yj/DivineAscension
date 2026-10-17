@@ -24,7 +24,9 @@ namespace Code.Dimension
     public static class DimensionWorldManager
     {
         // ========== 存档布局（全部隔离在模组目录，不动玩家原存档） ==========
-        private static string SaveRoot => Path.Combine(Application.persistentDataPath, "GenCultivationDim");
+        // v0.18.84 统一目录：并入主模组 GeneCultivation/Dim（旧 GenCultivationDim 自动迁移）
+        private static string SaveRoot => Path.Combine(Application.persistentDataPath, "GeneCultivation", "Dim");
+        private static string OldSaveRoot => Path.Combine(Application.persistentDataPath, "GenCultivationDim");
         private static string MainBackupDir => Path.Combine(SaveRoot, "main_backup");
         private static string SpaceDir => Path.Combine(SaveRoot, "dim_space");
         private static string StateFile => Path.Combine(SaveRoot, "dim_state.txt");
@@ -54,6 +56,21 @@ namespace Code.Dimension
             if (_initialized) return;
             try
             {
+                // v0.18.84 旧目录迁移：GenCultivationDim → GeneCultivation/Dim（一次搬移，保留玩家维度存档）
+                try
+                {
+                    if (Directory.Exists(OldSaveRoot) && !Directory.Exists(SaveRoot))
+                    {
+                        Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "GeneCultivation"));
+                        Directory.Move(OldSaveRoot, SaveRoot);
+                        DSDebug.Verbose("[维度空间] 数据目录已迁移: GenCultivationDim → GeneCultivation/Dim");
+                    }
+                }
+                catch (Exception moveEx)
+                {
+                    DSDebug.Warning("[维度空间] 数据目录迁移失败: " + moveEx.Message);
+                }
+
                 if (!Directory.Exists(SaveRoot)) Directory.CreateDirectory(SaveRoot);
                 try
                 {
