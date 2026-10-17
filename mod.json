@@ -1,9 +1,9 @@
 {
   "name": "基因修炼",
   "author": "阿鱼要吃书",
-  "version": "0.18.99",
+  "version": "0.19.0",
   "GUID": "GeneCultivation",
-  "description": "异能库补全至304（兽化/命运/召唤/强化细分/水风雷满编）+召唤机制",
+  "description": "特效专属化：池素材意象清理+位置定位校准（地面贴地/普通贴体/护盾罩身）",
   "homepage": "https://github.com/Ninefish-yj/GeneCultivation",
   "repository": "https://github.com/Ninefish-yj/GeneCultivation.git",
   "tags": [

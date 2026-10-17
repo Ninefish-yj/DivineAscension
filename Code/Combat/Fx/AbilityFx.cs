@@ -37,7 +37,7 @@ namespace Code.Combat.Fx
             _tagPool[PrototypeTag.TimeSlow]   = new[] { "bub_mana", "bub_ice" };
             _tagPool[PrototypeTag.Stun]       = new[] { "vfx_impact", "vfx_smallhit", "magic_spark" };
             _tagPool[PrototypeTag.Crit]       = new[] { "vfx_bighit", "vfx_kabooms", "magic_spark4" };
-            _tagPool[PrototypeTag.Telekinesis]= new[] { "fx_plasma_trail", "vfx_constellation", "magic_spark4" };
+            _tagPool[PrototypeTag.Telekinesis]= new[] { "magic_bolt", "vfx_constellation", "magic_spark4" };
             _tagPool[PrototypeTag.Poison]     = new[] { "bub_toxic", "magic_smoke", "bub_green2" };
             _tagPool[PrototypeTag.Curse]      = new[] { "magic_darkbolt", "bub_purple", "bub_black" };
             _tagPool[PrototypeTag.Fear]       = new[] { "vfx_vortex", "bub_black" };
@@ -60,20 +60,20 @@ namespace Code.Combat.Fx
             _tagPool[PrototypeTag.Sleep]      = new[] { "bub_white", "bub_mana" };
             _tagPool[PrototypeTag.MultiShot]  = new[] { "magic_spark2", "magic_spark4", "spx_splatter" };
             _tagPool[PrototypeTag.HealAlly]   = new[] { "bub_green2", "bub_gold", "vfx_puffstars" };
-            _tagPool[PrototypeTag.Summon]     = new[] { "fx_teleport_singularity", "bub_mana", "magic_darkbolt" };
+            _tagPool[PrototypeTag.Summon]     = new[] { "vfx_vortex", "bub_mana", "magic_darkbolt" };
 
             // ---- 防守标签池 ----
             _tagPool[PrototypeTag.Shield]         = new[] { "shield_blue_loop", "shield_green_loop", "shield_bw_loop" };
-            _tagPool[PrototypeTag.Dodge]          = new[] { "fx_dodge", "art_windarc", "bub_white" };
+            _tagPool[PrototypeTag.Dodge]          = new[] { "art_windarc", "bub_white", "magic_spark2" };
             _tagPool[PrototypeTag.Illusion]       = new[] { "bub_rainbow", "bub_white" };
             _tagPool[PrototypeTag.Invisibility]   = new[] { "bub_white", "bub_rainbow", "bub_mana" };
-            _tagPool[PrototypeTag.Teleport]       = new[] { "fx_teleport_singularity", "fx_teleport_blue", "fx_teleport_red" };
+            _tagPool[PrototypeTag.Teleport]       = new[] { "art_burst", "vfx_vortex", "bub_mana" };
             _tagPool[PrototypeTag.Clone]          = new[] { "vfx_elecshield", "art_windarc" };
             _tagPool[PrototypeTag.Blessing]       = new[] { "bub_gold", "bub_white", "vfx_puffstars" };
             _tagPool[PrototypeTag.Regeneration]   = new[] { "bub_aqua", "bub_green1", "vfx_puffstars" };
             _tagPool[PrototypeTag.Magnetism]      = new[] { "vfx_elecshield", "magic_bolt", "magic_spark4" };
             _tagPool[PrototypeTag.Vibration]      = new[] { "vfx_smallhit", "vfx_impact" };
-            _tagPool[PrototypeTag.Sound]          = new[] { "fx_explosion_wave", "vfx_powerchords", "bub_white" };
+            _tagPool[PrototypeTag.Sound]          = new[] { "vfx_explosion", "vfx_powerchords", "bub_white" };
             _tagPool[PrototypeTag.Thorns]         = new[] { "magic_spark", "spx_splatter", "vfx_impact" };
             _tagPool[PrototypeTag.ElementResist]  = new[] { "shield_green_loop", "shield_blue_loop", "shield_bw_loop" };
             _tagPool[PrototypeTag.Cleanse]        = new[] { "bub_white", "bub_gold" };
@@ -419,6 +419,28 @@ namespace Code.Combat.Fx
                 || id == "vfx_fastfire" || id == "vfx_ditheredfire";
         }
 
+        /// <summary>地面类特效：贴地扩散（领域/气象/神兽威压/大爆炸/符环）。
+        /// 大众认知：领域、海啸、龙威、雷劫是"地/天级演出"，特效应贴地扩散而不是悬在单位头顶。</summary>
+        private static bool IsGroundFx(string id)
+        {
+            if (id == null) return false;
+            return id.Contains("vortex") || id.Contains("magma") || id.Contains("eldenring")
+                || id.Contains("constellation") || id.Contains("powerchords") || id.Contains("kabooms")
+                || id.Contains("explosion") || id == "vfx_bighit" || id == "vfx_tentacles"
+                || id == "vfx_worm" || id == "vfx_wheel" || id == "vfx_hyperspeed"
+                || id.StartsWith("art_rune");
+        }
+
+        /// <summary>特效纵向中心偏移（单位高≈0.33×scale）：
+        /// 地面类贴地（0.02）；护盾/符环类罩身体中心（0.17）；普通命中贴躯干（0.08，不再是"头顶"）。</summary>
+        private static float CenterOffset(string id, float scale)
+        {
+            if (id == null) return 0.08f * scale;
+            if (IsGroundFx(id)) return 0.02f * scale;
+            if (id.StartsWith("shield_")) return 0.17f * scale;
+            return 0.08f * scale;
+        }
+
         /// <summary>投射物：自 from 飞向 to（FaceVel 朝向 + 自旋），飞行 0.26s 恰好到点。
         /// v0.18.69：px=1/帧宽归一化（世界尺寸=Size 参数，不再随素材帧宽漂移）；起点从单位身体中部飞出。
         /// v0.18.92：投射体颜色跟随异能专属派生色。</summary>
@@ -464,8 +486,8 @@ namespace Code.Combat.Fx
                         var fx = EffectsLibrary.spawn(id, tile, null, null, 0f, -1f, -1f, null);
                         if (fx != null)
                         {
-                            // v0.18.91：特效中心对准单位身体中心（脚底+0.17×体型），原 0.3×scale 悬在头顶
-                            fx.prepare(pos + new Vector2(0f, 0.17f * scale), 1f);
+                            // v0.18.99：特效中心按定位贴地/贴体（原固定 0.17 悬在头顶）
+                            fx.prepare(pos + new Vector2(0f, CenterOffset(id, scale)), 1f);
                             // v0.18.91：帧宽归一化——目标世界宽 = 0.25×体型（人类 actor_scale≈0.25，
                             // 1 倍单位宽≈0.25 世界单位，与西幻奥术护盾 0.24 对齐）
                             CombatFxCore.ScaleFxToWorldWidth(fx, 0.25f * scale);
@@ -491,8 +513,8 @@ namespace Code.Combat.Fx
             if (frameW <= 0f) frameW = 128f;
             float px = 1f / frameW;
             // 特效中心对准单位身体中心（单位 current_position 是脚底；v0.18.91 由 0.3×scale 修正——
-            // 0.3 相对单位视觉高≈0.33 已到头顶，大众认知特效应作用在身体上）
-            Vector2 center = pos + new Vector2(0f, 0.17f * scale);
+            // v0.18.99 再校准：地面类贴地、普通命中贴躯干，不再悬在头顶）
+            Vector2 center = pos + new Vector2(0f, CenterOffset(id, scale));
             var p = CombatFxCore.Spawn(frames, center, px, life, layer, order);
             if (p == null) return;
             p.Delay = delay;
