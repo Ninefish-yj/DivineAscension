@@ -807,6 +807,11 @@ namespace Code.Realm
                 if (!actor.hasTrait("strong")) actor.addTrait("strong", false);
                 if (!actor.hasTrait("fast")) actor.addTrait("fast", false);
 
+                // 场域视觉（v0.18.68 补）：A级场域此前觉醒展开时无任何视觉，只有通知——
+                // 与"开辟专属异能场域"的异能逻辑不符。补播 5 秒跟随场域环 + 原版能量场域。
+                try { Code.Realm.DSSkillEffectManager.PlayEffect(actor, "ds_ability_domain_expand", null); }
+                catch (System.Exception dsEx) { DSDebug.Verbose($"场域特效异常: {dsEx.Message}"); }
+
                 // 场域内敌人减益（半径8格，使用空间分区查询 + 敌友判断）
                 int suppressed = 0;
                 try
