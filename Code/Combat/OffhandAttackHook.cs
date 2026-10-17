@@ -28,7 +28,8 @@ namespace Code.Combat
         {
             try
             {
-                if (pData == null || pData.initiator == null || pData.initiator.a == null) return;
+                // AttackData 是 struct，不能与 null 比较（CS0019），以 initiator 判空
+                if (pData.initiator == null || pData.initiator.a == null) return;
                 Actor attacker = pData.initiator.a;
                 if (!attacker.isAlive()) return;
                 if (pData.target == null) return;
@@ -50,7 +51,8 @@ namespace Code.Combat
         {
             try
             {
-                if (pData == null || pData.initiator == null || pData.initiator.a == null) return;
+                // AttackData 是 struct，不能与 null 比较（CS0019），以 initiator 判空
+                if (pData.initiator == null || pData.initiator.a == null) return;
                 Actor attacker = pData.initiator.a;
                 if (!attacker.isAlive()) return;
                 if (pData.target == null) return;
