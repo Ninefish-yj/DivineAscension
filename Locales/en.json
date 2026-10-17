@@ -2408,5 +2408,12 @@
   "god_proto_el_wood_08": "Ancient-Tree God",
   "god_proto_el_wood_08_west": "Ancient-Tree God",
   "god_proto_el_wood_09": "Myriad-Wood God",
-  "god_proto_el_wood_09_west": "Myriad-Wood God"
+  "god_proto_el_wood_09_west": "Myriad-Wood God",
+  "proto_total": "Total",
+  "proto_chromo_line": "Chromosome Affinity",
+  "proto_focus_btn": "Focus this Ability",
+  "proto_awaken_hint": "Ability not awakened yet. On awakening, the ability will be aligned by your vanilla genes.",
+  "proto_reset_btn": "Reset View",
+  "proto_nodes": "Nodes",
+  "proto_category_line": "Category: "
 }
