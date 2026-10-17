@@ -69,6 +69,10 @@ namespace Code.UI
         {
             try
             {
+                // v0.18.72：原版 showStatsRows 每次刷新都会调用（切单位/重开窗），
+                // 先清掉上一批自建统计行，避免模组信息（境界/异能/基因…）重复堆积几排
+                try { UnitOwnStatsRows.ClearOwnRows(); } catch { }
+
                 Actor actor = null;
                 try
                 {
