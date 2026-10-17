@@ -141,7 +141,9 @@ namespace Code.Realm.Prototype
                 if (fx != null)
                 {
                     float unitScale = Mathf.Max(0.3f, (float)actor.asset.actor_size / 13f);
-                    fx.prepare(pos, 0.5f * unitScale);
+                    fx.prepare(pos, 1f);
+                    // v0.18.90：帧宽归一化——目标世界宽 = 0.5×体型（≈1 倍单位宽）
+                    CombatFxCore.ScaleFxToWorldWidth(fx, 0.5f * unitScale);
                 }
             }
             catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 异能特效失败 " + fxId + ": " + dsEx.Message); }

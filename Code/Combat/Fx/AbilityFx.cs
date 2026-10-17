@@ -358,7 +358,13 @@ namespace Code.Combat.Fx
                     if (tile != null)
                     {
                         var fx = EffectsLibrary.spawn(id, tile, null, null, 0f, -1f, -1f, null);
-                        if (fx != null) fx.prepare(pos + new Vector2(0f, 0.3f * scale), 0.5f * scale);
+                        if (fx != null)
+                        {
+                            fx.prepare(pos + new Vector2(0f, 0.3f * scale), 1f);
+                            // v0.18.90：帧宽归一化——目标世界宽 = 0.5×体型（≈1 倍单位宽），
+                            // 原 0.5×scale 是精灵缩放倍数（世界宽=倍数×帧宽/PPU）导致特效巨大。
+                            CombatFxCore.ScaleFxToWorldWidth(fx, 0.5f * scale);
+                        }
                     }
                 }
                 catch (System.Exception dsEx) { Code.Core.DSDebug.Verbose("[AbilityFx] 原版特效 " + id + ": " + dsEx.Message); }

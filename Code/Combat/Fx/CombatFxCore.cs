@@ -141,6 +141,27 @@ namespace Code.Combat.Fx
 
         public static int Live => _live.Count;
 
+        /// <summary>原版 fx 特效帧宽归一化：把 EffectsLibrary 特效缩放到「目标世界宽」。
+        /// 原版 fx 素材帧宽大（256px+），EffectsLibrary 的 prepare(scale) 是精灵缩放倍数
+        /// （世界宽 = scale×帧宽/PPU），硬编码 0.5 倍依然有 1~2 世界单位宽（2~4 倍人类单位），
+        /// 是"护盾/爆炸为什么这么大"的根因。这里按 pixelsPerUnit 归一化：localScale = 目标宽×PPU/帧宽。
+        /// </summary>
+        public static void ScaleFxToWorldWidth(BaseEffect fx, float worldWidth)
+        {
+            if (fx == null || worldWidth <= 0f) return;
+            try
+            {
+                var sr = fx.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.sprite == null) return;
+                float frameW = sr.sprite.rect.width;
+                float ppu = sr.sprite.pixelsPerUnit;
+                if (frameW <= 0f || ppu <= 0f) return;
+                float ls = worldWidth * ppu / frameW;
+                fx.transform.localScale = new Vector3(ls, ls, 1f);
+            }
+            catch (System.Exception) { /* 原版特效缺帧时静默保持默认 */ }
+        }
+
         /// <summary>当前是否在屏幕内（世界坐标 → 屏幕，宽松边界）。</summary>
         public static bool OnScreen(Vector2 at, float pad)
         {

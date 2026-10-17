@@ -428,7 +428,12 @@ namespace Code.Realm
                                         {
                                             try {
                                                 var r = method.Invoke(null, new object[] { fx, stormTile, null, null, 2.0f, -1f, -1f, null });
-                                                if (r is BaseEffect be && be != null) be.prepare(stormPos, 0.5f);
+                                                if (r is BaseEffect be && be != null)
+                                                {
+                                                    be.prepare(stormPos, 1f);
+                                                    // v0.18.90：帧宽归一化——风暴特效目标世界宽 = 0.5（≈1 倍单位宽）
+                                                    Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(be, 0.5f);
+                                                }
                                             } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                                         }
                                         break;
