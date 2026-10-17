@@ -1,11 +1,13 @@
 // ============================================================
-// 异能树 · 数据与布局层（v0.18.0）
+// 异能树 · 数据与布局层（v0.18.93 辐射式）
 // 职责（单一职责）：
-//   1. 从 PrototypeRegistry（异能全量库）构建树节点模型：异能体系 → 12 大类 → 小类 → 异能
-//   2. 分层簇状布局：异能叶子横向排布 → 小类居中于其异能群 → 大类居中于小类群 → 根居中于大类群
-//   3. 输出内容包围盒（Bounds），供渲染层 Fit（聚焦）计算
+//   1. 从 PrototypeRegistry（异能全量库）构建树节点模型：异能体系 → 9 大类 → 小类 → 异能
+//   2. 辐射树布局：根"异能"居中，大类按系内异能数占比分配圆周扇区向四周辐射，
+//      小类在其系扇区内按异能数细分角，异能叶在小类中心角 ±30° 扇区内均布。
+//   3. 输出可见层包围盒（根+系+小类，异能叶默认折叠由渲染层展开），供 Fit 聚焦
 // 纯数据，不含任何 GUI 调用（UI 与业务/数据逻辑分离）。
-// 布局思想参考诸天神座 DaoTuLayout：分层 + 槽位 + 上层节点对下层子群居中。
+// 自适应：大类顺序动态枚举（新增大类自动追加扇区），异能增减只改变所属扇区角度，
+//         无需重新设计布局——拓展异能不用改树。
 // ============================================================
 
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace Code.UI
     public sealed class ProtoTreeLayout
     {
         public readonly List<ProtoTreeNode> Nodes = new List<ProtoTreeNode>();
-        public Rect Bounds;        // 内容包围盒（渲染层 Fit 用）
+        public Rect Bounds;        // 可见层内容包围盒（根+系+小类，渲染层 Fit 用；异能叶按需展开）
 
         private Dictionary<string, ProtoTreeNode> _byId;
 
@@ -49,141 +51,138 @@ namespace Code.UI
     }
 
     /// <summary>
-    /// 异能树布局构建器（单一职责：输入异能全量库 → 输出分层簇状布局）
+    /// 异能树辐射布局构建器（单一职责：输入异能全量库 → 输出辐射树布局）
     /// 纯数据计算，无 GUI / 无业务副作用。
     /// </summary>
     public static class ProtoTreeLayoutBuilder
     {
-        // 布局常量（参照诸天神座 DaoTuLayout 的量级，异能树更深更宽故槽位紧凑）
-        public const float LAYER_PITCH = 240f;    // 层间距（Y）
+        // ---- 辐射布局常量 ----
+        public const float RADIUS_CAT = 300f;    // 大类环半径（根中心起）
+        public const float RADIUS_SUB = 620f;    // 小类环半径
+        public const float RADIUS_LEAF = 900f;   // 异能叶环半径（展开扇区按叶数自适应，半径固定）
         public const float NODE_ROOT_W = 160f, NODE_ROOT_H = 54f;
-        public const float NODE_CAT_W = 180f, NODE_CAT_H = 46f;
-        public const float NODE_SUB_W = 110f, NODE_SUB_H = 40f;
+        public const float NODE_CAT_W = 190f, NODE_CAT_H = 46f;
+        public const float NODE_SUB_W = 120f, NODE_SUB_H = 40f;
         public const float NODE_LEAF_W = 172f, NODE_LEAF_H = 68f;
-        public const float LEAF_SLOT_X = 188f;    // 异能槽位宽（节点宽+间隔）
-        public const float GROUP_GAP = 160f;      // 不同小类异能群之间的最小间隔
-        public const float CAT_GAP = 240f;        // 不同大类之间的最小间隔
 
-        // 大类固定展示顺序（Categories 字典无序，用顺序数组保证树 UI 稳定；大众认知 10 系）
+        // 大类固定展示顺序（Categories 字典无序，用顺序数组保证树 UI 稳定；大众认知 9 系）。
+        // 数据中出现的新大类自动追加到末尾，无需改此数组——拓展异能/体系不用重新设计树。
         private static readonly string[] CategoryOrder =
         {
             "元素系", "自然系", "精神系", "时空系", "光明系", "黑暗系",
             "生命系", "死亡系", "强化系"
         };
 
-        /// <summary>构建全量异能树布局（根：异能 → 大类 → 小类 → 异能叶，根居中簇状分层树）</summary>
+        /// <summary>构建全量异能树布局（根居中，大类/小类按异能数占比分配扇区向四周辐射）</summary>
         public static ProtoTreeLayout Build()
         {
             var layout = new ProtoTreeLayout();
+            var registry = PrototypeRegistry.Categories;
 
-            // 层间距（Y）：根 → 大类 → 小类 → 异能叶
-            float rootY = 0f;
-            float catY = 1f * LAYER_PITCH;
-            float subY = 2f * LAYER_PITCH;
-            float leafY = 3f * LAYER_PITCH;
+            // ---- 阶段0：大类动态枚举（固定顺序优先，新系自动追加）----
+            var cats = new List<string>();
+            foreach (string c in CategoryOrder)
+                if (registry.ContainsKey(c)) cats.Add(c);
+            foreach (var kv in registry)
+                if (!cats.Contains(kv.Key)) cats.Add(kv.Key);
 
-            // ---- 阶段1：每系内部布局（异能叶横排、跨小类累积 X、小类居中于其群）----
-            // 记录每系：系名、系内总宽、小类群中心均值（相对系起点 0）、系内全部节点（相对坐标）
-            var catInfo = new List<CatLayoutInfo>();
-            foreach (string category in CategoryOrder)
+            // ---- 阶段1：按系/小类异能数计算扇区角并生成节点 ----
+            // 总异能数（角度分配权重）
+            int totalLeaves = 0;
+            foreach (string cat in cats)
             {
-                if (!PrototypeRegistry.Categories.TryGetValue(category, out var subs)) continue;
-
-                var catNodes = new List<ProtoTreeNode>();
-                var subCenters = new List<float>();
-                float groupX0 = 0f;   // ← 跨小类累积（旧版在此循环内重置导致全系异能重叠）
-
+                if (!registry.TryGetValue(cat, out var subs)) continue;
                 foreach (var kv in subs)
-                {
-                    string subName = kv.Key;
-                    var subList = kv.Value;
-                    if (subList == null || subList.Count == 0) continue;
-
-                    // 异能叶子（横排）
-                    var leafRefs = new List<ProtoTreeNode>();
-                    for (int i = 0; i < subList.Count; i++)
-                    {
-                        var def = subList[i];
-                        if (def == null) continue;
-                        var leaf = new ProtoTreeNode
-                        {
-                            Id = def.Id, Name = def.NameZh, Level = 2,
-                            ParentId = category + "::" + subName,
-                            X = groupX0 + i * LEAF_SLOT_X, Y = leafY,
-                            W = NODE_LEAF_W, H = NODE_LEAF_H,
-                            Def = def, Color = GetCategoryColor(category)
-                        };
-                        catNodes.Add(leaf);
-                        leafRefs.Add(leaf);
-                    }
-                    if (leafRefs.Count == 0) continue;
-                    float groupW = (leafRefs.Count - 1) * LEAF_SLOT_X + NODE_LEAF_W;
-                    float groupCenter = groupX0 + groupW / 2f;
-
-                    // 小类节点：居中于其异能群
-                    var subNode = new ProtoTreeNode
-                    {
-                        Id = category + "::" + subName, Name = subName, Level = 1,
-                        ParentId = category, X = groupCenter - NODE_SUB_W / 2f, Y = subY,
-                        W = NODE_SUB_W, H = NODE_SUB_H,
-                        Color = GetCategoryColor(category) * new Color(0.85f, 0.85f, 0.85f, 1f)
-                    };
-                    catNodes.Add(subNode);
-                    subCenters.Add(groupCenter);
-
-                    // 下一组异能群的起始 X（当前群末尾 + 群间隔）
-                    groupX0 = groupX0 + groupW + GROUP_GAP;
-                }
-                if (subCenters.Count == 0) continue;
-
-                // 系内总宽 = 最后一个异能群右端（去掉尾间隔）
-                float catWidth = groupX0 - GROUP_GAP;
-                float catCenterOfs = 0f;
-                foreach (float c in subCenters) catCenterOfs += c;
-                catCenterOfs /= subCenters.Count;
-                catInfo.Add(new CatLayoutInfo(category, catWidth, catCenterOfs, catNodes));
+                    if (kv.Value != null) totalLeaves += kv.Value.Count;
+            }
+            if (totalLeaves == 0)
+            {
+                layout.Bounds = new Rect(-100f, -100f, 200f, 200f);
+                return layout;
             }
 
-            // ---- 阶段2：横向排系 + 根节点居中 ----
-            // 总宽 = Σ(系宽 + 系间隔)；以根中心 x=0 整体居中
-            float totalW = 0f;
-            foreach (var ci in catInfo) totalW += ci.Width + CAT_GAP;
-            totalW -= CAT_GAP;
-            float cursorX = -totalW / 2f;
-
-            // 根节点（异能）：顶部居中
+            // 根节点（异能）：世界中心
             var root = new ProtoTreeNode
             {
                 Id = ROOT_ID, Name = "异能", Level = -1, ParentId = null,
-                X = -NODE_ROOT_W / 2f, Y = rootY,
+                X = -NODE_ROOT_W / 2f, Y = -NODE_ROOT_H / 2f,
                 W = NODE_ROOT_W, H = NODE_ROOT_H,
                 Color = new Color(0.95f, 0.85f, 0.55f, 1f)
             };
             layout.Nodes.Add(root);
 
-            foreach (var ci in catInfo)
+            float ang = 0f;   // 当前扇区起始角（度，0=正右，顺时针；绘制时 -90° 偏移使顶部为起点）
+            foreach (string cat in cats)
             {
-                // 大类节点：居中于其小类群（相对坐标 + 系起点）
+                if (!registry.TryGetValue(cat, out var subs)) continue;
+                int catLeaves = 0;
+                foreach (var kv in subs)
+                    if (kv.Value != null) catLeaves += kv.Value.Count;
+                if (catLeaves == 0) continue;
+
+                float catSector = catLeaves / (float)totalLeaves * 360f;
+                float catCenter = ang + catSector / 2f;
+
+                // 大类节点（环 RADIUS_CAT）
                 var catNode = new ProtoTreeNode
                 {
-                    Id = ci.Name, Name = ci.Name, Level = 0, ParentId = ROOT_ID,
-                    X = cursorX + ci.CenterOfs - NODE_CAT_W / 2f, Y = catY,
+                    Id = cat, Name = cat, Level = 0, ParentId = ROOT_ID,
                     W = NODE_CAT_W, H = NODE_CAT_H,
-                    Color = GetCategoryColor(ci.Name)
+                    Color = GetCategoryColor(cat)
                 };
+                SetRadialPos(catNode, catCenter, RADIUS_CAT);
                 layout.Nodes.Add(catNode);
-                foreach (var n in ci.Nodes)
+
+                // 系内小类：在系扇区内按小类异能数占比细分角
+                float subAng = ang;
+                foreach (var kv in subs)
                 {
-                    n.X += cursorX;   // 系内节点平移到该系起点
-                    layout.Nodes.Add(n);
+                    var subList = kv.Value;
+                    if (subList == null || subList.Count == 0) continue;
+                    string subName = kv.Key;
+                    float subSector = subList.Count / (float)catLeaves * catSector;
+                    float subCenter = subAng + subSector / 2f;
+
+                    // 小类节点（环 RADIUS_SUB）
+                    var subNode = new ProtoTreeNode
+                    {
+                        Id = cat + "::" + subName, Name = subName, Level = 1, ParentId = cat,
+                        W = NODE_SUB_W, H = NODE_SUB_H,
+                        Color = GetCategoryColor(cat) * new Color(0.85f, 0.85f, 0.85f, 1f)
+                    };
+                    SetRadialPos(subNode, subCenter, RADIUS_SUB);
+                    layout.Nodes.Add(subNode);
+
+                    // 异能叶：以小类中心角为中心、扇区随叶数自适应（叶数×12°，夹 50°~110°）均布
+                    // （环 RADIUS_LEAF；默认折叠由渲染层按展开状态显隐，坐标始终预计算——
+                    //   新增异能自动并入扇区，无需重新设计布局）
+                    float leafSpan = Mathf.Clamp(subList.Count * 12f, 50f, 110f);
+                    for (int i = 0; i < subList.Count; i++)
+                    {
+                        var def = subList[i];
+                        if (def == null) continue;
+                        float leafAngle = subCenter - leafSpan / 2f
+                                        + (i + 0.5f) / subList.Count * leafSpan;
+                        var leaf = new ProtoTreeNode
+                        {
+                            Id = def.Id, Name = def.NameZh, Level = 2,
+                            ParentId = cat + "::" + subName,
+                            W = NODE_LEAF_W, H = NODE_LEAF_H,
+                            Def = def, Color = GetCategoryColor(cat)
+                        };
+                        SetRadialPos(leaf, leafAngle, RADIUS_LEAF);
+                        layout.Nodes.Add(leaf);
+                    }
+                    subAng += subSector;
                 }
-                cursorX += ci.Width + CAT_GAP;
+                ang += catSector;
             }
 
-            // 内容包围盒（含边预留）
+            // ---- 阶段2：可见层包围盒（根+系+小类；异能叶折叠不计入，避免全树 Fit 过小）----
             float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
             foreach (var n in layout.Nodes)
             {
+                if (n.Level == 2) continue;   // 异能叶默认折叠
                 x0 = Mathf.Min(x0, n.X); y0 = Mathf.Min(y0, n.Y);
                 x1 = Mathf.Max(x1, n.X + n.W); y1 = Mathf.Max(y1, n.Y + n.H);
             }
@@ -192,22 +191,18 @@ namespace Code.UI
             return layout;
         }
 
+        /// <summary>把节点中心放到极坐标 (radius, angleDeg) 处（左上角对齐）</summary>
+        private static void SetRadialPos(ProtoTreeNode node, float angleDeg, float radius)
+        {
+            float rad = (angleDeg - 90f) * Mathf.Deg2Rad;   // -90°：顶部为 0 起点，顺时针绕
+            float cx = Mathf.Cos(rad) * radius;
+            float cy = Mathf.Sin(rad) * radius;
+            node.X = cx - node.W / 2f;
+            node.Y = cy - node.H / 2f;
+        }
+
         /// <summary>根节点 ID（异能）</summary>
         public const string ROOT_ID = "__root__";
-
-        /// <summary>每系的布局信息（阶段1 → 阶段2 传递）</summary>
-        private sealed class CatLayoutInfo
-        {
-            public readonly string Name;
-            public readonly float Width;        // 系内异能群总宽（相对坐标跨度）
-            public readonly float CenterOfs;    // 小类群中心均值（相对系起点 0）
-            public readonly List<ProtoTreeNode> Nodes;
-
-            public CatLayoutInfo(string name, float width, float centerOfs, List<ProtoTreeNode> nodes)
-            {
-                Name = name; Width = width; CenterOfs = centerOfs; Nodes = nodes;
-            }
-        }
 
         /// <summary>大类主色（元素系红蓝系 / 自然系绿 / 精神系紫 / 时空系青 / 光明金 / 黑暗紫灰 / 生命翠 / 死亡灰绿 / 强化赤橙 / 星辰蓝紫 / 血族血红 / 神话金橙）</summary>
         public static Color GetCategoryColor(string category)
@@ -223,6 +218,9 @@ namespace Code.UI
                 case "生命系": return new Color(0.40f, 0.85f, 0.55f, 1f);   // 生命翠
                 case "死亡系": return new Color(0.60f, 0.60f, 0.55f, 1f);   // 死寂灰绿
                 case "强化系": return new Color(0.88f, 0.55f, 0.40f, 1f);   // 强化赤橙（力量感）
+                case "星辰系": return new Color(0.50f, 0.55f, 0.90f, 1f);   // 星辰蓝紫
+                case "血族系": return new Color(0.80f, 0.25f, 0.30f, 1f);   // 血族血红
+                case "神话系": return new Color(0.90f, 0.72f, 0.35f, 1f);   // 神话金橙
                 default: return new Color(0.6f, 0.6f, 0.6f, 1f);
             }
         }

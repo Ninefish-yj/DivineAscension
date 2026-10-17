@@ -46,6 +46,8 @@ namespace Code.UI
         private Vector2 _panStart;
         private string _focusNodeId;   // 点击选中的节点（详情卡；默认=当前异能）
         private bool _pathMode = true; // 仅路径模式：只显示当前异能所在链路（异能叶→小类→系→根）
+        // v0.18.93 辐射树：当前展开异能叶的小类 id 集合（全树模式下点击小类展开/收起其异能叶）
+        private readonly HashSet<string> _expandedSubs = new HashSet<string>();
         // 仅路径模式：链上节点紧凑重排（根在下→叶在上，居中堆叠，连线自然变短）
         private string _chainCacheKey;                               // 缓存对应的 activeId
         private readonly Dictionary<string, Vector2> _chainPos = new Dictionary<string, Vector2>();
@@ -473,15 +475,11 @@ namespace Code.UI
                 return;
             }
 
-            // 左键点击节点 → 选中详情
+            // 左键点击节点 → 选中详情；小类节点（辐射树 v0.18.93）→ 展开/收起异能叶
             if (e.type == EventType.MouseDown && e.button == 0)
             {
-                var hit = HitTestNode(e.mousePosition);
-                if (hit != null)
-                {
-                    _focusNodeId = hit.Id;
-                    e.Use();
-                }
+                OnNodeTap(HitTestNode(e.mousePosition));
+                if (e.type == EventType.MouseDown) e.Use();
             }
         }
 
@@ -530,7 +528,7 @@ namespace Code.UI
                 if (t0.phase == TouchPhase.Began)
                 {
                     var hit = HitTestNode(p);
-                    if (hit != null) { _focusNodeId = hit.Id; _draging = false; }
+                    if (hit != null) { OnNodeTap(hit); _draging = false; }
                     else { _draging = true; _dragStart = p; _panStart = _pan; }
                 }
                 else if (t0.phase == TouchPhase.Moved && _draging)
@@ -562,10 +560,71 @@ namespace Code.UI
             string activeId = GetActiveProtoId();
             foreach (var node in _layout.Nodes)
             {
+                if (!IsNodeVisible(node)) continue;   // v0.18.93：折叠的异能叶不可点
                 Rect r = NodeScreenRect(node, activeId);
                 if (r.Contains(screenPos)) return node;
             }
             return null;
+        }
+
+        // ============================================================
+        // v0.18.93 辐射树 · 展开交互（单一职责：小类展开/收起 + 可见性过滤 + Fit 包围盒）
+        // ============================================================
+
+        /// <summary>节点是否可见：根/系/小类恒可见；异能叶仅在其所属小类展开时可见（路径模式链上叶恒显）</summary>
+        private bool IsNodeVisible(ProtoTreeNode node)
+        {
+            if (node.Level != 2) return true;
+            string activeId = GetActiveProtoId();
+            if (_pathMode && !string.IsNullOrEmpty(activeId) && IsOnActiveChain(node, activeId)) return true;
+            return _expandedSubs.Contains(node.ParentId);
+        }
+
+        /// <summary>节点点击：小类切换异能叶展开/收起（展开 Fit 局部，收起 Fit 可见层）；其余节点仅选中详情</summary>
+        private void OnNodeTap(ProtoTreeNode hit)
+        {
+            if (hit == null) return;
+            _focusNodeId = hit.Id;
+            if (hit.Level == 1)
+            {
+                if (_expandedSubs.Contains(hit.Id))
+                {
+                    _expandedSubs.Remove(hit.Id);
+                    FitToRect(ComputeVisibleBounds());
+                }
+                else
+                {
+                    _expandedSubs.Add(hit.Id);
+                    FitToRect(ComputeSubLocalBounds(hit.Id));
+                }
+            }
+        }
+
+        /// <summary>可见层包围盒（根+系+小类+已展开小类的异能叶）</summary>
+        private Rect ComputeVisibleBounds()
+        {
+            if (_layout == null || _layout.Nodes.Count == 0) return _layout != null ? _layout.Bounds : new Rect(0, 0, 1, 1);
+            float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+            foreach (var n in _layout.Nodes)
+            {
+                if (!IsNodeVisible(n)) continue;
+                x0 = Mathf.Min(x0, n.X); y0 = Mathf.Min(y0, n.Y);
+                x1 = Mathf.Max(x1, n.X + n.W); y1 = Mathf.Max(y1, n.Y + n.H);
+            }
+            return Rect.MinMaxRect(x0 - 40f, y0 - 40f, x1 + 40f, y1 + 40f);
+        }
+
+        /// <summary>指定小类局部包围盒（小类节点 + 其全部异能叶）</summary>
+        private Rect ComputeSubLocalBounds(string subId)
+        {
+            float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+            foreach (var n in _layout.Nodes)
+            {
+                if (n.Id != subId && !(n.Level == 2 && n.ParentId == subId)) continue;
+                x0 = Mathf.Min(x0, n.X); y0 = Mathf.Min(y0, n.Y);
+                x1 = Mathf.Max(x1, n.X + n.W); y1 = Mathf.Max(y1, n.Y + n.H);
+            }
+            return x0 > 1e9f ? ComputeVisibleBounds() : Rect.MinMaxRect(x0 - 60f, y0 - 60f, x1 + 60f, y1 + 60f);
         }
 
         /// <summary>当前选中单位已觉醒的异能 Id（无则 null）</summary>
@@ -601,6 +660,7 @@ namespace Code.UI
 
             foreach (var node in _layout.Nodes)
             {
+                if (!IsNodeVisible(node)) continue;   // v0.18.93：折叠的异能叶不画连线
                 if (string.IsNullOrEmpty(node.ParentId)) continue;   // 根节点无父，不画入线
                 if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上入边
                 var parent = _layout.GetNode(node.ParentId);
@@ -732,6 +792,7 @@ namespace Code.UI
 
             foreach (var node in _layout.Nodes)
             {
+                if (!IsNodeVisible(node)) continue;   // v0.18.93：折叠的异能叶不画
                 if (_pathMode && !string.IsNullOrEmpty(activeId) && !IsOnActiveChain(node, activeId)) continue;   // 仅路径模式：只画链上节点
                 Rect r = NodeScreenRect(node, activeId);
                 if (r.xMax < -20f || r.yMax < -20f || r.x > area.width + 20f || r.y > area.height + 20f) continue; // 视口裁剪
