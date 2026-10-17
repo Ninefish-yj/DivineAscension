@@ -142,7 +142,7 @@ namespace Code.Combat.Fx
             // 人类单位显示宽≈0.55 世界单位（v0.18.67 复核原版 actor_size/current_scale 后整体压低）：
             // 护盾/光环≈单位宽、投射≈0.7 单位、爆炸类扩散到≈1.3 倍单位。
             if (id == null) { size = 0.45f; life = 0.6f; return; }
-            if (id.StartsWith("shield_")) { size = 0.6f; life = 1.4f; return; }      // 护盾环绕≈单位宽
+            if (id.StartsWith("shield_")) { size = 0.6f; life = 2.0f; return; }      // 护盾环绕≈单位宽，持续2秒有"套盾"存在感
             if (id.StartsWith("bub_")) { size = 0.4f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
                 || id == "magic_dust" || id == "vfx_impact" || id == "vfx_smallhit"
@@ -245,7 +245,12 @@ namespace Code.Combat.Fx
                 }
                 else if (!string.IsNullOrEmpty(mainFx))
                 {
-                    SpawnFx(mainFx, pos, FxLayer.Top, 35, true, scale, 0f, null);
+                    // v0.18.69：护盾环绕类特效必须绑定单位跟随——护盾是"套在身上环绕"，
+                    // 不是命中贴图。攻击路径也跟随被攻击目标（给目标上盾的视觉），
+                    // 防守路径（else 大分支）已 follow:self。
+                    bool shieldFx = mainFx.StartsWith("shield_");
+                    SpawnFx(mainFx, pos, FxLayer.Top, shieldFx ? 25 : 35, true, scale, 0f,
+                        shieldFx ? anchor : null);
                 }
                 // 命中冲击环（扩张淡出，贴合目标体型）
                 var ring = CombatFxCore.Spawn(CombatFxArt.Rings[0], pos, 0.09f, 0.35f, FxLayer.Top, 30);
