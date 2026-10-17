@@ -141,15 +141,15 @@ namespace Code.Combat.Fx
             // 尺寸基准：特效世界宽 = Px(0.01)×帧宽(128)×size ≈ 1.28×size。
             // 人类单位显示宽≈0.55 世界单位（v0.18.67 复核原版 actor_size/current_scale 后整体压低）：
             // 护盾/光环≈单位宽、投射≈0.7 单位、爆炸类扩散到≈1.3 倍单位。
-            if (id == null) { size = 0.45f; life = 0.6f; return; }
+            if (id == null) { size = 0.4f; life = 0.6f; return; }
             if (id.StartsWith("shield_")) { size = 0.6f; life = 2.0f; return; }      // 护盾环绕≈单位宽，持续2秒有"套盾"存在感
-            if (id.StartsWith("bub_")) { size = 0.4f; life = 0.55f; return; }
+            if (id.StartsWith("bub_")) { size = 0.35f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
                 || id == "magic_dust" || id == "vfx_impact" || id == "vfx_smallhit"
                 || id == "vfx_ditheredfire" || id == "vfx_fastfire" || id == "vfx_bloodimpact"
                 || id == "vfx_puffstars" || id == "vfx_elecshield" || id == "vfx_anima")
             {
-                size = 0.5f; life = 0.5f; return;
+                size = 0.38f; life = 0.5f; return;
             }
             if (id.StartsWith("vfx_") && (id.Contains("explosion") || id.Contains("kabooms")
                 || id.Contains("bighit") || id.Contains("charged") || id.Contains("magma")
@@ -157,9 +157,9 @@ namespace Code.Combat.Fx
                 || id.Contains("wheel") || id.Contains("eldenring") || id.Contains("constellation")
                 || id.Contains("powerchords") || id.Contains("hyperspeed")))
             {
-                size = 0.75f; life = 0.75f; return;                                   // 爆发类扩散≈1.3倍单位
+                size = 0.5f; life = 0.75f; return;                                    // 命中爆发类≈单位宽，不遮地图人物
             }
-            size = 0.55f; life = 0.6f;
+            size = 0.4f; life = 0.6f;
         }
 
         // ============================================================
@@ -252,12 +252,12 @@ namespace Code.Combat.Fx
                     SpawnFx(mainFx, pos, FxLayer.Top, shieldFx ? 25 : 35, true, scale, 0f,
                         shieldFx ? anchor : null);
                 }
-                // 命中冲击环（扩张淡出，贴合目标体型）
+                // 命中冲击环（扩张淡出，贴合目标体型，细环不遮视野）
                 var ring = CombatFxCore.Spawn(CombatFxArt.Rings[0], pos, 0.09f, 0.35f, FxLayer.Top, 30);
                 if (ring != null)
                 {
                     ring.Color(new Color(1f, 0.95f, 0.75f, 0.85f), new Color(1f, 0.85f, 0.55f, 0f))
-                        .Sized(0.35f * scale, 1.5f * scale);
+                        .Sized(0.3f * scale, 1.1f * scale);
                 }
             }
             else
@@ -311,8 +311,8 @@ namespace Code.Combat.Fx
             float fly = 0.26f;
             var p = CombatFxCore.Spawn(frames, from, 0.012f, fly, FxLayer.Top, 34);
             if (p == null) return;
-            p.Sized(0.5f * scale, 0.3f * scale)
-             .Color(new Color(1f, 1f, 1f, 0.95f), new Color(1f, 1f, 1f, 0f))
+            p.Sized(0.45f * scale, 0.28f * scale)
+             .Color(new Color(1f, 1f, 1f, 0.7f), new Color(1f, 1f, 1f, 0f))
              .Moving(dir * (dist / fly), 0f, 0.5f, 0f);
             p.FaceVel = true;
             p.Spin = UnityEngine.Random.Range(4f, 8f);
@@ -353,7 +353,9 @@ namespace Code.Combat.Fx
             p.Sized(s, s * 0.72f);
             if (strong)
             {
-                p.Color(new Color(1f, 1f, 1f, 0.92f), new Color(1f, 1f, 1f, 0f));
+                // v0.18.69：非半透明命中特效不透明度从 0.92 压到 0.55——
+                // 大块不透明会遮住地图和人物，半透明既能看清特效又不挡视野
+                p.Color(new Color(1f, 1f, 1f, 0.55f), new Color(1f, 1f, 1f, 0f));
             }
             else
             {
