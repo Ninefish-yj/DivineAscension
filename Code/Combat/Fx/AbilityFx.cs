@@ -161,7 +161,7 @@ namespace Code.Combat.Fx
                 if (id == "art_rune") { size = 0.5f; life = 0.7f; return; }
                 size = 0.42f; life = 0.55f; return;
             }
-            if (id.StartsWith("shield_")) { size = 0.42f; life = 2.0f; return; }      // v0.18.71 护盾压到0.42（≈单位宽75%）只罩躯干，不整个罩住人
+            if (id.StartsWith("shield_")) { size = 0.28f; life = 2.0f; return; }      // v0.18.75 对齐西幻奥术护盾：半单位宽（0.28/0.55≈51%）只罩躯干
             if (id.StartsWith("bub_")) { size = 0.35f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
                 || id == "magic_dust" || id == "vfx_impact" || id == "vfx_smallhit"
@@ -383,7 +383,13 @@ namespace Code.Combat.Fx
             float s = (strong ? size : size * 0.55f) * scale;
             p.Sized(s, s * 0.72f);
             // v0.18.72：竖素材（96x128 护盾）默认高=1.33×宽会显大——护盾压扁到 0.75（高≈0.32，只罩躯干）
-            if (id.StartsWith("shield_")) p.YRatio = 0.75f;
+            // v0.18.75：对齐西幻奥术护盾 alpha≈0.03 的"淡罩"观感——护盾透明度压到 0.2（淡可见不遮人）
+            if (id.StartsWith("shield_"))
+            {
+                p.YRatio = 0.8f;
+                p.Color(new Color(1f, 1f, 1f, 0.2f), new Color(1f, 1f, 1f, 0.05f));
+                return;
+            }
             if (strong)
             {
                 // v0.18.69：非半透明命中特效不透明度从 0.92 压到 0.55——
