@@ -1549,6 +1549,9 @@ public class AbilityCodexPanel : MonoBehaviour
 
 	private void DrawTabDivine()
 	{
+		// v0.18.95 滚动修复：维度页此前是唯一未包 ScrollView 的页签（内容超窗截断、手机无法滚轮/触屏滑动），
+		// 与其它页签统一包 BeginScrollView（共享 _genericScroll，支持滚轮与触屏拖动）
+		_genericScroll = GUILayout.BeginScrollView(_genericScroll, (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height(ContentHeight) });
 		DSGUIHelper.Title(UILocalization.Get("dimension_title"), _currentFontSize + 2);
 		DSGUIHelper.Separator();
 		int num = 0;
@@ -1631,17 +1634,25 @@ public class AbilityCodexPanel : MonoBehaviour
 				{
 					try
 					{
-						Code.Realm.TrueGodManager.TrueGodData dsGod = g;
-						Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod);
-						if (dsPlaced != null && dsPlaced.isAlive())
+						// v0.18.95 防重复：世界已有同名存活单位 → 取消放置（记录保留，由玩家手动删除）
+						if (Code.Realm.TrueGodManager.IsNamePresentInWorld(g.Name))
 						{
-							// v0.18.52 移动语义：放置成功=移动完成，删除圣所记录（该单位只存在于新存档）
-							Code.Realm.TrueGodManager.DeleteTrueGod(dsGod.Name, dsGod.OriginWorld);
-							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+							Code.Core.DSNotificationManager.NotifyInfo("世界中已存在「" + g.Name + "」，已取消放置（防止重复单位）");
 						}
 						else
 						{
-							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+							Code.Realm.TrueGodManager.TrueGodData dsGod = g;
+							Actor dsPlaced = Code.Realm.TrueGodManager.SpawnTrueGod(dsGod);
+							if (dsPlaced != null && dsPlaced.isAlive())
+							{
+								// v0.18.52 移动语义：放置成功=移动完成，删除圣所记录（该单位只存在于新存档）
+								Code.Realm.TrueGodManager.DeleteTrueGod(dsGod.Name, dsGod.OriginWorld);
+								Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+							}
+							else
+							{
+								Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+							}
 						}
 					}
 					catch (System.Exception dsSpawnEx)
@@ -1678,16 +1689,24 @@ public class AbilityCodexPanel : MonoBehaviour
 				{
 					try
 					{
-						Actor reinSpawned = Code.Realm.TrueGodManager.SpawnTrueGod(g);
-						if (reinSpawned != null && reinSpawned.isAlive())
+						// v0.18.95 防重复：世界已有同名存活单位 → 取消召回（记录保留，由玩家手动删除）
+						if (Code.Realm.TrueGodManager.IsNamePresentInWorld(g.Name))
 						{
-							// 回归即出池：召回成功删除回归池记录（席位轮换）
-							Code.Realm.TrueGodManager.DeleteReincarnation(g.Name, g.OriginWorld);
-							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+							Code.Core.DSNotificationManager.NotifyInfo("世界中已存在「" + g.Name + "」，已取消召回（防止重复单位）");
 						}
 						else
 						{
-							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+							Actor reinSpawned = Code.Realm.TrueGodManager.SpawnTrueGod(g);
+							if (reinSpawned != null && reinSpawned.isAlive())
+							{
+								// 回归即出池：召回成功删除回归池记录（席位轮换）
+								Code.Realm.TrueGodManager.DeleteReincarnation(g.Name, g.OriginWorld);
+								Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+							}
+							else
+							{
+								Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+							}
 						}
 					}
 					catch (System.Exception reinEx)
@@ -1707,6 +1726,7 @@ public class AbilityCodexPanel : MonoBehaviour
 		{
 			GUILayout.Label(UILocalization.Get("none_label"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)pantheonRowH) });
 		}
+		GUILayout.EndScrollView();
 	}
 
 	private int[] GetTierDist()

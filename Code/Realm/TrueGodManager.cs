@@ -414,8 +414,35 @@ namespace Code.Realm
 		}
 
 		/// <summary>
+		/// 世界内是否已有同名存活单位（v0.18.95 防降临重复）。
+		/// 根因：回归池降临/圣所放置只向世界生成新实例、不查重，导致同一角色在世界出现双份，
+		/// 原版收藏夹（遍历 World.world.units 无去重）随之重复显示。
+		/// 语义：单位名即角色身份标识——同名存活单位已存在时，不再重复生成。
+		/// </summary>
+		public static bool IsNamePresentInWorld(string name)
+		{
+			if (string.IsNullOrEmpty(name) || World.world == null) return false;
+			try
+			{
+				var alive = World.world.units?.units_only_alive;
+				if (alive == null) return false;
+				foreach (var actor in alive)
+				{
+					if (actor == null || !actor.isAlive()) continue;
+					if (actor.getName() == name) return true;
+				}
+			}
+			catch (Exception e)
+			{
+				DSDebug.Verbose($"[GeneCultivation] 世界同名检查异常: {e.Message}");
+			}
+			return false;
+		}
+
+		/// <summary>
 		/// 召回回归池单位到当前世界（新世界开局注入）。
 		/// ③ 回归即出池：召回成功即从池中删除（一次性），席位空出给新突破者。
+		/// v0.18.95 防重复：候选若已在世间（同名存活），仅出池流转席位，不再生成新实例。
 		/// </summary>
 		public static int ReturnGodToWorld(int count)
 		{
@@ -434,6 +461,13 @@ namespace Code.Realm
 					var candidates = pool.OrderBy(g => Guid.NewGuid()).Take(count).ToList();
 					foreach (var god in candidates)
 					{
+						// v0.18.95 已在世间：视为已回归，出池流转席位（避免世界出现同名双份）
+						if (IsNamePresentInWorld(god.Name))
+						{
+							pool.Remove(god);
+							DSDebug.Verbose($"[GeneCultivation] 神系回归：{god.Name} 已在世间（同名存活），出池流转席位");
+							continue;
+						}
 						Actor spawned = SpawnTrueGod(god);
 						if (spawned != null && spawned.isAlive())
 						{
@@ -455,6 +489,7 @@ namespace Code.Realm
 		/// <summary>
 		/// 神名念诵召唤（v0.18.86）：随机召回回归池 1 位神到当前世界（回归即出池，席位轮换）。
 		/// 返回召回单位名称（无神可召/失败返回 null）。
+		/// v0.18.95 防重复：跳过世界内已同名存活的神；若池内全部神均已降临世间，清池流转席位。
 		/// </summary>
 		public static string TrySummonRandomGod()
 		{
@@ -467,8 +502,16 @@ namespace Code.Realm
 					var pool = _globalData.Reincarnations;
 					if (pool.Count == 0) return null;
 
-					// 随机取 1 位（打乱，避免永远召唤同一批）
-					var god = pool.OrderBy(g => Guid.NewGuid()).First();
+					// 随机取 1 位（打乱，避免永远召唤同一批）；跳过世界已同名的（防重复降临）
+					var god = pool.OrderBy(g => Guid.NewGuid()).FirstOrDefault(g => !IsNamePresentInWorld(g.Name));
+					if (god == null)
+					{
+						// 池内所有神均已降临世间：清池流转席位（避免"永远召不出"的僵尸记录）
+						foreach (var stale in pool.ToList()) pool.Remove(stale);
+						SaveGlobalData();
+						DSDebug.Verbose("[GeneCultivation] 神名念诵：回归池所有神均已在世间，池清空流转席位");
+						return null;
+					}
 					Actor spawned = SpawnTrueGod(god);
 					if (spawned != null && spawned.isAlive())
 					{
@@ -489,6 +532,7 @@ namespace Code.Realm
 		/// 指定神名召唤（v0.18.87）：按名称精确匹配回归池单位并召回（回归即出池，席位轮换）。
 		/// 念诵神名语义：优先按 DivineName（神名）匹配，未命中则回退按 Name（单位名）匹配。
 		/// 返回召回的 TrueGodData（失败返回 null）。
+		/// v0.18.95 防重复：目标神已在世间（同名存活）→ 视为已回归，出池流转席位，不再重复降临。
 		/// </summary>
 		public static TrueGodData TrySummonGodByName(string divineName)
 		{
@@ -508,6 +552,15 @@ namespace Code.Realm
 						!string.IsNullOrEmpty(g.DivineNameWest) && g.DivineNameWest == divineName)
 						?? pool.FirstOrDefault(g => g.Name == divineName);
 					if (god == null) return null;
+
+					// v0.18.95 已在世间：出池流转席位（神已降临，无需重复生成）
+					if (IsNamePresentInWorld(god.Name))
+					{
+						pool.Remove(god);
+						SaveGlobalData();
+						DSDebug.Verbose($"[GeneCultivation] 神名念诵：{god.Name} 已在世间，出池流转席位（不重复降临）");
+						return null;
+					}
 
 					Actor spawned = SpawnTrueGod(god);
 					if (spawned != null && spawned.isAlive())

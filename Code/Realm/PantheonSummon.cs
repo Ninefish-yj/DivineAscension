@@ -46,6 +46,8 @@ namespace Code.Realm
                 string invokedGodName = TryPickPoolGodName();
                 if (invokedGodName != null)
                 {
+                    // v0.18.95 神已在世间：记录由 TrueGodManager 出池流转席位，念诵无应（不重复降临）
+                    bool alreadyPresent = TrueGodManager.IsNamePresentInWorld(invokedGodName);
                     TrueGodManager.TrueGodData returned = TrueGodManager.TrySummonGodByName(invokedGodName);
                     if (returned != null)
                     {
@@ -53,6 +55,10 @@ namespace Code.Realm
                             ? returned.DivineName
                             : returned.Name;
                         DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名「" + divineTitle + "」，上代强者「" + returned.Name + "」应召降临！");
+                    }
+                    else if (alreadyPresent)
+                    {
+                        DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名「" + invokedGodName + "」，但该神已在世间，无需重复降临。");
                     }
                 }
             }
