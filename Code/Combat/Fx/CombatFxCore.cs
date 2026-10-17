@@ -277,9 +277,9 @@ namespace Code.Combat.Fx
             p.Cine = layer == FxLayer.Cine;
             p.Px = px;
             p.Alive = true;
-            // v0.18.72：素材宽高比（取首帧像素 rect，无需 bounds 开销）
-            p.Aspect = (frames != null && frames.Length > 0 && frames[0] != null)
-                ? frames[0].rect.height / Mathf.Max(0.0001f, frames[0].rect.width) : 1f;
+            // v0.18.72：素材宽高比（取 sprite 像素 rect，无需 bounds 开销）
+            p.Aspect = (sprite != null)
+                ? sprite.rect.height / Mathf.Max(0.0001f, sprite.rect.width) : 1f;
             p.YRatio = p.Aspect;
             if (_normal != null) p.R.sharedMaterial = _normal;
             switch (layer)
