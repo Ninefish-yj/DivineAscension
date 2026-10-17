@@ -2415,5 +2415,7 @@
   "proto_awaken_hint": "Ability not awakened yet. On awakening, the ability will be aligned by your vanilla genes.",
   "proto_reset_btn": "Reset View",
   "proto_nodes": "Nodes",
-  "proto_category_line": "Category: "
+  "proto_category_line": "Category: ",
+  "event_apotheosis_descend": "Apotheosis Descends",
+  "event_apotheosis_descend_desc": "An apotheosis is born; heaven and earth bestow it, and all ability users are bathed in energy."
 }

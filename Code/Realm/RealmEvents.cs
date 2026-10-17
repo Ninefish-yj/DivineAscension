@@ -72,14 +72,16 @@ namespace Code.Realm
                 IsGlobal = false
             });
 
-            // 11阶 登神级 - 超神级降临（全局事件）
+            // 11阶 登神级 - 登神降临（全局事件）。
+            // v0.18.68：原名误用 event_superbody_descend（"超神级降临"，超神级是13阶名），
+            // 11阶登神级事件改用自己的"登神降临"文案，与阶位语义对齐。
             RegisterEvent(new RealmEvent
             {
                 RequiredTier = 11,
                 Type = RealmEventType.DivineRevelation,
                 Id = "ds_event_sanctuary_global",
-                Name = UILocalization.Get("event_superbody_descend"),
-                Description = UILocalization.Get("event_superbody_descend_desc"),
+                Name = UILocalization.Get("event_apotheosis_descend"),
+                Description = UILocalization.Get("event_apotheosis_descend_desc"),
                 Damage = 0f,
                 EnergyBonus = 50000f,
                 IsGlobal = true
