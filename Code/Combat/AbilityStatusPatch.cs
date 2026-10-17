@@ -232,6 +232,19 @@ namespace Code.Combat
                     }
                 }
 
+                // 抗击退锁定（v0.18.80）：能量/登神单位攻击命中 → 目标短定身 0.3s。
+                // 原版无物理击退（knockback 字段未应用），"打飞"实为目标受伤后位移/逃跑导致仇恨断；
+                // 轻定身让目标站桩挨打不远离，仇恨稳定（已有 stunned 状态时不覆盖，避免顶掉击退异能标签 2.5s）
+                if (from != null && __instance != null && __instance.isAlive())
+                {
+                    bool isLockAttacker = Code.Combat.VirtualWeaponSystem.HasVirtualEnergyWeapon(from)
+                        || CultivationData.IsAscended(from);
+                    if (isLockAttacker && !__instance.hasStatus("stunned"))
+                    {
+                        try { Code.Core.DSStatusManager.SafeAddStatusEffect(__instance, "stunned", 0.3f, false); } catch (System.Exception dsLockEx) { Code.Core.DSDebug.Verbose("[GeneCultivation] 抗击退锁定异常: " + dsLockEx.Message); }
+                    }
+                }
+
                 // 战斗表现层（v0.18.47）：伤害命中演出——登神单位出手时触发星形/火花/碎片/音效，大伤害追加击停
                 // （仅登神攻击者触发，避免原版生物互殴被演出刷屏）
                 try
