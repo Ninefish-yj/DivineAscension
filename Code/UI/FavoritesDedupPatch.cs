@@ -23,6 +23,11 @@ namespace Code.UI
     [HarmonyPatch]
     public static class FavoritesDedupPatch
     {
+        public static bool Prepare()
+        {
+            return AccessTools.Method(typeof(WindowFavorites), "getObjects", System.Type.EmptyTypes) != null;
+        }
+
         public static MethodBase TargetMethod()
         {
             return AccessTools.Method(typeof(WindowFavorites), "getObjects", System.Type.EmptyTypes);
