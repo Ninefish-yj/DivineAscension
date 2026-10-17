@@ -30,6 +30,10 @@ namespace Code.Combat
 
         // 投射物是否已初始化
         private static bool _projectileInitialized = false;
+        /// <summary>投射物帧是否就绪（v0.18.76：原版 drawProjectiles 会取 frames[0]，
+        /// 贴图缺失→空帧数组→每帧 ArgumentOutOfRangeException 刷屏。注册后立即预加载校验，
+        /// 未就绪则 TrySpawnProjectile 回退到延迟特效，绝不发射空帧投射物）。</summary>
+        private static bool _projectileFramesReady = false;
 
         private static bool _initialized = false;
 
@@ -91,7 +95,13 @@ namespace Code.Combat
                 asset.look_at_target = true;
                 AssetManager.projectiles.add(asset);
 
-                DSDebug.Verbose("[虚拟武器] 能量刃投射物注册成功");
+                // v0.18.76：预加载投射物帧（原版 Projectile.spawn 懒加载 effects/projectiles/<texture>，
+                // 加载失败 frames 为空数组 → QuantumSpriteLibrary.drawProjectiles 取 frames[0] 越界刷屏）。
+                // 这里主动加载并赋给 asset.frames，保证渲染链路拿到真实帧。
+                var projFrames = SpriteTextureLoader.getSpriteList("effects/projectiles/" + asset.texture);
+                asset.frames = projFrames;
+                _projectileFramesReady = projFrames != null && projFrames.Length > 0;
+                DSDebug.Verbose($"[虚拟武器] 能量刃投射物注册成功 frames={(_projectileFramesReady ? projFrames.Length.ToString() : "缺失")}");
             }
             catch (Exception e)
             {
@@ -200,6 +210,8 @@ namespace Code.Combat
             try
             {
                 if (World.world == null || World.world.projectiles == null) return false;
+                // v0.18.76：帧缺失时绝不发射（避免空帧投射物进渲染队列刷 ArgumentOutOfRange），走回退延迟特效
+                if (!_projectileFramesReady) return false;
 
                 // 获取发射位置和目标位置
                 Vector2 launchPos = attacker.current_position;
