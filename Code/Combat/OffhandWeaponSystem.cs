@@ -195,6 +195,48 @@ namespace Code.Combat
         }
 
         /// <summary>
+        /// 副手独立开火（v0.18.79 双持发射）
+        /// 由 CombatActionLibrary.attackRangeAction 的 Postfix 调用：主手远程攻击发射后，
+        /// 副手能量刃单位补发一发能量刃投射物（发射点偏移身侧，视觉双持开火）。
+        /// 伤害语义：副手投射物 = 真实第二发武器攻击（能量刃附魔），命中正常走原版伤害+特质加成。
+        /// 直接调 ProjectileManager.spawn（public，不经过 attackRangeAction → 无递归）。
+        /// </summary>
+        public static void TryFireOffhand(Actor attacker, BaseSimObject target)
+        {
+            try
+            {
+                if (attacker == null || target == null || !attacker.isAlive()) return;
+                if (GetOffhandAssetId(attacker) != OFFHAND_ENERGY_BLADE_ID) return;
+                if (World.world == null || World.world.projectiles == null) return;
+
+                // 发射点：单位身侧偏移（垂直目标方向 0.8 格，模拟副手持刃位置）
+                Vector2 toTarget = (Vector2)target.current_position - (Vector2)attacker.current_position;
+                Vector2 side = toTarget.sqrMagnitude > 0.0001f
+                    ? Vector2.Perpendicular(toTarget.normalized) * 0.8f
+                    : new Vector2(0.8f, 0f);
+
+                Vector3 launchPos = new Vector3(
+                    attacker.current_position.x + side.x,
+                    attacker.current_position.y + side.y,
+                    0f);
+                Vector2 targetPos = new Vector2(target.current_position.x, target.current_position.y);
+                float targetZ = 0f;
+                if (target.isInAir()) targetZ = target.getHeight();
+                float startPosZ = 0.6f * attacker.getScaleMod();
+
+                World.world.projectiles.spawn(
+                    attacker, target, VirtualWeaponSystem.ENERGY_BLADE_PROJECTILE_ID,
+                    launchPos, targetPos, targetZ, startPosZ, null, attacker.kingdom);
+
+                DSDebug.Verbose($"[副手武器] {attacker.getName()} 副手能量刃独立开火");
+            }
+            catch (Exception e)
+            {
+                DSDebug.Verbose("[副手武器] TryFireOffhand 异常: " + e.Message);
+            }
+        }
+
+        /// <summary>
         /// 每帧清理（由 AnnualTickDriver 调用）：每 60 秒全遍历世界单位，
         /// 清除已死亡/已移除单位的副手条目（变更即存）。
         /// </summary>

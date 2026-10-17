@@ -25,8 +25,8 @@ namespace Code.Combat
         // 虚拟武器攻击特效ID
         private const string VIRTUAL_WEAPON_EFFECT_ID = "ds_ability_energy_blade";
 
-        // 能量刃投射物ID
-        private const string ENERGY_BLADE_PROJECTILE_ID = "ds_energy_blade_projectile";
+        // 能量刃投射物ID（public：副手武器系统双持开火复用同一投射物）
+        public const string ENERGY_BLADE_PROJECTILE_ID = "ds_energy_blade_projectile";
         // 能量刃真实武器ID（v0.18.77：虚拟武器真实化——注册为原版武器资产，觉醒单位真实装备，AI自动发射投射物）
         private const string WEAPON_ITEM_ID = "ds_energy_blade";
 
