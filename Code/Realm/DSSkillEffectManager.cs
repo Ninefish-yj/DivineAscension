@@ -50,27 +50,27 @@ namespace Code.Realm
             {
                 // 6阶 能量弹：投射物特效
                 { "ds_ability_energy_bolt",
-                    new SkillEffectConfig("skill/energy_bolt", 0.35f, 0.05f, followActor: true, offsetY: 0.2f) },
+                    new SkillEffectConfig("skill/energy_bolt", 0.35f, 0.05f, followActor: true, offsetY: 0.17f) },
 
                 // 7阶 能量刃（虚拟武器）：跟随施法者
                 { "ds_ability_energy_blade",
-                    new SkillEffectConfig("skill/energy_blade", 0.4f, 0.08f, followActor: true, offsetY: 0.2f) },
+                    new SkillEffectConfig("skill/energy_blade", 0.4f, 0.08f, followActor: true, offsetY: 0.17f) },
 
                 // 7阶 治疗之光：跟随施法者，持续3秒
                 { "ds_ability_healing_light",
-                    new SkillEffectConfig("skill/healing_light", 0.4f, 0.1f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
+                    new SkillEffectConfig("skill/healing_light", 0.4f, 0.1f, followActor: true, offsetY: 0.17f, duration: 3.0f) },
 
                 // 8阶 能量风暴：范围伤害
                 { "ds_ability_energy_storm",
-                    new SkillEffectConfig("skill/energy_storm", 8f, 0.12f, followActor: true, offsetY: 0.3f, duration: 3.0f) },
+                    new SkillEffectConfig("skill/energy_storm", 8f, 0.12f, followActor: true, offsetY: 0.17f, duration: 3.0f) },
 
                 // 9阶 领域展开：跟随施法者，持续5秒
                 { "ds_ability_domain_expand",
-                    new SkillEffectConfig("skill/domain_expand", 5f, 0.15f, followActor: true, offsetY: 0.3f, duration: 5.0f) },
+                    new SkillEffectConfig("skill/domain_expand", 5f, 0.15f, followActor: true, offsetY: 0.17f, duration: 5.0f) },
 
                 // 9阶 法则压制：目标位置
                 { "ds_ability_law_suppress",
-                    new SkillEffectConfig("skill/law_suppress", 2.5f, 0.1f, followActor: true, offsetY: 0.3f, duration: 2.0f) },
+                    new SkillEffectConfig("skill/law_suppress", 2.5f, 0.1f, followActor: true, offsetY: 0.17f, duration: 2.0f) },
 
                 // 10阶 本源汲取：目标位置
                 { "ds_ability_origin_drain",
@@ -82,7 +82,7 @@ namespace Code.Realm
 
                 // 11阶 圣域：跟随施法者，持续10秒
                 { "ds_ability_sanctuary",
-                    new SkillEffectConfig("skill/sanctuary", 1.5f, 0.12f, followActor: true, offsetY: 0.3f, duration: 10.0f) },
+                    new SkillEffectConfig("skill/sanctuary", 1.5f, 0.12f, followActor: true, offsetY: 0.17f, duration: 10.0f) },
 
                 // 12阶 维度打击：大范围
                 { "ds_ability_dimensional_strike",
@@ -301,7 +301,7 @@ namespace Code.Realm
 
                 // 非跟随技能播在目标/AOE 中心脚底，中心上移对准目标身体（同 AbilityFx 位置修复）
                 Vector2 spawnPos = position;
-                if (!config.FollowActor) spawnPos.y += 0.3f;
+                if (!config.FollowActor) spawnPos.y += 0.17f;
 
                 // 清理对象池残留
                 effect.transform.localScale = Vector3.one;
@@ -376,13 +376,15 @@ namespace Code.Realm
                     WorldTile tile = World.world.GetTileSimple((int)pos.x, (int)pos.y);
                     if (tile != null)
                     {
+                        pos.y += 0.17f; // v0.18.91：原版特效对准单位身体中心（脚底+0.17）
                         var fx = EffectsLibrary.spawn(cfg.EffectName, tile, null, null, 0f, -1f, -1f, null);
                         if (fx != null)
                         {
                             fx.prepare(pos, 1f); // 先置标准缩放，下面帧宽归一化
-                            // v0.18.90：cfg.Scale 语义=「人类单位宽倍数」，目标世界宽 = Scale×0.55（人类显示宽≈0.55 世界单位）。
-                            // 修复原硬编码 0.5 倍仍达 1~2 世界单位（2~4 倍人类宽）的"护盾/爆炸特效过大"根因。
-                            Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(fx, cfg.Scale * 0.55f);
+                            // v0.18.91：cfg.Scale 语义=「人类单位宽倍数」，目标世界宽 = Scale×0.25
+                            // （人类 actor_scale≈0.25→1 倍单位宽≈0.25 世界单位，与西幻奥术护盾 0.24 对齐；
+                            //  原 0.55 基准仍达 2.2 倍单位宽，是"原版 fx 特效偏大"残余根因）
+                            Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(fx, cfg.Scale * 0.25f);
                         }
                     }
                 }

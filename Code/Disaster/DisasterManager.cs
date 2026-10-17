@@ -253,8 +253,9 @@ namespace Code.Disaster
                 else
                 {
                     effect.prepare(position, 1f);
-                    // v0.18.90：帧宽归一化——scale 语义=「人类单位宽倍数」，目标世界宽 = scale×0.55
-                    Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(effect, scale * 0.55f);
+                    // v0.18.91：帧宽归一化——scale 语义=「人类单位宽倍数」，目标世界宽 = scale×0.25
+                    // （人类 actor_scale≈0.25，1 倍单位宽≈0.25 世界单位；原 0.55 基准仍达 2.2 倍）
+                    Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(effect, scale * 0.25f);
                 }
             }
             catch (System.Exception e)

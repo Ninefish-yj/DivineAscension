@@ -430,9 +430,10 @@ namespace Code.Realm
                                                 var r = method.Invoke(null, new object[] { fx, stormTile, null, null, 2.0f, -1f, -1f, null });
                                                 if (r is BaseEffect be && be != null)
                                                 {
-                                                    be.prepare(stormPos, 1f);
-                                                    // v0.18.90：帧宽归一化——风暴特效目标世界宽 = 0.5（≈1 倍单位宽）
-                                                    Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(be, 0.5f);
+                                                    // v0.18.91：风暴中心对准身体高度（目标脚底+0.17）
+                                                    be.prepare(new Vector2(stormPos.x, stormPos.y + 0.17f), 1f);
+                                                    // v0.18.91：帧宽归一化——目标世界宽 = 0.25（1 倍单位宽）
+                                                    Code.Combat.Fx.CombatFxCore.ScaleFxToWorldWidth(be, 0.25f);
                                                 }
                                             } catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] ExecuteAbilityEffect 异常: " + dsEx.Message); }
                                         }
