@@ -142,7 +142,7 @@ namespace Code.Combat.Fx
             // 人类单位显示宽≈0.55 世界单位（v0.18.67 复核原版 actor_size/current_scale 后整体压低）：
             // 护盾/光环≈单位宽、投射≈0.7 单位、爆炸类扩散到≈1.3 倍单位。
             if (id == null) { size = 0.4f; life = 0.6f; return; }
-            if (id.StartsWith("shield_")) { size = 0.6f; life = 2.0f; return; }      // 护盾环绕≈单位宽，持续2秒有"套盾"存在感
+            if (id.StartsWith("shield_")) { size = 0.42f; life = 2.0f; return; }      // v0.18.71 护盾压到0.42（≈单位宽75%）只罩躯干，不整个罩住人
             if (id.StartsWith("bub_")) { size = 0.35f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
                 || id == "magic_dust" || id == "vfx_impact" || id == "vfx_smallhit"
