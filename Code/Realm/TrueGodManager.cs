@@ -321,6 +321,7 @@ namespace Code.Realm
 
 		/// <summary>
 		/// 删除单个真神（按名称+起源世界）
+		/// v0.18.85：联动清理——圣所与神系回归池的同一单位一并删除（彻底清除跨存档数据，不留残留）
 		/// </summary>
 		public static void DeleteTrueGod(string name, string originWorld)
 		{
@@ -332,8 +333,14 @@ namespace Code.Realm
 				{
 					_globalData.TrueGods.Remove(god);
 					_globalData.TotalTrueGods = _globalData.TrueGods.Count;
-					SaveGlobalData();
 				}
+				// 联动清理回归池同名记录（自动传承池——删除圣所单位时一并清除，避免文件夹残留）
+				var rein = _globalData.Reincarnations.FirstOrDefault(g => g.Name == name && g.OriginWorld == originWorld);
+				if (rein != null)
+				{
+					_globalData.Reincarnations.Remove(rein);
+				}
+				SaveGlobalData();
 			}
 		}
 

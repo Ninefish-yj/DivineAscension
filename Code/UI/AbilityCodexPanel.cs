@@ -1661,6 +1661,52 @@ public class AbilityCodexPanel : MonoBehaviour
 		{
 			GUILayout.Label(UILocalization.Get("none_label"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)pantheonRowH) });
 		}
+
+		// v0.18.85 神系回归池（自动传承）子区块：展示池内单位，可召回/删除
+		// （删除圣所单位时已联动清理回归池同名记录，此处提供独立管理入口）
+		DSGUIHelper.ColoredLabel("神系回归池（自动传承）", DSUITheme.AccentGold, _currentFontSize, (FontStyle)0);
+		List<Code.Realm.TrueGodManager.TrueGodData> reinList = Code.Realm.TrueGodManager.GetReincarnations();
+		if (reinList != null && reinList.Count > 0)
+		{
+			GUILayout.BeginVertical((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.ExpandWidth(true) });
+			foreach (Code.Realm.TrueGodManager.TrueGodData g in reinList)
+			{
+				GUILayout.BeginHorizontal((GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)pantheonRowH) });
+				string reinTierName = g.RealmTier >= 13 ? "超神" : (g.RealmTier == 12 ? "真神" : "登神");
+				GUILayout.Label(string.Format("{0}  |  {1}  |  T{2}", g.Name, reinTierName, g.RealmTier), GUILayout.Width(200));
+				if (GUILayout.Button(UILocalization.Get("codex_spawn"), GUILayout.Width(60), GUILayout.Height(pantheonRowH)))
+				{
+					try
+					{
+						Actor reinSpawned = Code.Realm.TrueGodManager.SpawnTrueGod(g);
+						if (reinSpawned != null && reinSpawned.isAlive())
+						{
+							// 回归即出池：召回成功删除回归池记录（席位轮换）
+							Code.Realm.TrueGodManager.DeleteReincarnation(g.Name, g.OriginWorld);
+							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_ok"));
+						}
+						else
+						{
+							Code.Core.DSNotificationManager.NotifyInfo(Code.UI.UILocalization.Get("codex_spawn_fail"));
+						}
+					}
+					catch (System.Exception reinEx)
+					{
+						Code.Core.DSDebug.Warning("[GeneCultivation] 回归池召回异常: " + reinEx.Message);
+					}
+				}
+				if (GUILayout.Button(UILocalization.Get("codex_delete"), GUILayout.Width(60), GUILayout.Height(pantheonRowH)))
+				{
+					Code.Realm.TrueGodManager.DeleteReincarnation(g.Name, g.OriginWorld);
+				}
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+		}
+		else
+		{
+			GUILayout.Label(UILocalization.Get("none_label"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)pantheonRowH) });
+		}
 	}
 
 	private int[] GetTierDist()
