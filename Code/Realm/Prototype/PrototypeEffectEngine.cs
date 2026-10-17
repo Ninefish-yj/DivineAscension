@@ -275,6 +275,15 @@ namespace Code.Realm.Prototype
                 case PrototypeTag.HealAlly:
                     TryHealAllies(attacker, target, damage, def);
                     break;
+                case PrototypeTag.Summon:
+                    // v0.18.99 召唤：攻击概率在目标旁召唤灵兽助战（短暂作战后消散）
+                    float summonChance = Mathf.Min(def.MaxChance, def.BaseChance + GeneAffinityBridge.GetTagAffinity(attacker, tag) * 0.05f);
+                    if (UnityEngine.Random.value < summonChance)
+                    {
+                        var proto = PrototypeRegistry.GetForActor(attacker);
+                        if (proto != null) SummonEngine.TrySummon(attacker, target, proto);
+                    }
+                    break;
                 default:
                     break;
             }

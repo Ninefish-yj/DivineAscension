@@ -660,7 +660,8 @@ namespace Code.Realm
             { Code.Realm.Prototype.PrototypeTag.Magnetism, 3 }, // 磁力 → 力场（磁场帝君）
             { Code.Realm.Prototype.PrototypeTag.Sound, 3 },     // 声波 → 力场（音爆冲击）
             { Code.Realm.Prototype.PrototypeTag.Teleport, 3 },  // 瞬移 → 力场（空间之神）
-            { Code.Realm.Prototype.PrototypeTag.Cleanse, 2 }    // 净化 → 能量（圣光/光辉）
+            { Code.Realm.Prototype.PrototypeTag.Cleanse, 2 },   // 净化 → 能量（圣光/光辉）
+            { Code.Realm.Prototype.PrototypeTag.Summon, 5 }     // 召唤 → 精神（万灵/御兽之神，v0.18.99）
         };
 
         /// <summary>按异能标签选神名组（v0.18.32：神名与异能相符；无异能/无匹配则回退基因染色体）</summary>

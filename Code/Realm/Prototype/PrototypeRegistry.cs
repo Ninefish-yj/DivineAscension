@@ -67,6 +67,10 @@ namespace Code.Realm.Prototype
             RegisterAll(PrototypeData_Machine.List);
             RegisterAll(PrototypeData_Blood.List);
             RegisterAll(PrototypeData_Myth.List);
+            RegisterAll(PrototypeData_Beast.List);      // v0.18.99 兽化系
+            RegisterAll(PrototypeData_Fate.List);      // v0.18.99 命运系
+            RegisterAll(PrototypeData_Summon.List);    // v0.18.99 召唤系
+            RegisterAll(PrototypeData_Fortify.List);   // v0.18.99 强化系细分
         }
 
         private static void RegisterAll(List<PrototypeDef> list)

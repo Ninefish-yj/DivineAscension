@@ -60,6 +60,7 @@ namespace Code.Combat.Fx
             _tagPool[PrototypeTag.Sleep]      = new[] { "bub_white", "bub_mana" };
             _tagPool[PrototypeTag.MultiShot]  = new[] { "magic_spark2", "magic_spark4", "spx_splatter" };
             _tagPool[PrototypeTag.HealAlly]   = new[] { "bub_green2", "bub_gold", "vfx_puffstars" };
+            _tagPool[PrototypeTag.Summon]     = new[] { "fx_teleport_singularity", "bub_mana", "magic_darkbolt" };
 
             // ---- 防守标签池 ----
             _tagPool[PrototypeTag.Shield]         = new[] { "shield_blue_loop", "shield_green_loop", "shield_bw_loop" };
@@ -104,6 +105,19 @@ namespace Code.Combat.Fx
             _family["自然系/毒"] = "bub_toxic";         _family["自然系/气象"] = "vfx_elecshield";
             _family["自然系/藤蔓"] = "art_woodvine";    _family["自然系/野兽"] = "spx_shock";
             _family["强化系/体魄"] = "vfx_bighit";      _family["强化系/能量"] = "bub_gold";
+            // ---- v0.18.99 新体系家族氛围 ----
+            _family["兽化系/猛兽"] = "vfx_bighit";      _family["兽化系/飞禽"] = "art_windarc";
+            _family["兽化系/爬行"] = "art_woodvine";    _family["兽化系/虫豸"] = "spx_shock";
+            _family["兽化系/神兽"] = "vfx_powerchords";
+            _family["命运系/命运"] = "vfx_constellation"; _family["命运系/因果"] = "vfx_constellation";
+            _family["命运系/气运"] = "bub_gold";         _family["命运系/灾厄"] = "vfx_vortex";
+            _family["召唤系/兽灵"] = "vfx_puffstars";    _family["召唤系/元素"] = "magic_lightning";
+            _family["召唤系/亡灵"] = "art_soulflame";    _family["召唤系/幻影"] = "bub_rainbow";
+            _family["召唤系/虫潮"] = "spx_shock";        _family["召唤系/巨兽"] = "vfx_bighit";
+            _family["召唤系/圣灵"] = "bub_gold";         _family["召唤系/龙裔"] = "vfx_powerchords";
+            _family["召唤系/百鬼"] = "vfx_vortex";
+            _family["强化系/力量"] = "vfx_bighit";       _family["强化系/速度"] = "fx_plasma_trail";
+            _family["强化系/防御"] = "shield_blue_loop"; _family["强化系/变形"] = "art_windarc";
         }
 
         // ============================================================
@@ -256,6 +270,7 @@ namespace Code.Combat.Fx
                 case PrototypeTag.ElementResist: return new Color(0.5f, 0.7f, 1f);    // 蓝
                 case PrototypeTag.Cleanse:       return new Color(0.75f, 0.9f, 0.95f);// 淡青白
                 case PrototypeTag.Teleport:      return new Color(0.6f, 0.45f, 0.9f); // 紫
+                case PrototypeTag.Summon:        return new Color(0.55f, 0.4f, 0.85f);// 召唤紫（v0.18.99）
                 default:                         return new Color(1f, 1f, 1f);
             }
         }

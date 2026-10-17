@@ -52,6 +52,7 @@ namespace Code.Realm.Prototype
                 case PrototypeTag.Sleep: return "fx_cast_top_blue";          // 睡眠：蓝光
                 case PrototypeTag.MultiShot: return "fx_slash";              // 多重：连续斩
                 case PrototypeTag.HealAlly: return "fx_cast_ground_green";   // 群疗：绿光
+                case PrototypeTag.Summon: return "fx_teleport_singularity";  // 召唤：扭曲传送门（v0.18.99）
                 default: return null;
             }
         }

@@ -83,7 +83,9 @@ namespace Code.Realm.Prototype
         Clone,        // 分身：受击免伤+回敬伤害
         ElementResist,// 元素抗性：受击减伤（元素/异常攻击抗性）
         Cleanse,      // 净化：受击概率清除自身负面状态
-        Teleport      // 瞬移：受击概率遁走免伤（闪避最高）
+        Teleport,     // 瞬移：受击概率遁走免伤（闪避最高）
+        // ---- 大众认知补充标签（v0.18.99 兽化/命运/召唤/强化体系扩展）----
+        Summon        // 召唤：攻击概率召唤灵兽助战（短暂作战后消散，召唤物攻击当前目标）
     }
 
     /// <summary>标签静态定义（数据驱动）</summary>
@@ -165,6 +167,8 @@ namespace Code.Realm.Prototype
             Add(new PrototypeTagDef(PrototypeTag.ElementResist, "元素抗性", "受击减伤（元素/异常攻击抗性）", false, 1f, 1f, 0.2f));
             Add(new PrototypeTagDef(PrototypeTag.Cleanse, "净化", "受击概率清除自身负面状态", false, 0.30f, 0.70f, 1f));
             Add(new PrototypeTagDef(PrototypeTag.Teleport, "瞬移", "受击概率遁走免伤（闪避最高）", false, 1f, 1f, 0.35f));
+            // ---- 大众认知补充标签（v0.18.99 召唤体系）----
+            Add(new PrototypeTagDef(PrototypeTag.Summon, "召唤", "攻击概率召唤灵兽助战（短暂作战后消散）", true, 0.25f, 0.60f, 1f));
         }
 
         private static void Add(PrototypeTagDef def)

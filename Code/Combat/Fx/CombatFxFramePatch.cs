@@ -44,10 +44,12 @@ namespace Code.Combat.Fx
                     : Mathf.Min(Time.deltaTime, 0.05f) * CombatFxCinema.Rate;
                 CombatFxCore.Update(dt, CombatFxCinema.Dt);
                 CombatFxDirector.Tick();
+                Code.Realm.Prototype.SummonEngine.Tick(dt);   // v0.18.99 召唤物生命周期（与演出同节奏）
                 // 世界已销毁/存档切换：懒清理演出（新世界由业务重新触发演出）
                 if (World.world == null && CombatFxCore.Live > 0)
                 {
                     CombatFxDirector.ClearAll();
+                    Code.Realm.Prototype.SummonEngine.ClearAll();
                 }
             }
             catch (Exception e)

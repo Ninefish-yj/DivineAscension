@@ -1,9 +1,9 @@
 {
   "name": "基因修炼",
   "author": "阿鱼要吃书",
-  "version": "0.18.98",
+  "version": "0.18.99",
   "GUID": "GeneCultivation",
-  "description": "WorldBox 0.51 现代异能修炼模组",
+  "description": "异能库补全至304（兽化/命运/召唤/强化细分/水风雷满编）+召唤机制",
   "homepage": "https://github.com/Ninefish-yj/GeneCultivation",
   "repository": "https://github.com/Ninefish-yj/GeneCultivation.git",
   "tags": [
