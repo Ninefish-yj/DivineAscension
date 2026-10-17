@@ -129,7 +129,7 @@ namespace Code.Realm
         {
             if (actor == null || !actor.isAlive()) return;
 
-            // v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破瞬间自动快照入池（跨存档传承，席位轮换）
+            // v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破瞬间自动快照入池（跨存档，席位轮换）
             if (newTier >= 11 && newTier <= 13)
             {
                 try { Code.Realm.TrueGodManager.AutoEnshrineGod(actor); }

@@ -1672,9 +1672,9 @@ public class AbilityCodexPanel : MonoBehaviour
 			GUILayout.Label(UILocalization.Get("none_label"), (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Height((float)pantheonRowH) });
 		}
 
-		// v0.18.85 神系回归池（自动传承）子区块：展示池内单位，可召回/删除
+		// v0.18.85 神系回归池（跨存档神名记忆）子区块：展示池内单位，可召回/删除
 		// （删除圣所单位时已联动清理回归池同名记录，此处提供独立管理入口）
-		DSGUIHelper.ColoredLabel("神系回归池（自动传承）", DSUITheme.AccentGold, _currentFontSize, (FontStyle)0);
+		DSGUIHelper.ColoredLabel("神系回归池（跨存档）", DSUITheme.AccentGold, _currentFontSize, (FontStyle)0);
 		List<Code.Realm.TrueGodManager.TrueGodData> reinList = Code.Realm.TrueGodManager.GetReincarnations();
 		if (reinList != null && reinList.Count > 0)
 		{

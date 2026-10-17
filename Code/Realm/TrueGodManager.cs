@@ -69,7 +69,7 @@ namespace Code.Realm
 			public int TotalTrueGods = 0;
 			public long LastUpdateTime = 0;
 
-			// v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破时自动快照入池（跨存档传承）。
+			// v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破时自动快照入池（跨存档）。
 			// 与圣所（TrueGods，手动移动仓）独立：入池=复制快照，单位继续留在当前世界。
 			public List<TrueGodData> Reincarnations = new List<TrueGodData>();
 		}
@@ -337,7 +337,7 @@ namespace Code.Realm
 					_globalData.TrueGods.Remove(god);
 					_globalData.TotalTrueGods = _globalData.TrueGods.Count;
 				}
-				// 联动清理回归池同名记录（自动传承池——删除圣所单位时一并清除，避免文件夹残留）
+				// 联动清理回归池同名记录（跨存档池——删除圣所单位时一并清除，避免文件夹残留）
 				var rein = _globalData.Reincarnations.FirstOrDefault(g => g.Name == name && g.OriginWorld == originWorld);
 				if (rein != null)
 				{
@@ -348,7 +348,7 @@ namespace Code.Realm
 		}
 
 		// ============================================================
-		//  神系回归池（v0.18.83 跨存档自动传承 + 席位轮换）
+		//  神系回归池（v0.18.83 跨存档跨存档 + 席位轮换）
 		//  - 自动入池：登神级(11)/真神(12)/超神(13)突破瞬间快照（复制，不移动世界）
 		//  - 席位轮换（避免永远是同一个单位）：
 		//      ① 段位分档容量：11阶池≤16 / 12阶池≤7 / 13阶池≤3（对应世界名额）
@@ -366,7 +366,7 @@ namespace Code.Realm
 		/// <summary>
 		/// 自动入池（突破回调调用）：真神级及以上（12-13阶）单位突破瞬间复制快照入回归池。
 		/// v0.18.98 登神级（11阶）不再入池：登神仍是"人间巅峰"的凡躯极限，不具备跨存档神格；
-		/// 只有真神/超神拥有神格，可进入跨存档传承体系（回归池）与圣所（仅13阶可移入）。
+		/// 只有真神/超神拥有神格，可进入跨存档体系（回归池）与圣所（仅13阶可移入）。
 		/// 单位继续留在当前世界；池满时顶替同段位最老，席位轮换。
 		/// </summary>
 		public static void AutoEnshrineGod(Actor actor)
