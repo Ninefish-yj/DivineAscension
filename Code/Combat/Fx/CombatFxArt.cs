@@ -30,6 +30,18 @@ namespace Code.Combat.Fx
         /// <summary>纯白 1×1（暗幕/遮罩用）。</summary>
         internal static Sprite White;
 
+        // ---- v0.18.70 战斗动作图元 ----
+        /// <summary>月牙剑弧（御剑横扫）。</summary>
+        internal static Sprite Slash;
+        /// <summary>飞剑/剑气（长菱形条）。</summary>
+        internal static Sprite Blade;
+        /// <summary>锯齿闪电（连锁电弧）。</summary>
+        internal static Sprite Zap;
+        /// <summary>地面放射裂纹（震地重击）。</summary>
+        internal static Sprite Crack;
+        /// <summary>符文法阵环（领域展开）。</summary>
+        internal static Sprite RuneRing;
+
         internal static void Init()
         {
             try
@@ -77,6 +89,12 @@ namespace Code.Combat.Fx
                 Glint = Make(9, 9, (x, y) => Cross(x, y, 9, 9));
                 Burst = Make(21, 21, (x, y) => SoftDot(x, y, 21, 21, 9.5f));
                 White = Make(1, 1, (x, y) => 1f);
+                // v0.18.70 战斗动作图元
+                Slash = Make(33, 33, (x, y) => SlashAt(x, y, 33, 33));
+                Blade = Make(29, 9, (x, y) => BladeAt(x, y, 29, 9));
+                Zap = Make(33, 13, (x, y) => ZapAt(x, y, 33, 13));
+                Crack = Make(41, 41, (x, y) => CrackAt(x, y, 41, 41));
+                RuneRing = Make(49, 49, (x, y) => RuneRingAt(x, y, 49, 49));
             }
             catch (Exception e)
             {
@@ -181,6 +199,120 @@ namespace Code.Combat.Fx
             float dx = Mathf.Abs(x - (w - 1) * 0.5f);
             float dy = Mathf.Abs(y - (h - 1) * 0.5f);
             if (dx <= 0.8f || dy <= 0.8f) return 1f;
+            return 0f;
+        }
+
+        // ---------------------------------------------------------- 战斗动作图元（v0.18.70）--
+
+        /// <summary>确定性线性 hash（[0,1)）。</summary>
+        private static float LinHash(int seed)
+        {
+            float h = Mathf.Sin(seed * 12.9898f + 78.233f) * 43758.5453f;
+            h = h - Mathf.Floor(h);
+            return h;
+        }
+
+        /// <summary>点到线段距离。</summary>
+        private static float SegDist(int x, int y, float ax, float ay, float bx, float by)
+        {
+            float px = x, py = y;
+            float abx = bx - ax, aby = by - ay;
+            float len2 = abx * abx + aby * aby;
+            float t = len2 < 0.0001f ? 0f : Mathf.Clamp01(((px - ax) * abx + (py - ay) * aby) / len2);
+            float cx = ax + abx * t, cy = ay + aby * t;
+            float dx = px - cx, dy = py - cy;
+            return Mathf.Sqrt(dx * dx + dy * dy);
+        }
+
+        /// <summary>月牙剑弧（御剑横扫）：环形段（角度扇区 ±0.55rad），旋转交给粒子。</summary>
+        private static float SlashAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f, cy = (h - 1) * 0.5f;
+            float dx = x - cx, dy = y - cy;
+            float dist = Mathf.Sqrt(dx * dx + dy * dy);
+            float r = (w - 1) * 0.5f * 0.78f;
+            float lo = r * 0.42f, hi = r * 0.72f;
+            if (dist < lo - 1f || dist > hi) return 0f;
+            float a = Mathf.Atan2(dy, dx);
+            if (a < -0.55f || a > 0.55f) return 0f;   // 弧段朝右，旋转/翻转由粒子控制
+            float alpha = 1f;
+            if (dist < lo) alpha = dist - (lo - 1f);
+            if (dist > hi - 1f) alpha = hi - dist;
+            // 两端渐隐
+            float edge = Mathf.Abs(a) > 0.42f ? (0.55f - Mathf.Abs(a)) / 0.13f : 1f;
+            return alpha * Mathf.Clamp01(edge);
+        }
+
+        /// <summary>飞剑/剑气（长菱形条）：|dx|+3|dy| 窄条，两端尖。</summary>
+        private static float BladeAt(int x, int y, int w, int h)
+        {
+            float dx = Mathf.Abs(x - (w - 1) * 0.5f);
+            float dy = Mathf.Abs(y - (h - 1) * 0.5f);
+            float t = (w - 1) * 0.5f;
+            return Mathf.Clamp01(t + 0.8f - (dx + 3f * dy));
+        }
+
+        /// <summary>锯齿闪电（横向折线）：4 段确定性折点，线宽 1.4px。</summary>
+        private static float ZapAt(int x, int y, int w, int h)
+        {
+            float cy = (h - 1) * 0.5f;
+            float x0 = 0f, y0 = cy;
+            float amp = (h - 1) * 0.5f - 1.5f;
+            float seg = (w - 1) / 4f;
+            float min = 10f;
+            for (int i = 1; i <= 4; i++)
+            {
+                float nx = seg * i;
+                float ny = cy + (LinHash(i * 7 + 13) - 0.5f) * 2f * amp * (i == 4 ? 0.2f : 1f);
+                min = Mathf.Min(min, SegDist(x, y, x0, y0, nx, ny));
+                x0 = nx; y0 = ny;
+            }
+            return min <= 1.4f ? 1f : 0f;
+        }
+
+        /// <summary>地面放射裂纹：中心 6 条射线（角度 hash 抖动，线长 11~19px）。</summary>
+        private static float CrackAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f, cy = (h - 1) * 0.5f;
+            float min = 10f;
+            for (int i = 0; i < 6; i++)
+            {
+                float a = (i * 60f + (LinHash(i + 3) - 0.5f) * 22f) * Mathf.Deg2Rad;
+                float len = 11f + LinHash(i + 9) * 8f;
+                float ex = cx + Mathf.Cos(a) * len;
+                float ey = cy + Mathf.Sin(a) * len;
+                min = Mathf.Min(min, SegDist(x, y, cx, cy, ex, ey));
+            }
+            // 中心点实心
+            float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            return (min <= 1.5f || d <= 2.2f) ? 1f : 0f;
+        }
+
+        /// <summary>符文法阵环：粗环 + 圆周 12 刻度（领域展开）。</summary>
+        private static float RuneRingAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f, cy = (h - 1) * 0.5f;
+            float dx = x - cx, dy = y - cy;
+            float dist = Mathf.Sqrt(dx * dx + dy * dy);
+            float r = (w - 1) * 0.5f * 0.88f;
+            float lo = r * 0.82f, hi = r * 0.94f;
+            if (dist >= lo - 1f && dist <= hi)
+            {
+                float alpha = 1f;
+                if (dist < lo) alpha = dist - (lo - 1f);
+                if (dist > hi - 1f) alpha = hi - dist;
+                if (alpha > 0f)
+                {
+                    float a = Mathf.Atan2(dy, dx);
+                    // 12 刻度：环上凸起短条
+                    float step = Mathf.PI * 2f / 12f;
+                    float k = a / step;
+                    float kf = k - Mathf.Floor(k);
+                    float spread = Mathf.Min(kf, 1f - kf) * step;
+                    if (spread < 0.14f) return alpha;
+                    return alpha * 0.55f;   // 环体略暗，刻度亮
+                }
+            }
             return 0f;
         }
     }
