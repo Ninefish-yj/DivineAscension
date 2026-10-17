@@ -2413,5 +2413,7 @@
   "god_proto_el_wood_08": "古木真君",
   "god_proto_el_wood_08_west": "Ancient-Tree God",
   "god_proto_el_wood_09": "万木真君",
-  "god_proto_el_wood_09_west": "Myriad-Wood God"
+  "god_proto_el_wood_09_west": "Myriad-Wood God",
+  "gene_cultivation_config_enable_global_health_suppression": "战斗期间抑制外部治疗",
+  "gene_cultivation_config_enable_global_health_suppression Description": "我方异能者交战时，取消原版回血特质、其他模组治疗增益与牧师的治疗。"
 }
