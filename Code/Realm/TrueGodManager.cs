@@ -363,14 +363,17 @@ namespace Code.Realm
 		private const int CAP_REINCARNATION_T11 = 16;
 
 		/// <summary>
-		/// 自动入池（突破回调调用）：登神级及以上单位突破瞬间复制快照入回归池。
+		/// <summary>
+		/// 自动入池（突破回调调用）：真神级及以上（12-13阶）单位突破瞬间复制快照入回归池。
+		/// v0.18.98 登神级（11阶）不再入池：登神仍是"人间巅峰"的凡躯极限，不具备跨存档神格；
+		/// 只有真神/超神拥有神格，可进入跨存档传承体系（回归池）与圣所（仅13阶可移入）。
 		/// 单位继续留在当前世界；池满时顶替同段位最老，席位轮换。
 		/// </summary>
 		public static void AutoEnshrineGod(Actor actor)
 		{
 			if (actor == null || !actor.isAlive() || World.world == null) return;
 			int tier = CultivationData.GetRealmTier(actor);
-			if (tier < 11 || tier > 13) return;
+			if (tier < 12 || tier > 13) return; // v0.18.98 登神级（11阶）不跨存档
 
 			try
 			{
