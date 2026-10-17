@@ -128,6 +128,14 @@ namespace Code.Realm
         public static void OnBreakthrough(Actor actor, int newTier)
         {
             if (actor == null || !actor.isAlive()) return;
+
+            // v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破瞬间自动快照入池（跨存档传承，席位轮换）
+            if (newTier >= 11 && newTier <= 13)
+            {
+                try { Code.Realm.TrueGodManager.AutoEnshrineGod(actor); }
+                catch (System.Exception dsEx) { Code.Core.DSDebug.Warning("[GeneCultivation] 自动入池异常: " + dsEx.Message); }
+            }
+
             if (!_eventsByTier.ContainsKey(newTier)) return;
 
             foreach (var evt in _eventsByTier[newTier])

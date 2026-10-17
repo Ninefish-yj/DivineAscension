@@ -50,6 +50,10 @@ namespace Code.Realm
 			public CultureData CultureSnapshot;  // 所属文化
 			public LanguageData LanguageSnapshot; // 所属语言
 			public ClanData ClanSnapshot;        // 所属氏族
+
+			// v0.18.83 神系回归池字段（旧存档缺省：0/null 兼容）
+			public long EnshrineTime;            // 入池时间（Ticks，轮换顶替依据）
+			public int ReturnCount;              // 已回归次数（预留：多段轮换用，当前回归即出池）
 		}
 
 		/// <summary>
@@ -61,6 +65,10 @@ namespace Code.Realm
 			public List<TrueGodData> TrueGods = new List<TrueGodData>();
 			public int TotalTrueGods = 0;
 			public long LastUpdateTime = 0;
+
+			// v0.18.83 神系回归池：登神级(11)/真神(12)/超神(13)突破时自动快照入池（跨存档传承）。
+			// 与圣所（TrueGods，手动移动仓）独立：入池=复制快照，单位继续留在当前世界。
+			public List<TrueGodData> Reincarnations = new List<TrueGodData>();
 		}
 
 		private static TrueGodGlobalData _globalData;
@@ -204,46 +212,14 @@ namespace Code.Realm
 
 			try
 			{
-				// 先冻结数据到最新（原版 save 前置），再整档快照
-				actor.prepareForSave();
-				string godName = actor.getName();
-				string currentWorld = World.world?.name ?? "Unknown";
-
-				var godData = new TrueGodData
-				{
-					Name = godName,
-					Race = ReadAssetId(actor) ?? "Unknown",
-					RealmTier = tier,
-					// v0.18.51：神名跨存档快照（东名+西名），放置时恢复独属神名
-					DivineName = ReadDivineName(actor, "divine_name"),
-					DivineNameWest = ReadDivineName(actor, "divine_name_west"),
-					UnlockedElements = CultivationData.GetUnlockedElements(actor),
-					ActiveCombos = CultivationData.GetActiveCombos(actor),
-					Qi = CultivationData.GetEnergy(actor),
-					Mastery = CultivationData.GetMastery(actor),
-					Turbulence = CultivationData.GetTurbulence(actor),
-					EnlightenmentExp = CultivationData.GetEnlightenmentExp(actor),
-					AscensionTime = DateTime.Now.Ticks,
-					OriginWorld = currentWorld,
-					KillCount = 0,
-					YearsLived = actor.getAge(),
-					// 基因/特质快照（降级路径用；整档快照已含全部数据）
-					Genome = actor.subspecies?.nucleus != null ? actor.subspecies.nucleus.getListForSave() : null,
-					Traits = ReadSavedTraits(actor),
-					// v0.18.52 整档快照：所有数据完整保留
-					ActorSnapshot = DeepCopy(actor.getData() as ActorData),
-					SubspeciesSnapshot = DeepCopy(actor.subspecies?.data),
-					CultureSnapshot = DeepCopy(actor.culture?.data),
-					LanguageSnapshot = DeepCopy(actor.language?.data),
-					ClanSnapshot = DeepCopy(actor.clan?.data)
-				};
+				TrueGodData godData = BuildTrueGodData(actor);
 
 				lock (_lock)
 				{
 					if (!_initialized) Init();
 
 					// 按名称+起源世界复合键去重（同名不同世界的真神允许共存）
-					var existing = _globalData.TrueGods.FirstOrDefault(g => g.Name == godName && g.OriginWorld == currentWorld);
+					var existing = _globalData.TrueGods.FirstOrDefault(g => g.Name == godData.Name && g.OriginWorld == godData.OriginWorld);
 					if (existing != null)
 					{
 						_globalData.TrueGods.Remove(existing);
@@ -256,7 +232,7 @@ namespace Code.Realm
 				// 移动语义：从当前世界移除（原存档不再存在该单位；不走死亡链，无尸体/墓碑）
 				actor.removeByMetamorphosis();
 
-				DSDebug.Verbose($"[GeneCultivation] 真神 {godName} 已移入圣所（全量数据+离开当前世界），当前共有 {_globalData.TrueGods.Count} 位");
+				DSDebug.Verbose($"[GeneCultivation] 真神 {godData.Name} 已移入圣所（全量数据+离开当前世界），当前共有 {_globalData.TrueGods.Count} 位");
 				return godData;
 			}
 			catch (Exception e)
@@ -264,6 +240,45 @@ namespace Code.Realm
 				DSDebug.Error($"[GeneCultivation] 移入圣所失败: {e.Message}");
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// 构建真神整档快照（公共抽取：圣所移动仓与神系回归池共用）
+		/// 冻结单位数据到最新（原版 save 前置）→ 全量快照（ActorData+亚种/氏族/文化/语言+业务字段）
+		/// </summary>
+		private static TrueGodData BuildTrueGodData(Actor actor)
+		{
+			actor.prepareForSave();
+			string godName = actor.getName();
+			string currentWorld = World.world?.name ?? "Unknown";
+
+			return new TrueGodData
+			{
+				Name = godName,
+				Race = ReadAssetId(actor) ?? "Unknown",
+				RealmTier = CultivationData.GetRealmTier(actor),
+				DivineName = ReadDivineName(actor, "divine_name"),
+				DivineNameWest = ReadDivineName(actor, "divine_name_west"),
+				UnlockedElements = CultivationData.GetUnlockedElements(actor),
+				ActiveCombos = CultivationData.GetActiveCombos(actor),
+				Qi = CultivationData.GetEnergy(actor),
+				Mastery = CultivationData.GetMastery(actor),
+				Turbulence = CultivationData.GetTurbulence(actor),
+				EnlightenmentExp = CultivationData.GetEnlightenmentExp(actor),
+				AscensionTime = DateTime.Now.Ticks,
+				OriginWorld = currentWorld,
+				KillCount = 0,
+				YearsLived = actor.getAge(),
+				Genome = actor.subspecies?.nucleus != null ? actor.subspecies.nucleus.getListForSave() : null,
+				Traits = ReadSavedTraits(actor),
+				ActorSnapshot = DeepCopy(actor.getData() as ActorData),
+				SubspeciesSnapshot = DeepCopy(actor.subspecies?.data),
+				CultureSnapshot = DeepCopy(actor.culture?.data),
+				LanguageSnapshot = DeepCopy(actor.language?.data),
+				ClanSnapshot = DeepCopy(actor.clan?.data),
+				EnshrineTime = DateTime.Now.Ticks,
+				ReturnCount = 0
+			};
 		}
 
 		/// <summary>
@@ -320,6 +335,148 @@ namespace Code.Realm
 					SaveGlobalData();
 				}
 			}
+		}
+
+		// ============================================================
+		//  神系回归池（v0.18.83 跨存档自动传承 + 席位轮换）
+		//  - 自动入池：登神级(11)/真神(12)/超神(13)突破瞬间快照（复制，不移动世界）
+		//  - 席位轮换（避免永远是同一个单位）：
+		//      ① 段位分档容量：11阶池≤16 / 12阶池≤7 / 13阶池≤3（对应世界名额）
+		//      ② 满员顶替：新入池者顶掉同段位最老（入池时间最早），席位必然流转
+		//      ③ 回归即出池：召回新世界后从池中删除（同一快照最多回归 1 次）
+		//      ④ 升级迁移：单位升入更高段位时，从低段位池移除（每单位占一席）
+		// ============================================================
+
+		/// <summary>回归池段位容量（对应世界登神/真神/超神名额）</summary>
+		private const int CAP_REINCARNATION_T13 = 3;
+		private const int CAP_REINCARNATION_T12 = 7;
+		private const int CAP_REINCARNATION_T11 = 16;
+
+		/// <summary>
+		/// 自动入池（突破回调调用）：登神级及以上单位突破瞬间复制快照入回归池。
+		/// 单位继续留在当前世界；池满时顶替同段位最老，席位轮换。
+		/// </summary>
+		public static void AutoEnshrineGod(Actor actor)
+		{
+			if (actor == null || !actor.isAlive() || World.world == null) return;
+			int tier = CultivationData.GetRealmTier(actor);
+			if (tier < 11 || tier > 13) return;
+
+			try
+			{
+				TrueGodData godData = BuildTrueGodData(actor);
+				int cap = tier == 13 ? CAP_REINCARNATION_T13 : (tier == 12 ? CAP_REINCARNATION_T12 : CAP_REINCARNATION_T11);
+
+				lock (_lock)
+				{
+					if (!_initialized) Init();
+					var pool = _globalData.Reincarnations;
+
+					// ④ 升级迁移：先移除同名（跨段位占位）——单位升段后以新段位重新入池
+					var existing = pool.FirstOrDefault(g => g.Name == godData.Name && g.OriginWorld == godData.OriginWorld);
+					if (existing != null) pool.Remove(existing);
+
+					// ② 满员顶替：同段位按入池时间最老者移除（席位轮换——不会永远是同一个单位）
+					var sameTier = pool.Where(g => g.RealmTier == tier).ToList();
+					if (sameTier.Count >= cap)
+					{
+						var oldest = sameTier.OrderBy(g => g.EnshrineTime).FirstOrDefault();
+						if (oldest != null) pool.Remove(oldest);
+					}
+
+					pool.Add(godData);
+					SaveGlobalData();
+				}
+
+				DSDebug.Verbose($"[GeneCultivation] 神系回归池：{godData.Name} 突破至{GetTierName(tier)}自动入池（席位 {GetTierPoolCount(tier)}/{cap}）");
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[GeneCultivation] 自动入池失败: {e.Message}");
+			}
+		}
+
+		/// <summary>获取某段位回归池当前数量（UI/日志用）</summary>
+		private static int GetTierPoolCount(int tier)
+		{
+			lock (_lock)
+			{
+				if (!_initialized) Init();
+				return _globalData.Reincarnations.Count(g => g.RealmTier == tier);
+			}
+		}
+
+		/// <summary>
+		/// 召回回归池单位到当前世界（新世界开局注入）。
+		/// ③ 回归即出池：召回成功即从池中删除（一次性），席位空出给新突破者。
+		/// </summary>
+		public static int ReturnGodToWorld(int count)
+		{
+			if (World.world == null || count <= 0) return 0;
+			int returned = 0;
+
+			try
+			{
+				lock (_lock)
+				{
+					if (!_initialized) Init();
+					var pool = _globalData.Reincarnations;
+					if (pool.Count == 0) return 0;
+
+					// 随机取 count 个（打乱，避免每次都是同一批最强单位）
+					var candidates = pool.OrderBy(g => Guid.NewGuid()).Take(count).ToList();
+					foreach (var god in candidates)
+					{
+						Actor spawned = SpawnTrueGod(god);
+						if (spawned != null && spawned.isAlive())
+						{
+							pool.Remove(god);
+							returned++;
+							DSDebug.Verbose($"[GeneCultivation] 神系回归：{god.Name} 降临新世界（出池，席位流转）");
+						}
+					}
+					SaveGlobalData();
+				}
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[GeneCultivation] 召回回归池异常: {e.Message}");
+			}
+			return returned;
+		}
+
+		/// <summary>获取回归池全部单位（UI 展示用）</summary>
+		public static List<TrueGodData> GetReincarnations()
+		{
+			lock (_lock)
+			{
+				if (!_initialized) Init();
+				return new List<TrueGodData>(_globalData.Reincarnations);
+			}
+		}
+
+		/// <summary>删除回归池单个单位（管理功能）</summary>
+		public static void DeleteReincarnation(string name, string originWorld)
+		{
+			lock (_lock)
+			{
+				if (!_initialized) Init();
+				var god = _globalData.Reincarnations.FirstOrDefault(g => g.Name == name && g.OriginWorld == originWorld);
+				if (god != null)
+				{
+					_globalData.Reincarnations.Remove(god);
+					SaveGlobalData();
+				}
+			}
+		}
+
+		/// <summary>段位名（11登神/12真神/13超神）</summary>
+		private static string GetTierName(int tier)
+		{
+			if (tier == 13) return "超神级";
+			if (tier == 12) return "真神级";
+			if (tier == 11) return "登神级";
+			return "T" + tier;
 		}
 
 		/// <summary>
