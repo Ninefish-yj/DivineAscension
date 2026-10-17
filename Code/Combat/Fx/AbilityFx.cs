@@ -202,6 +202,86 @@ namespace Code.Combat.Fx
         }
 
         // ============================================================
+        // v0.18.92 异能专属视觉：44 标签基准色 × 异能 id 稳定哈希派生
+        // 每个异能都有稳定可辨识的专属色调（同标签异能互不撞色），
+        // 且不破坏大众认知（火系仍是暖色、冰系仍是冷色、毒仍是绿）。
+        // 同一异能每次播放色调一致（哈希稳定，非随机）。
+        // ============================================================
+
+        private static Color TagBaseColor(PrototypeTag tag)
+        {
+            switch (tag)
+            {
+                case PrototypeTag.Burn:          return new Color(1f, 0.42f, 0.18f);  // 橙红
+                case PrototypeTag.Plasma:        return new Color(1f, 0.28f, 0.15f);  // 炽红
+                case PrototypeTag.Frost:         return new Color(0.55f, 0.82f, 1f);   // 淡蓝
+                case PrototypeTag.Frostbite:     return new Color(0.62f, 0.9f, 1f);    // 冰蓝白
+                case PrototypeTag.TimeSlow:      return new Color(0.45f, 0.6f, 0.95f); // 蓝紫
+                case PrototypeTag.Stun:          return new Color(1f, 0.82f, 0.2f);   // 金黄
+                case PrototypeTag.Crit:          return new Color(1f, 0.65f, 0.15f);  // 橙
+                case PrototypeTag.Telekinesis:   return new Color(0.68f, 0.5f, 0.95f); // 紫
+                case PrototypeTag.Poison:        return new Color(0.45f, 0.85f, 0.35f);// 绿
+                case PrototypeTag.Curse:         return new Color(0.5f, 0.3f, 0.65f);  // 暗紫
+                case PrototypeTag.Fear:          return new Color(0.4f, 0.25f, 0.55f); // 暗紫
+                case PrototypeTag.Slow:          return new Color(0.4f, 0.7f, 0.9f);   // 水蓝
+                case PrototypeTag.Lifesteal:     return new Color(0.85f, 0.2f, 0.22f);// 血红
+                case PrototypeTag.Drain:         return new Color(0.6f, 0.15f, 0.25f);// 暗红
+                case PrototypeTag.Blood:         return new Color(0.75f, 0.12f, 0.15f);// 血红
+                case PrototypeTag.Soul:          return new Color(0.45f, 0.75f, 0.95f);// 幽蓝
+                case PrototypeTag.Heal:          return new Color(0.4f, 0.85f, 0.5f); // 翠绿
+                case PrototypeTag.Chain:         return new Color(0.45f, 0.72f, 1f);  // 电蓝
+                case PrototypeTag.Knockback:     return new Color(1f, 0.7f, 0.3f);    // 橙
+                case PrototypeTag.Gravity:       return new Color(0.42f, 0.3f, 0.55f);// 暗紫
+                case PrototypeTag.Berserk:       return new Color(0.9f, 0.25f, 0.12f);// 血红
+                case PrototypeTag.Entangle:      return new Color(0.4f, 0.75f, 0.3f); // 藤绿
+                case PrototypeTag.Petrify:       return new Color(0.75f, 0.72f, 0.68f);// 灰
+                case PrototypeTag.Aging:         return new Color(0.62f, 0.55f, 0.5f);// 灰褐
+                case PrototypeTag.Weakness:      return new Color(0.55f, 0.5f, 0.3f); // 暗黄
+                case PrototypeTag.ArmorBreak:    return new Color(1f, 0.72f, 0.2f);   // 橙黄
+                case PrototypeTag.Execute:       return new Color(0.85f, 0.1f, 0.08f);// 深红
+                case PrototypeTag.Sleep:         return new Color(0.6f, 0.75f, 0.9f); // 淡蓝白
+                case PrototypeTag.MultiShot:     return new Color(1f, 0.85f, 0.35f);  // 金黄
+                case PrototypeTag.HealAlly:      return new Color(0.45f, 0.85f, 0.55f);// 翠绿
+                case PrototypeTag.Shield:        return new Color(0.45f, 0.65f, 1f);  // 蓝
+                case PrototypeTag.Dodge:         return new Color(0.4f, 0.8f, 0.85f); // 青
+                case PrototypeTag.Blessing:      return new Color(1f, 0.85f, 0.4f);   // 金
+                case PrototypeTag.Magnetism:     return new Color(0.4f, 0.6f, 0.95f); // 电蓝
+                case PrototypeTag.Vibration:     return new Color(1f, 0.6f, 0.25f);   // 橙
+                case PrototypeTag.Sound:         return new Color(0.4f, 0.8f, 0.7f);  // 青绿
+                case PrototypeTag.Illusion:      return new Color(0.85f, 0.75f, 0.95f);// 浅紫
+                case PrototypeTag.Invisibility:  return new Color(0.8f, 0.85f, 0.95f);// 淡蓝白
+                case PrototypeTag.Regeneration:  return new Color(0.45f, 0.9f, 0.6f); // 翠绿
+                case PrototypeTag.Thorns:        return new Color(0.5f, 0.8f, 0.35f); // 绿
+                case PrototypeTag.Clone:         return new Color(0.55f, 0.8f, 0.85f);// 青
+                case PrototypeTag.ElementResist: return new Color(0.5f, 0.7f, 1f);    // 蓝
+                case PrototypeTag.Cleanse:       return new Color(0.75f, 0.9f, 0.95f);// 淡青白
+                case PrototypeTag.Teleport:      return new Color(0.6f, 0.45f, 0.9f); // 紫
+                default:                         return new Color(1f, 1f, 1f);
+            }
+        }
+
+        /// <summary>异能专属派生色：基准标签色 + 异能 id 稳定哈希（色相 ±12°、明度 ±0.08）。
+        /// 233 个异能各自稳定可辨识；同标签下不同异能互不撞色；不破坏标签大众认知。</summary>
+        private static Color DeriveTint(PrototypeDef def)
+        {
+            Color c = TagBaseColor(def.MainTag);
+            if (def == null || string.IsNullOrEmpty(def.Id)) return c;
+            unchecked
+            {
+                int h = 17;
+                foreach (char ch in def.Id) h = h * 31 + ch;
+                if (h < 0) h = -h;
+                float hueShift = ((h % 240) - 120) / 10f;      // -12° ~ +12°
+                float bright = 1f + (((h / 240) % 160) - 80) / 1000f; // ±0.08
+                Color.RGBToHSV(c, out float H, out float S, out float V);
+                H = (H + hueShift / 360f) % 1f;
+                if (H < 0f) H += 1f;
+                V = Mathf.Clamp01(V * bright);
+                return Color.HSVToRGB(H, S, V);
+            }
+        }
+
+        // ============================================================
         // 神形显现（v0.18.66 unit_gifs 登神动画）
         // 帧序列在 GameResources/effects/unit_anim_<name>/ 下，清单在
         // GameResources/effects_unit_anims.txt（GIF 转换脚本生成，运行期只读清单）
@@ -253,15 +333,16 @@ namespace Code.Combat.Fx
 
             float scale = UnitScale(anchor);
             string mainFx = PickTagFx(def.MainTag, def.SubTag);
+            Color tint = DeriveTint(def);   // v0.18.92 异能专属派生色（基准标签色×异能id哈希）
 
             if (attack)
             {
                 // ---- 攻击：投射飞行 or 目标爆发 ----
                 if (!string.IsNullOrEmpty(mainFx) && IsProjectile(mainFx))
                 {
-                    SpawnProjectile(mainFx, self.current_position, pos, scale);
+                    SpawnProjectile(mainFx, self.current_position, pos, scale, tint);
                     // 命中爆（延迟一段，投射物到点后炸开）
-                    SpawnFx(mainFx, pos, FxLayer.Top, 36, true, scale, delay: 0.13f, follow: null);
+                    SpawnFx(mainFx, pos, FxLayer.Top, 36, true, scale, delay: 0.13f, follow: null, tint: tint);
                 }
                 else if (!string.IsNullOrEmpty(mainFx))
                 {
@@ -270,7 +351,7 @@ namespace Code.Combat.Fx
                     // 防守路径（else 大分支）已 follow:self。
                     bool shieldFx = mainFx.StartsWith("shield_");
                     SpawnFx(mainFx, pos, FxLayer.Top, shieldFx ? 25 : 35, true, scale, 0f,
-                        shieldFx ? anchor : null);
+                        shieldFx ? anchor : null, tint: tint);
                 }
                 // 命中冲击环（扩张淡出，贴合目标体型，细环不遮视野）
                 var ring = CombatFxCore.Spawn(CombatFxArt.Rings[0], pos, 0.09f, 0.35f, FxLayer.Top, 30);
@@ -278,7 +359,8 @@ namespace Code.Combat.Fx
                 {
                     // v0.18.91：命中冲击环按帧宽归一化（世界宽=px×帧宽×size，px=0.09/帧宽17→1.53×size），
                     // 目标 0.9→0.35 世界单位（≈1.5 倍单位宽扩散），原 1.7 世界单位偏大
-                    ring.Color(new Color(1f, 0.95f, 0.75f, 0.85f), new Color(1f, 0.85f, 0.55f, 0f))
+                    // v0.18.92：环色跟随异能专属派生色
+                    ring.Color(new Color(tint.r, tint.g, tint.b, 0.85f), new Color(tint.r, tint.g, tint.b, 0f))
                         .Sized(0.59f * scale, 0.23f * scale);
                 }
             }
@@ -287,7 +369,7 @@ namespace Code.Combat.Fx
                 // ---- 防守：特效绑定单位跟随（护盾/再生/祝福/净化环绕）----
                 if (!string.IsNullOrEmpty(mainFx))
                 {
-                    SpawnFx(mainFx, pos, FxLayer.Over, 25, true, scale, 0f, self);
+                    SpawnFx(mainFx, pos, FxLayer.Over, 25, true, scale, 0f, self, tint: tint);
                 }
             }
 
@@ -296,7 +378,7 @@ namespace Code.Combat.Fx
             string famFx = PickFamilyFx(def.Category, def.SubCategory);
             if (!string.IsNullOrEmpty(famFx) && famFx != mainFx && (!attack || force))
             {
-                SpawnFx(famFx, pos, FxLayer.Behind, 5, false, scale * 0.8f, 0f, attack ? null : self);
+                SpawnFx(famFx, pos, FxLayer.Behind, 5, false, scale * 0.8f, 0f, attack ? null : self, tint: tint);
             }
         }
 
@@ -323,8 +405,9 @@ namespace Code.Combat.Fx
         }
 
         /// <summary>投射物：自 from 飞向 to（FaceVel 朝向 + 自旋），飞行 0.26s 恰好到点。
-        /// v0.18.69：px=1/帧宽归一化（世界尺寸=Size 参数，不再随素材帧宽漂移）；起点从单位身体中部飞出。</summary>
-        private static void SpawnProjectile(string id, Vector2 from, Vector2 to, float scale)
+        /// v0.18.69：px=1/帧宽归一化（世界尺寸=Size 参数，不再随素材帧宽漂移）；起点从单位身体中部飞出。
+        /// v0.18.92：投射体颜色跟随异能专属派生色。</summary>
+        private static void SpawnProjectile(string id, Vector2 from, Vector2 to, float scale, Color? tint = null)
         {
             var frames = Load(id);
             if (frames == null || frames.Length == 0) return;
@@ -338,8 +421,9 @@ namespace Code.Combat.Fx
             // v0.18.91：起点从单位身体中心飞出（脚底+0.17×体型），原 0.3×scale 在头顶
             var p = CombatFxCore.Spawn(frames, from + new Vector2(0f, 0.17f * scale), px, fly, FxLayer.Top, 34);
             if (p == null) return;
+            Color tc = tint ?? Color.white;
             p.Sized(0.45f * scale, 0.28f * scale)
-             .Color(new Color(1f, 1f, 1f, 0.7f), new Color(1f, 1f, 1f, 0f))
+             .Color(new Color(tc.r, tc.g, tc.b, 0.7f), new Color(tc.r, tc.g, tc.b, 0f))
              .Moving(dir * (dist / fly), 0f, 0.5f, 0f);
             p.FaceVel = true;
             p.Spin = UnityEngine.Random.Range(4f, 8f);
@@ -348,9 +432,10 @@ namespace Code.Combat.Fx
         /// <summary>
         /// 单层特效播放（px 0.01 基准；尺寸=样式组×单位缩放；alpha 渐隐；可延迟、可绑定单位）。
         /// fx_* 前缀走原版 EffectsLibrary（原版内置图，自动回池）。
+        /// v0.18.92：tint 为异能专属派生色（null=原白色），应用于特效主体着色。
         /// </summary>
         private static void SpawnFx(string id, Vector2 pos, FxLayer layer, int order, bool strong,
-            float scale = 1f, float delay = 0f, Actor follow = null)
+            float scale = 1f, float delay = 0f, Actor follow = null, Color? tint = null)
         {
             // 原版特效（fx_* 前缀）：走 EffectsLibrary（原版内置图，自动回池）。
             // v0.18.67：spawn 后按单位缩放 prepare（原版资产默认 1.0 偏大，压到 0.5×单位缩放）。
@@ -369,6 +454,12 @@ namespace Code.Combat.Fx
                             // v0.18.91：帧宽归一化——目标世界宽 = 0.25×体型（人类 actor_scale≈0.25，
                             // 1 倍单位宽≈0.25 世界单位，与西幻奥术护盾 0.24 对齐）
                             CombatFxCore.ScaleFxToWorldWidth(fx, 0.25f * scale);
+                            // v0.18.92：原版特效同样跟随异能专属派生色
+                            if (tint.HasValue && fx.sprite_renderer != null)
+                            {
+                                Color fc = fx.sprite_renderer.color;
+                                fx.sprite_renderer.color = new Color(tint.Value.r, tint.Value.g, tint.Value.b, fc.a);
+                            }
                         }
                     }
                 }
@@ -396,21 +487,23 @@ namespace Code.Combat.Fx
             p.Sized(s, s * 0.72f);
             // v0.18.72：竖素材（96x128 护盾）默认高=1.33×宽会显大——护盾压扁到 0.75（高≈0.32，只罩躯干）
             // v0.18.75：对齐西幻奥术护盾 alpha≈0.03 的"淡罩"观感——护盾透明度压到 0.2（淡可见不遮人）
+            // v0.18.92：着色跟随异能专属派生色
+            Color tc = tint ?? Color.white;
             if (id.StartsWith("shield_"))
             {
                 p.YRatio = 0.8f;
-                p.Color(new Color(1f, 1f, 1f, 0.2f), new Color(1f, 1f, 1f, 0.05f));
+                p.Color(new Color(tc.r, tc.g, tc.b, 0.2f), new Color(tc.r, tc.g, tc.b, 0.05f));
                 return;
             }
             if (strong)
             {
                 // v0.18.69：非半透明命中特效不透明度从 0.92 压到 0.55——
                 // 大块不透明会遮住地图和人物，半透明既能看清特效又不挡视野
-                p.Color(new Color(1f, 1f, 1f, 0.55f), new Color(1f, 1f, 1f, 0f));
+                p.Color(new Color(tc.r, tc.g, tc.b, 0.55f), new Color(tc.r, tc.g, tc.b, 0f));
             }
             else
             {
-                p.Color(new Color(1f, 1f, 1f, 0.34f), new Color(1f, 1f, 1f, 0f));
+                p.Color(new Color(tc.r, tc.g, tc.b, 0.34f), new Color(tc.r, tc.g, tc.b, 0f));
             }
         }
     }
