@@ -138,15 +138,17 @@ namespace Code.Combat.Fx
         // ============================================================
         private static void Style(string id, out float size, out float life)
         {
-            if (id == null) { size = 1f; life = 0.6f; return; }
-            if (id.StartsWith("shield_")) { size = 1.25f; life = 1.4f; return; }
-            if (id.StartsWith("bub_")) { size = 0.85f; life = 0.55f; return; }
+            // 尺寸基准：特效世界宽 = Px(0.01)×帧宽(128)×size ≈ 1.28×size。
+            // 人类单位约 1 世界单位：护盾/光环≈单位、投射≈0.7、爆炸类扩散到≈1.5 倍单位。
+            if (id == null) { size = 0.7f; life = 0.6f; return; }
+            if (id.StartsWith("shield_")) { size = 0.95f; life = 1.4f; return; }      // 护盾环绕≈单位宽
+            if (id.StartsWith("bub_")) { size = 0.6f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
                 || id == "magic_dust" || id == "vfx_impact" || id == "vfx_smallhit"
                 || id == "vfx_ditheredfire" || id == "vfx_fastfire" || id == "vfx_bloodimpact"
                 || id == "vfx_puffstars" || id == "vfx_elecshield" || id == "vfx_anima")
             {
-                size = 0.95f; life = 0.5f; return;
+                size = 0.75f; life = 0.5f; return;
             }
             if (id.StartsWith("vfx_") && (id.Contains("explosion") || id.Contains("kabooms")
                 || id.Contains("bighit") || id.Contains("charged") || id.Contains("magma")
@@ -154,9 +156,9 @@ namespace Code.Combat.Fx
                 || id.Contains("wheel") || id.Contains("eldenring") || id.Contains("constellation")
                 || id.Contains("powerchords") || id.Contains("hyperspeed")))
             {
-                size = 1.55f; life = 0.75f; return;
+                size = 1.2f; life = 0.75f; return;                                   // 爆发类扩散≈1.5倍单位
             }
-            size = 1.15f; life = 0.6f;
+            size = 0.85f; life = 0.6f;
         }
 
         // ============================================================
@@ -295,7 +297,7 @@ namespace Code.Combat.Fx
             float fly = 0.26f;
             var p = CombatFxCore.Spawn(frames, from, 0.012f, fly, FxLayer.Top, 34);
             if (p == null) return;
-            p.Sized(0.9f * scale, 0.6f * scale)
+            p.Sized(0.7f * scale, 0.45f * scale)
              .Color(new Color(1f, 1f, 1f, 0.95f), new Color(1f, 1f, 1f, 0f))
              .Moving(dir * (dist / fly), 0f, 0.5f, 0f);
             p.FaceVel = true;
