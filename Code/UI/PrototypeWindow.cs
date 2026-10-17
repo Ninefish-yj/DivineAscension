@@ -302,7 +302,7 @@ namespace Code.UI
             GUI.color = Color.white;
 
             // 关闭按钮
-            Rect closeRect = new Rect(Screen.width - 48f, 12f, 32f, 32f);
+            Rect closeRect = new Rect(Screen.width - 88f, 10f, 44f, 38f);
             GUI.color = new Color(0.9f, 0.3f, 0.3f);
             if (GUI.Button(closeRect, "×", _closeBtnStyle))
             {

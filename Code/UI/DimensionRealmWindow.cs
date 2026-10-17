@@ -499,7 +499,7 @@ namespace Code.UI
         #region 右侧面板
         private void DrawRightPanel()
         {
-            float x = Screen.width - RIGHT_PANEL_WIDTH - 10f;
+            float x = Screen.width - RIGHT_PANEL_WIDTH - 30f;
             float y = 10f;
             float width = RIGHT_PANEL_WIDTH;
             float height = Screen.height - BOTTOM_PANEL_HEIGHT - 30f;
@@ -757,7 +757,7 @@ namespace Code.UI
                     hover = { background = _buttonHoverTex }
                 };
             }
-            if (GUI.Button(new Rect(Screen.width - 50f, y + 10f, 35f, 35f), "×", _closeBtnStyle))
+            if (GUI.Button(new Rect(Screen.width - 86f, y + 2f, 44f, 38f), "×", _closeBtnStyle))
             {
                 Hide();
             }

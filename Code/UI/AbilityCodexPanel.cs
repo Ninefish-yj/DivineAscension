@@ -190,7 +190,7 @@ public class AbilityCodexPanel : MonoBehaviour
 			MouseOverlayBlocker.UpdateBlockArea(_windowRect, flag); // 仅鼠标在窗口内时阻挡 UGUI（离开窗口立即放行地图操作）
 			// === 图谱式自绘窗口（布局仍为流式）===
 			Rect titleRect = new Rect(_windowRect.x, _windowRect.y, _windowRect.width, 30f);
-			Rect closeRect = new Rect(_windowRect.xMax - 32f, _windowRect.y + 4f, 28f, 28f);
+			Rect closeRect = new Rect(_windowRect.xMax - 44f, _windowRect.y + 1f, 40f, 30f);
 			// 拖动：MouseDrag/MouseUp 在绘制前处理（不影响控件）
 			if (current != null && current.type == EventType.MouseDrag && _isDragging)
 			{
