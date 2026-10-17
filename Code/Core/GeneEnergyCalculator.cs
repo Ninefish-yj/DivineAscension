@@ -37,10 +37,10 @@ namespace Code.Core
         // ============================================================
         //  属性加成系数（基因能量→属性的转换率）
         // ============================================================
-        private const float DAMAGE_COEFF = 0.1f;      // 伤害加成系数
-        private const float HEALTH_COEFF = 5.0f;      // 生命加成系数（从1.0提高到5.0，高境界血量更高）
-        private const float ARMOR_COEFF = 0.05f;      // 防御加成系数
-        private const float ATTACK_SPEED_COEFF = 0.001f; // 攻速加成系数
+        private const float DAMAGE_COEFF = 0.2f;      // 伤害加成系数（v0.18.88 从0.1翻倍，数值整体上调）
+        private const float HEALTH_COEFF = 10.0f;     // 生命加成系数（v0.18.88 从5.0翻倍，高境界血量更夸张）
+        private const float ARMOR_COEFF = 0.1f;       // 防御加成系数（v0.18.88 从0.05翻倍）
+        private const float ATTACK_SPEED_COEFF = 0.002f; // 攻速加成系数（v0.18.88 从0.001翻倍）
         private const float RANGE_COEFF = 0.0001f;    // 射程加成系数
         private const float SPEED_COEFF = 0.0001f;    // 速度加成系数
         private const float BREAKTHROUGH_COEFF = 0.02f; // 突破成功率加成系数（基因能量越高，突破成功率越高）

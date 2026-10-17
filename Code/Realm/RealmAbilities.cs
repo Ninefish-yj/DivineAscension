@@ -754,13 +754,13 @@ namespace Code.Realm
                                 _ => Code.Combat.TerrainDestructionType.Generic                      // 使徒/场域级：通用型
                             };
                             
-                            // 破坏概率：函数式上升（6阶43% → 10阶55% → 13阶64%；中心地块由DSTerrainDestruction保证必破）
-                            float terrainChance = 0.25f + tier * 0.03f;
+                            // 破坏概率：函数式上升（v0.18.88 上调：6阶59% → 10阶75% → 13阶87%；中心地块由DSTerrainDestruction保证必破）
+                            float terrainChance = 0.35f + tier * 0.04f;
                             
-                            // 破坏半径：统一指数公式 3.5×1.3^tier（6阶≈17格 → 10阶≈48格 → 13阶≈106格）
-                            // 上限=地图短边45%（防全图破坏与性能问题）
-                            float maxRadius = Mathf.Min(MapBox.width, MapBox.height) * 0.45f;
-                            float terrainRadius = Mathf.Min(3.5f * Mathf.Pow(1.3f, tier), maxRadius);
+                            // 破坏半径：统一指数公式（v0.18.88 上调：5.5×1.33^tier → 6阶≈26格 → 10阶≈72格 → 13阶≈152格）
+                            // 上限=地图短边55%（防全图破坏与性能问题）
+                            float maxRadius = Mathf.Min(MapBox.width, MapBox.height) * 0.55f;
+                            float terrainRadius = Mathf.Min(5.5f * Mathf.Pow(1.33f, tier), maxRadius);
                             
                             int destroyed = Code.Combat.DSTerrainDestruction.DestroyTerrain(
                                 center: actor.current_position,

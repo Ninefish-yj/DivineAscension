@@ -141,39 +141,39 @@ namespace Code.Combat
             options.damage_buildings = true;    // 炸建筑（含非城市建筑）
             options.add_burned = true;          // 烧焦
             options.shake = true;               // 屏幕震动（视觉匹配）
-            options.shake_duration = 0.4f;
+            options.shake_duration = 0.5f;
             options.shake_interval = 0.04f;
-            options.shake_intensity = 0.25f;
+            options.shake_intensity = 0.35f;    // v0.18.88 上调（大破坏配大震动）
 
             switch (type)
             {
                 case TerrainDestructionType.EnergyStorm:
-                    // 能量风暴：烧焦+点火+加热+移除龙卷风+爆炸伤害
+                    // 能量风暴：烧焦+点火+加热+移除龙卷风+爆炸伤害（v0.18.88 伤害/加热上调）
                     options.set_fire = true;
-                    options.add_heat = 15;
+                    options.add_heat = 25;
                     options.remove_tornado = true;
                     options.lightning_effect = false;
-                    options.damage = 20;
+                    options.damage = 50;
                     break;
 
                 case TerrainDestructionType.DimensionalStrike:
-                    // 维度打击：烧焦+少量加热+爆炸伤害（高度变化在ApplyDestructionToTile中处理）
-                    options.add_heat = 5;
-                    options.damage = 35;
+                    // 维度打击：烧焦+少量加热+爆炸伤害（高度变化在ApplyDestructionToTile中处理；v0.18.88 上调）
+                    options.add_heat = 10;
+                    options.damage = 90;
                     break;
 
                 case TerrainDestructionType.DivinePunishment:
-                    // 神罚：烧焦+点火+强加热+高爆炸伤害
+                    // 神罚：烧焦+点火+强加热+高爆炸伤害（v0.18.88 大幅上调，匹配超神级特效）
                     options.set_fire = true;
-                    options.add_heat = 25;
-                    options.damage = 60;
+                    options.add_heat = 45;
+                    options.damage = 160;
                     break;
 
                 case TerrainDestructionType.Generic:
                 default:
-                    // 通用型：烧焦+少量加热+基础爆炸伤害
-                    options.add_heat = 5;
-                    options.damage = 8;
+                    // 通用型：烧焦+少量加热+基础爆炸伤害（v0.18.88 上调）
+                    options.add_heat = 10;
+                    options.damage = 20;
                     break;
             }
 

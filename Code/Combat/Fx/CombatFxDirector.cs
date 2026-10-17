@@ -168,7 +168,7 @@ namespace Code.Combat.Fx
             {
                 EnsureArt();
                 if (!CanFull(pos)) return;
-                float cap = Mathf.Min(radius, 40f); // 演出尺寸封顶，避免巨大环溢出屏幕
+                float cap = Mathf.Min(radius, 60f); // 演出尺寸封顶（v0.18.88 40→60，破坏规模同步放大，特效跟上破坏力）
                 // 地面细环（扩张淡出）
                 int ringIdx = cap >= 25f ? 2 : (cap >= 12f ? 1 : 0);
                 CombatFxCore.Spawn(CombatFxArt.Rings[ringIdx], pos, 0.1f, 0.55f, FxLayer.Ground, 10)
