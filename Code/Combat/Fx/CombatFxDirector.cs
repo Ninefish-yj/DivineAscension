@@ -20,13 +20,9 @@ namespace Code.Combat.Fx
         private static float _ascendVeilTimer;
         private const float MaxFullZoom = 60f;
 
-        private static bool _artReady;
-
         private static void EnsureArt()
         {
-            if (_artReady) return;
-            _artReady = true;
-            CombatFxArt.Init();
+            CombatFxArt.EnsureInit();
         }
 
         /// <summary>门禁：世界运行中、相机近距、目标在屏幕内——才允许全演出。</summary>

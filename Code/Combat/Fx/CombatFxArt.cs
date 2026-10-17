@@ -42,6 +42,44 @@ namespace Code.Combat.Fx
         /// <summary>符文法阵环（领域展开）。</summary>
         internal static Sprite RuneRing;
 
+        // ---- v0.18.74 中式特效重生成（替换 soul_* 人形动画等不符世界观素材）----
+        /// <summary>魂焰（魂灵之火：外焰内芯，灵魂/生命/死亡系）。</summary>
+        internal static Sprite SoulFlame;
+        /// <summary>风痕（双交叉细弧旋风，风系/幻象/残影）。</summary>
+        internal static Sprite WindArc;
+        /// <summary>木藤（S 形藤蔓带叶片，木系/藤蔓/缠缚）。</summary>
+        internal static Sprite WoodVine;
+
+        private static bool _ready;
+
+        /// <summary>幂等初始化：任意消费方调用均安全，仅首次真正生成。</summary>
+        internal static void EnsureInit()
+        {
+            if (_ready) return;
+            _ready = true;
+            Init();
+        }
+
+        /// <summary>程序化特效图元分发（art_ 前缀由 AbilityFx 播放器消费）。</summary>
+        internal static Sprite Get(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            switch (id)
+            {
+                case "art_soulflame": return SoulFlame;
+                case "art_windarc":   return WindArc;
+                case "art_woodvine":  return WoodVine;
+                case "art_rune":      return RuneRing;
+                case "art_glint":     return Glint;
+                case "art_burst":     return Burst;
+                case "art_zap":       return Zap;
+                case "art_crack":     return Crack;
+                case "art_blade":     return Blade;
+                case "art_slash":     return Slash;
+                default:              return null;
+            }
+        }
+
         internal static void Init()
         {
             try
@@ -95,6 +133,10 @@ namespace Code.Combat.Fx
                 Zap = Make(33, 13, (x, y) => ZapAt(x, y, 33, 13));
                 Crack = Make(41, 41, (x, y) => CrackAt(x, y, 41, 41));
                 RuneRing = Make(49, 49, (x, y) => RuneRingAt(x, y, 49, 49));
+                // v0.18.74 中式重生成图元
+                SoulFlame = Make(31, 41, (x, y) => SoulFlameAt(x, y, 31, 41));
+                WindArc = Make(33, 17, (x, y) => WindArcAt(x, y, 33, 17));
+                WoodVine = Make(21, 35, (x, y) => WoodVineAt(x, y, 21, 35));
             }
             catch (Exception e)
             {
@@ -314,6 +356,69 @@ namespace Code.Combat.Fx
                 }
             }
             return 0f;
+        }
+
+        // ---- v0.18.74 中式重生成图元函数 ----
+
+        /// <summary>魂焰：竖向火苗，外焰半透明、内芯实亮（y 越靠上越收尖）。</summary>
+        private static float SoulFlameAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f, cy = (h - 1) * 0.62f;
+            float dx = (x - cx) / (w * 0.36f), dy = (y - cy) / (h * 0.32f);
+            float top = (cy - y) / (h * 0.5f);          // 顶部收尖
+            float squash = 1f + Mathf.Max(0f, top) * 1.5f;
+            float dd = Mathf.Sqrt(dx * dx * squash * squash + dy * dy);
+            float outer = 1f - Mathf.Clamp01(dd);
+            if (outer <= 0f) return 0f;
+            // 内芯：火苗下部核心更亮
+            float inner = 1f - Mathf.Clamp01(Mathf.Sqrt(dx * dx * 0.9f + dy * dy * 1.5f));
+            if (inner > 0f) return 0.95f;
+            return outer * 0.45f;
+        }
+
+        /// <summary>风痕：双交叉细弧（X 形风刃），中心交叉处留空。</summary>
+        private static float WindArcAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f, cy = (h - 1) * 0.5f;
+            float s = (w - 1) * 0.42f;
+            float d1 = SegDist(x, y, cx - s, cy + s * 0.55f, cx + s, cy - s * 0.55f);
+            float d2 = SegDist(x, y, cx - s, cy - s * 0.55f, cx + s, cy + s * 0.55f);
+            float a = Mathf.Min(d1, d2);
+            float t = (w - 1) * 0.075f;
+            if (a > t) return 0f;
+            float alpha = 1f - a / t;
+            // 中心留空（两弧交叉点）
+            float cdist = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            float gap = (w - 1) * 0.13f;
+            if (cdist < gap) alpha *= cdist / gap;
+            return alpha * 0.9f;
+        }
+
+        /// <summary>木藤：S 形藤蔓曲线 + 周期叶片凸点。</summary>
+        private static float WoodVineAt(int x, int y, int w, int h)
+        {
+            float cx = (w - 1) * 0.5f;
+            float t = y / (h - 1f);
+            float amp = (w - 1) * 0.30f;
+            float curveX = cx + Mathf.Sin(t * Mathf.PI * 2f) * amp;
+            float dx = x - curveX;
+            float th = (w - 1) * 0.08f;
+            float alpha = Mathf.Clamp01(1f - Mathf.Abs(dx) / th);
+            if (alpha <= 0f) return 0f;
+            // 叶片：藤线两侧的周期凸点
+            float leaf = Mathf.Max(0f, Mathf.Sin(t * 8f * Mathf.PI));
+            float side = Mathf.Sin(t * 8f * Mathf.PI * 0.5f) > 0f ? 1f : -1f;
+            if (leaf > 0.8f)
+            {
+                float ldx = Mathf.Abs(dx) - th;
+                float lr = 1.6f + leaf * 2.4f;
+                if (ldx >= 0f && ldx <= lr)
+                {
+                    float la = 1f - ldx / lr;
+                    alpha = Mathf.Max(alpha, la * 0.85f);
+                }
+            }
+            return alpha;
         }
     }
 }

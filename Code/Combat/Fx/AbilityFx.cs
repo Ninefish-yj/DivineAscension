@@ -39,20 +39,20 @@ namespace Code.Combat.Fx
             _tagPool[PrototypeTag.Crit]       = new[] { "vfx_bighit", "vfx_kabooms", "magic_spark4" };
             _tagPool[PrototypeTag.Telekinesis]= new[] { "fx_plasma_trail", "vfx_constellation", "magic_spark4" };
             _tagPool[PrototypeTag.Poison]     = new[] { "bub_toxic", "magic_smoke", "bub_green2" };
-            _tagPool[PrototypeTag.Curse]      = new[] { "vfx_tentacles", "magic_darkbolt", "bub_purple" };
+            _tagPool[PrototypeTag.Curse]      = new[] { "magic_darkbolt", "bub_purple", "bub_black" };
             _tagPool[PrototypeTag.Fear]       = new[] { "vfx_vortex", "bub_black" };
             _tagPool[PrototypeTag.Slow]       = new[] { "bub_ice", "bub_water1", "bub_water2" };
             _tagPool[PrototypeTag.Lifesteal]  = new[] { "blood_vfx1", "blood_vfx3", "bub_blood" };
-            _tagPool[PrototypeTag.Drain]      = new[] { "blood_vfx2", "soul_yin" };
-            _tagPool[PrototypeTag.Blood]      = new[] { "blood_vfx1", "soul_yin" };
-            _tagPool[PrototypeTag.Soul]       = new[] { "soul_yin", "soul_yang", "bub_white" };
+            _tagPool[PrototypeTag.Drain]      = new[] { "blood_vfx2", "blood_vfx3" };
+            _tagPool[PrototypeTag.Blood]      = new[] { "blood_vfx1", "blood_vfx3" };
+            _tagPool[PrototypeTag.Soul]       = new[] { "art_soulflame", "bub_white", "bub_gold" };
             _tagPool[PrototypeTag.Heal]       = new[] { "bub_green1", "vfx_puffstars", "bub_gold" };
             _tagPool[PrototypeTag.Chain]      = new[] { "magic_lightning", "vfx_elecshield", "magic_bolt" };
             _tagPool[PrototypeTag.Knockback]  = new[] { "vfx_smallhit", "magic_spark", "magic_dust" };
-            _tagPool[PrototypeTag.Gravity]    = new[] { "soul_earth", "vfx_vortex", "magic_dust" };
+            _tagPool[PrototypeTag.Gravity]    = new[] { "vfx_vortex", "bub_black", "magic_dust" };
             _tagPool[PrototypeTag.Berserk]    = new[] { "vfx_magma", "vfx_fastfire" };
-            _tagPool[PrototypeTag.Entangle]   = new[] { "soul_wood", "vfx_tentacles" };
-            _tagPool[PrototypeTag.Petrify]    = new[] { "soul_earth", "magic_dust" };
+            _tagPool[PrototypeTag.Entangle]   = new[] { "art_woodvine", "vfx_tentacles" };
+            _tagPool[PrototypeTag.Petrify]    = new[] { "magic_dust", "magic_smoke" };
             _tagPool[PrototypeTag.Aging]      = new[] { "bub_purple2", "bub_black" };
             _tagPool[PrototypeTag.Weakness]   = new[] { "bub_purple", "bub_purple2" };
             _tagPool[PrototypeTag.ArmorBreak] = new[] { "magic_spark", "magic_spark2", "magic_spark4" };
@@ -63,11 +63,11 @@ namespace Code.Combat.Fx
 
             // ---- 防守标签池 ----
             _tagPool[PrototypeTag.Shield]         = new[] { "shield_blue_loop", "shield_green_loop", "shield_bw_loop" };
-            _tagPool[PrototypeTag.Dodge]          = new[] { "fx_dodge", "soul_wind", "bub_white" };
-            _tagPool[PrototypeTag.Illusion]       = new[] { "soul_wind", "bub_white" };
+            _tagPool[PrototypeTag.Dodge]          = new[] { "fx_dodge", "art_windarc", "bub_white" };
+            _tagPool[PrototypeTag.Illusion]       = new[] { "bub_rainbow", "bub_white" };
             _tagPool[PrototypeTag.Invisibility]   = new[] { "bub_white", "bub_rainbow", "bub_mana" };
             _tagPool[PrototypeTag.Teleport]       = new[] { "fx_teleport_singularity", "fx_teleport_blue", "fx_teleport_red" };
-            _tagPool[PrototypeTag.Clone]          = new[] { "soul_kong", "vfx_elecshield" };
+            _tagPool[PrototypeTag.Clone]          = new[] { "vfx_elecshield", "art_windarc" };
             _tagPool[PrototypeTag.Blessing]       = new[] { "bub_gold", "bub_white", "vfx_puffstars" };
             _tagPool[PrototypeTag.Regeneration]   = new[] { "bub_aqua", "bub_green1", "vfx_puffstars" };
             _tagPool[PrototypeTag.Magnetism]      = new[] { "vfx_elecshield", "magic_bolt", "magic_spark4" };
@@ -79,30 +79,30 @@ namespace Code.Combat.Fx
 
             // ---- 家族氛围（大类/小类 → 特效）----
             _family["元素系/火"] = "vfx_fastfire";     _family["元素系/水"] = "magic_splash";
-            _family["元素系/风"] = "soul_wind";        _family["元素系/雷"] = "magic_lightning";
-            _family["元素系/冰"] = "magic_ice_a";      _family["元素系/土"] = "soul_earth";
-            _family["元素系/木"] = "soul_wood";        _family["元素系/金属"] = "vfx_impact";
-            _family["元素系/光"] = "vfx_eldenring";    _family["元素系/暗"] = "vfx_tentacles";
-            _family["光明系/圣光"] = "vfx_powerchords"; _family["光明系/光刃"] = "spx_shock";
-            _family["光明系/净化"] = "bub_white";       _family["光明系/晨曦"] = "vfx_eldenring";
-            _family["黑暗系/暗影"] = "vfx_vortex";      _family["黑暗系/腐蚀"] = "vfx_magma";
-            _family["黑暗系/诅咒"] = "vfx_tentacles";   _family["黑暗系/夜幕"] = "fx_teleport_singularity";
-            _family["生命系/生命"] = "soul_yang";       _family["生命系/治愈"] = "vfx_puffstars";
-            _family["生命系/再生"] = "bub_aqua";        _family["生命系/生长"] = "soul_wood";
+            _family["元素系/风"] = "art_windarc";      _family["元素系/雷"] = "magic_lightning";
+            _family["元素系/冰"] = "magic_ice_a";      _family["元素系/土"] = "magic_dust";
+            _family["元素系/木"] = "art_woodvine";     _family["元素系/金属"] = "vfx_impact";
+            _family["元素系/光"] = "art_rune";         _family["元素系/暗"] = "vfx_vortex";
+            _family["光明系/圣光"] = "art_rune";        _family["光明系/光刃"] = "spx_shock";
+            _family["光明系/净化"] = "bub_white";       _family["光明系/晨曦"] = "art_rune";
+            _family["黑暗系/暗影"] = "vfx_vortex";      _family["黑暗系/腐蚀"] = "bub_toxic";
+            _family["黑暗系/诅咒"] = "bub_purple";      _family["黑暗系/夜幕"] = "fx_teleport_singularity";
+            _family["生命系/生命"] = "art_soulflame";   _family["生命系/治愈"] = "vfx_puffstars";
+            _family["生命系/再生"] = "bub_aqua";        _family["生命系/生长"] = "art_woodvine";
             _family["生命系/祝福"] = "bub_gold";
             _family["死亡系/亡灵"] = "vfx_bloodimpact"; _family["死亡系/凋零"] = "bub_black";
-            _family["死亡系/死亡"] = "soul_yin";        _family["死亡系/灵魂"] = "soul_yin";
+            _family["死亡系/死亡"] = "art_soulflame";   _family["死亡系/灵魂"] = "art_soulflame";
             _family["死亡系/腐化"] = "vfx_magma";
-            _family["精神系/催眠"] = "bub_mana";        _family["精神系/幻象"] = "soul_wind";
+            _family["精神系/催眠"] = "bub_mana";        _family["精神系/幻象"] = "bub_rainbow";
             _family["精神系/心灵"] = "vfx_constellation"; _family["精神系/念力"] = "vfx_constellation";
-            _family["精神系/意志"] = "vfx_powerchords";  _family["精神系/操控"] = "vfx_constellation";
+            _family["精神系/意志"] = "art_rune";         _family["精神系/操控"] = "vfx_constellation";
             _family["精神系/预知"] = "bub_rainbow";
             _family["时空系/时间"] = "bub_mana";        _family["时空系/空间"] = "fx_teleport_singularity";
-            _family["时空系/次元"] = "vfx_vortex";      _family["时空系/引力"] = "soul_earth";
+            _family["时空系/次元"] = "vfx_vortex";      _family["时空系/引力"] = "vfx_vortex";
             _family["时空系/速度"] = "fx_plasma_trail";
-            _family["自然系/动物"] = "soul_kong";       _family["自然系/植物"] = "soul_wood";
+            _family["自然系/动物"] = "vfx_puffstars";   _family["自然系/植物"] = "art_woodvine";
             _family["自然系/毒"] = "bub_toxic";         _family["自然系/气象"] = "vfx_elecshield";
-            _family["自然系/藤蔓"] = "vfx_tentacles";   _family["自然系/野兽"] = "soul_jin";
+            _family["自然系/藤蔓"] = "art_woodvine";    _family["自然系/野兽"] = "spx_shock";
             _family["强化系/体魄"] = "vfx_bighit";      _family["强化系/能量"] = "bub_gold";
         }
 
@@ -115,6 +115,19 @@ namespace Code.Combat.Fx
             if (_cache.TryGetValue(effectId, out var cached)) return cached;
             try
             {
+                // art_ 前缀：程序化图元（v0.18.74 中式重生成，零素材文件依赖）
+                if (effectId.StartsWith("art_"))
+                {
+                    CombatFxArt.EnsureInit();
+                    var art = CombatFxArt.Get(effectId);
+                    if (art == null)
+                    {
+                        _cache[effectId] = new Sprite[0];
+                        return null;
+                    }
+                    _cache[effectId] = new[] { art };
+                    return _cache[effectId];
+                }
                 var sprites = Resources.LoadAll<Sprite>("effects/" + effectId);
                 if (sprites == null || sprites.Length == 0)
                 {
@@ -142,6 +155,12 @@ namespace Code.Combat.Fx
             // 人类单位显示宽≈0.55 世界单位（v0.18.67 复核原版 actor_size/current_scale 后整体压低）：
             // 护盾/光环≈单位宽、投射≈0.7 单位、爆炸类扩散到≈1.3 倍单位。
             if (id == null) { size = 0.4f; life = 0.6f; return; }
+            if (id.StartsWith("art_"))
+            {
+                // v0.18.74 程序化中式图元：魂焰/风痕/木藤≈单位宽，符环≈领域环
+                if (id == "art_rune") { size = 0.5f; life = 0.7f; return; }
+                size = 0.42f; life = 0.55f; return;
+            }
             if (id.StartsWith("shield_")) { size = 0.42f; life = 2.0f; return; }      // v0.18.71 护盾压到0.42（≈单位宽75%）只罩躯干，不整个罩住人
             if (id.StartsWith("bub_")) { size = 0.35f; life = 0.55f; return; }
             if (id.StartsWith("spx_") || id.StartsWith("magic_spark") || id == "magic_flash"
