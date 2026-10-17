@@ -363,6 +363,8 @@ namespace Code.Combat.Fx
             p.FollowOffset = new Vector2(0f, 0.3f * scale);   // 跟随单位时同样上移，护盾/光环套在身体上
             float s = (strong ? size : size * 0.55f) * scale;
             p.Sized(s, s * 0.72f);
+            // v0.18.72：竖素材（96x128 护盾）默认高=1.33×宽会显大——护盾压扁到 0.75（高≈0.32，只罩躯干）
+            if (id.StartsWith("shield_")) p.YRatio = 0.75f;
             if (strong)
             {
                 // v0.18.69：非半透明命中特效不透明度从 0.92 压到 0.55——
