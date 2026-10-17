@@ -151,9 +151,10 @@ namespace Code.Combat.Fx
         // ============================================================
         private static void Style(string id, out float size, out float life)
         {
-            // 尺寸基准：特效世界宽 = Px(0.01)×帧宽(128)×size ≈ 1.28×size。
-            // 人类单位显示宽≈0.55 世界单位（v0.18.67 复核原版 actor_size/current_scale 后整体压低）：
-            // 护盾/光环≈单位宽、投射≈0.7 单位、爆炸类扩散到≈1.3 倍单位。
+            // 尺寸基准：px=1/帧宽 → 世界宽恒等于 size（size 即期望世界宽）。
+            // 人类 actor_scale≈0.25 → 单位视觉宽≈0.22~0.28 世界单位（v0.18.91 反编译复核；
+            // 西幻奥术护盾 0.24 世界单位=罩全身的标准）：
+            // 护盾≈1.3 倍单位宽罩全身、投射≈单位宽、爆炸类扩散到≈2 倍单位宽，不遮地图人物。
             if (id == null) { size = 0.4f; life = 0.6f; return; }
             if (id.StartsWith("art_"))
             {
@@ -275,8 +276,10 @@ namespace Code.Combat.Fx
                 var ring = CombatFxCore.Spawn(CombatFxArt.Rings[0], pos, 0.09f, 0.35f, FxLayer.Top, 30);
                 if (ring != null)
                 {
+                    // v0.18.91：命中冲击环按帧宽归一化（世界宽=px×帧宽×size，px=0.09/帧宽17→1.53×size），
+                    // 目标 0.9→0.35 世界单位（≈1.5 倍单位宽扩散），原 1.7 世界单位偏大
                     ring.Color(new Color(1f, 0.95f, 0.75f, 0.85f), new Color(1f, 0.85f, 0.55f, 0f))
-                        .Sized(0.3f * scale, 1.1f * scale);
+                        .Sized(0.59f * scale, 0.23f * scale);
                 }
             }
             else
@@ -332,7 +335,8 @@ namespace Code.Combat.Fx
             float frameW = frames[0].rect.width;
             if (frameW <= 0f) frameW = 128f;
             float px = 1f / frameW;
-            var p = CombatFxCore.Spawn(frames, from + new Vector2(0f, 0.3f * scale), px, fly, FxLayer.Top, 34);
+            // v0.18.91：起点从单位身体中心飞出（脚底+0.17×体型），原 0.3×scale 在头顶
+            var p = CombatFxCore.Spawn(frames, from + new Vector2(0f, 0.17f * scale), px, fly, FxLayer.Top, 34);
             if (p == null) return;
             p.Sized(0.45f * scale, 0.28f * scale)
              .Color(new Color(1f, 1f, 1f, 0.7f), new Color(1f, 1f, 1f, 0f))
@@ -360,10 +364,11 @@ namespace Code.Combat.Fx
                         var fx = EffectsLibrary.spawn(id, tile, null, null, 0f, -1f, -1f, null);
                         if (fx != null)
                         {
-                            fx.prepare(pos + new Vector2(0f, 0.3f * scale), 1f);
-                            // v0.18.90：帧宽归一化——目标世界宽 = 0.5×体型（≈1 倍单位宽），
-                            // 原 0.5×scale 是精灵缩放倍数（世界宽=倍数×帧宽/PPU）导致特效巨大。
-                            CombatFxCore.ScaleFxToWorldWidth(fx, 0.5f * scale);
+                            // v0.18.91：特效中心对准单位身体中心（脚底+0.17×体型），原 0.3×scale 悬在头顶
+                            fx.prepare(pos + new Vector2(0f, 0.17f * scale), 1f);
+                            // v0.18.91：帧宽归一化——目标世界宽 = 0.25×体型（人类 actor_scale≈0.25，
+                            // 1 倍单位宽≈0.25 世界单位，与西幻奥术护盾 0.24 对齐）
+                            CombatFxCore.ScaleFxToWorldWidth(fx, 0.25f * scale);
                         }
                     }
                 }
@@ -379,13 +384,14 @@ namespace Code.Combat.Fx
             float frameW = frames[0].rect.width;
             if (frameW <= 0f) frameW = 128f;
             float px = 1f / frameW;
-            // 特效中心对准单位身体中部（单位 current_position 是脚底，直接播会整体偏下/贴地）
-            Vector2 center = pos + new Vector2(0f, 0.3f * scale);
+            // 特效中心对准单位身体中心（单位 current_position 是脚底；v0.18.91 由 0.3×scale 修正——
+            // 0.3 相对单位视觉高≈0.33 已到头顶，大众认知特效应作用在身体上）
+            Vector2 center = pos + new Vector2(0f, 0.17f * scale);
             var p = CombatFxCore.Spawn(frames, center, px, life, layer, order);
             if (p == null) return;
             p.Delay = delay;
             p.FollowActor = follow;
-            p.FollowOffset = new Vector2(0f, 0.3f * scale);   // 跟随单位时同样上移，护盾/光环套在身体上
+            p.FollowOffset = new Vector2(0f, 0.17f * scale);   // 跟随单位时同样对准身体中心，护盾/光环套在身上
             float s = (strong ? size : size * 0.55f) * scale;
             p.Sized(s, s * 0.72f);
             // v0.18.72：竖素材（96x128 护盾）默认高=1.33×宽会显大——护盾压扁到 0.75（高≈0.32，只罩躯干）

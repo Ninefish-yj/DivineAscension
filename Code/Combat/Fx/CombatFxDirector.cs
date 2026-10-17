@@ -52,11 +52,13 @@ namespace Code.Combat.Fx
             {
                 EnsureArt();
                 if (!CanFull(pos)) return;
+                // v0.18.91：技能释放从单位身体中心爆开（脚底+0.17），原贴脚底/悬头顶
+                pos.y += 0.17f;
                 Color c = TierColor(tier);
-                // 中心光斑（快速收缩）
+                // 中心光斑（快速收缩；px=0.08×帧宽21→1.68×size，目标 0.8→0.3 世界单位）
                 CombatFxCore.Spawn(CombatFxArt.Burst, pos, 0.08f, 0.25f, FxLayer.Over, 30)
-                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.6f, 0.35f);
-                // 命中星 2-3 颗（旋转发散）
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.48f, 0.18f);
+                // 命中星 2-3 颗（旋转发散；px=0.1×帧宽17→1.7×size，目标 0.5→0.2）
                 int stars = 2 + Mathf.Min(1, tier / 6);
                 for (int i = 0; i < stars; i++)
                 {
@@ -64,10 +66,10 @@ namespace Code.Combat.Fx
                     float spd = UnityEngine.Random.Range(4f, 9f);
                     CombatFxCore.Spawn(CombatFxArt.HitStars[UnityEngine.Random.Range(0, CombatFxArt.HitStars.Length)],
                         pos, 0.1f, 0.4f, FxLayer.Top, 40)
-                        .Color(c).Sized(1f, 0.3f)
+                        .Color(c).Sized(0.29f, 0.12f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd, 0f, 2f, 0f);
                 }
-                // 火花迸发（数量随境界）
+                // 火花迸发（数量随境界；px=0.1×帧宽9→0.9×size，目标 0.35→0.15）
                 int sparks = 3 + Mathf.Min(6, tier / 2);
                 for (int i = 0; i < sparks; i++)
                 {
@@ -77,7 +79,7 @@ namespace Code.Combat.Fx
                     CombatFxCore.Spawn(CombatFxArt.Sparks[UnityEngine.Random.Range(0, CombatFxArt.Sparks.Length)],
                         pos, 0.1f, life, FxLayer.Top, 45)
                         .Color(c, new Color(c.r, c.g, c.b, 0f))
-                        .Sized(1f, 0.4f)
+                        .Sized(0.39f, 0.17f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd, UnityEngine.Random.Range(1f, 3f), 1.5f, 0f);
                 }
                 CombatFxSound.Play(tier >= 6 ? CombatFxSound.Powerup : CombatFxSound.Whoosh, pos);
@@ -116,17 +118,19 @@ namespace Code.Combat.Fx
                 }
                 _hitCooldown[victim] = Time.unscaledTime;
                 float scale = Mathf.Min(1f, damage / 3000f);
+                // v0.18.91：受击演出对准单位身体中心（大众认知：伤害作用在身体上）
+                pos.y += 0.17f;
                 Color c = new Color(1f, 0.9f, 0.55f);
-                // 命中星（低伤害 1 颗，高伤害 2 颗）
+                // 命中星（低伤害 1 颗，高伤害 2 颗；px=0.1×帧宽17→1.7×size，目标 0.4→0.18）
                 int stars = scale > 0.4f ? 2 : 1;
                 for (int i = 0; i < stars; i++)
                 {
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
                     CombatFxCore.Spawn(CombatFxArt.HitStars[stars - 1], pos, 0.1f, 0.3f, FxLayer.Top, 40)
-                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1f, 0.25f)
+                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.24f, 0.11f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * 6f, 0f, 2f, 0f);
                 }
-                // 火花（低伤害 1-2 颗，规模线性）
+                // 火花（低伤害 1-2 颗，规模线性；px=0.1×帧宽9→0.9×size，目标 0.33→0.15）
                 int sparks = 1 + (int)(scale * 6f);
                 for (int i = 0; i < sparks; i++)
                 {
@@ -134,10 +138,10 @@ namespace Code.Combat.Fx
                     float spd = UnityEngine.Random.Range(3f, 6f + scale * 6f);
                     CombatFxCore.Spawn(CombatFxArt.Sparks[UnityEngine.Random.Range(0, CombatFxArt.Sparks.Length)],
                         pos, 0.1f, UnityEngine.Random.Range(0.15f, 0.4f), FxLayer.Top, 45)
-                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1f, 0.3f)
+                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.37f, 0.17f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd, UnityEngine.Random.Range(1f, 3f), 1.5f, 0f);
                 }
-                // 大伤害追加碎石 + 击停
+                // 大伤害追加碎石 + 击停（px=0.09×帧宽11→0.99×size，目标 0.5→0.28）
                 if (damage >= 800f)
                 {
                     for (int i = 0; i < 3 + (int)(scale * 3f); i++)
@@ -146,7 +150,7 @@ namespace Code.Combat.Fx
                         float spd = UnityEngine.Random.Range(2f, 5f);
                         CombatFxCore.Spawn(CombatFxArt.Debris[UnityEngine.Random.Range(0, CombatFxArt.Debris.Length)],
                             pos, 0.09f, UnityEngine.Random.Range(0.25f, 0.5f), FxLayer.Top, 46)
-                            .Color(new Color(0.75f, 0.7f, 0.55f)).Sized(1f, 0.5f)
+                            .Color(new Color(0.75f, 0.7f, 0.55f)).Sized(0.5f, 0.28f)
                             .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd, UnityEngine.Random.Range(2f, 5f), 1f, 6f);
                     }
                     CombatFxHitStop.Request(pos, Mathf.Min(0.22f, 0.05f + damage / 40000f));
@@ -217,8 +221,11 @@ namespace Code.Combat.Fx
                 if (attacker == null) return;
                 Vector2 from = attacker.current_position;
                 if (!CanFull(targetPos) || !CanFull(from)) return;
+                // v0.18.91：演出高度对准身体中心（脚底+0.17），拖影/残影/命中环不再贴地或悬头顶
+                from.y += 0.17f;
+                targetPos.y += 0.17f;
                 Color c = new Color(1f, 0.95f, 0.75f);
-                // 冲刺拖影：沿直线撒光点（快速掠过感）
+                // 冲刺拖影：沿直线撒光点（快速掠过感；px=0.08×帧宽17→1.36×size，目标 0.4→0.15）
                 Vector2 dir = targetPos - from;
                 float dist = dir.magnitude;
                 if (dist < 0.5f) dist = 1f;
@@ -229,19 +236,19 @@ namespace Code.Combat.Fx
                     float t = (float)i / dots;
                     Vector2 p = Vector2.Lerp(from, targetPos, t);
                     CombatFxCore.Spawn(CombatFxArt.HitStars[0], p, 0.08f, 0.28f, FxLayer.Over, 30)
-                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.9f, 0.25f);
+                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.29f, 0.12f);
                 }
-                // 攻击者残影（身后淡出 ghost ×2）
+                // 攻击者残影（身后淡出 ghost ×2；px=0.07×帧宽21→1.47×size，目标 0.8→0.4）
                 for (int i = 0; i < 2; i++)
                 {
                     Vector2 gpos = from - dir * (0.4f + i * 0.35f);
                     CombatFxCore.Spawn(CombatFxArt.Burst, gpos, 0.07f, 0.35f - i * 0.1f, FxLayer.Behind, 4)
                         .Color(new Color(c.r, c.g, c.b, 0.28f), new Color(c.r, c.g, c.b, 0f))
-                        .Sized(1.4f - i * 0.3f, 0.5f);
+                        .Sized(0.54f - i * 0.11f, 0.2f);
                 }
-                // 目标命中环（扩张淡出）
+                // 目标命中环（扩张淡出；px=0.09×帧宽17→1.53×size，目标 1.0→0.4）
                 CombatFxCore.Spawn(CombatFxArt.Rings[0], targetPos, 0.09f, 0.35f, FxLayer.Top, 30)
-                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.4f, 1.6f);
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.65f, 0.26f);
                 CombatFxSound.Play(CombatFxSound.Whoosh, targetPos);
                 // 真突进：攻击者本体朝目标前冲（视觉偏移，AI 无感）
                 ActorDash(attacker, targetPos - from, Mathf.Min(0.55f, dist * 0.35f));
@@ -272,20 +279,22 @@ namespace Code.Combat.Fx
                 if (dist < 0.5f) dist = 1f;
                 dir /= dist;
                 Vector2 mid = (from + targetPos) * 0.5f;
+                // v0.18.91：剑弧/剑气对准身体中心高度（脚底+0.17），不再悬在头顶
+                mid.y += 0.17f;
                 Color c = new Color(0.82f, 0.93f, 1f);              // 剑气寒光
                 float baseAng = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-                // 横扫剑弧：3 段叠扫（大→小，旋转扫过 + 淡出）
+                // 横扫剑弧：3 段叠扫（大→小，旋转扫过 + 淡出；px=0.08×帧宽33→2.64×size，目标 1.0→0.4）
                 for (int i = 0; i < 3; i++)
                 {
                     float t = i / 3f;
                     var arc = CombatFxCore.Spawn(CombatFxArt.Slash, mid, 0.08f, 0.3f - t * 0.1f, FxLayer.Over, 32);
                     if (arc == null) continue;
-                    arc.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.62f, 0.26f);
+                    arc.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.38f, 0.16f);
                     arc.Rot = baseAng - 90f + (t - 0.5f) * 70f;     // 弧面朝向目标，从一侧扫向另一侧
                     arc.Spin = (1f - t) * 55f;
                 }
                 // 剑气飞射：2 道 Blade 朝目标（从身体中上部飞出）
-                Vector2 origin = from + new Vector2(0f, 0.3f);
+                Vector2 origin = from + new Vector2(0f, 0.17f);
                 for (int i = 0; i < 2; i++)
                 {
                     Vector2 off = new Vector2(dir.y, -dir.x) * (i == 0 ? -0.35f : 0.35f);
@@ -362,6 +371,8 @@ namespace Code.Combat.Fx
                 if (victim == null || !victim.isAlive()) return;
                 Vector2 pos = victim.current_position;
                 if (!CanFull(pos)) return;
+                // v0.18.91：电弧从身体中心放射（脚底+0.17），原贴脚底弧光被地面截断
+                pos.y += 0.17f;
                 Color c = new Color(0.55f, 0.82f, 1f);              // 雷蓝
                 int arcs = 2 + UnityEngine.Random.Range(0, 2);
                 for (int i = 0; i < arcs; i++)
@@ -454,6 +465,8 @@ namespace Code.Combat.Fx
                 if (actor == null) return;
                 Vector2 pos = actor.current_position;
                 if (!CanFull(pos)) return;
+                // v0.18.91：登神演出从身体中心展开（脚底+0.17），神形从身体上方 0.3 浮现而非头顶 0.8
+                pos.y += 0.17f;
                 Color gold = new Color(1f, 0.85f, 0.3f);
                 // 时间：慢动作 0.25×1.2s + 冻结 0.35s（冲击帧）
                 CombatFxCinema.SlowMo(0.25f, 1.2f);
@@ -467,26 +480,30 @@ namespace Code.Combat.Fx
                 CombatFxCore.Spawn(CombatFxArt.Rings[2], pos, 0.12f, 1.1f, FxLayer.Cine, 5)
                     .Color(new Color(1f, 0.95f, 0.7f), new Color(1f, 0.8f, 0.3f, 0f))
                     .Sized(0.25f, 0.62f);
-                // 金色星雨
+                // 金色星雨（px=0.1×帧宽17→1.7×size，目标 0.6→0.2）
                 for (int i = 0; i < 10; i++)
                 {
                     float ang = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
                     float spd = UnityEngine.Random.Range(3f, 8f);
                     CombatFxCore.Spawn(CombatFxArt.HitStars[UnityEngine.Random.Range(0, CombatFxArt.HitStars.Length)],
                         pos, 0.1f, UnityEngine.Random.Range(0.5f, 0.9f), FxLayer.Cine, 20)
-                        .Color(gold, new Color(gold.r, gold.g, gold.b, 0f)).Sized(1.2f, 0.2f)
+                        .Color(gold, new Color(gold.r, gold.g, gold.b, 0f)).Sized(0.35f, 0.12f)
                         .Moving(new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd, UnityEngine.Random.Range(2f, 5f), 0.5f, 0f);
                 }
                 CombatFxSound.Play(CombatFxSound.Inspiration, pos);
                 CombatFxSound.Play(CombatFxSound.ExplosionMeteorite, pos);
-                // 神形显现（v0.18.66 unit_gifs）：登神单位上方浮现巨大半透明虚影动画
+                // 神形显现（v0.18.66 unit_gifs）：登神单位上方浮现半透明虚影动画
                 var deity = AbilityFx.PickUnitAnim();
                 if (deity != null)
                 {
-                    // Cine 层：冻结中也继续播放；放大 3-4 倍、金色着色、缓慢上浮淡出
-                    CombatFxCore.Spawn(deity, pos + new Vector2(0f, 0.8f), 0.012f, 1.6f, FxLayer.Cine, 15)
+                    // v0.18.91：神形按帧宽归一化到 1.5 世界单位宽（原 3.4 宽×6.5 高遮屏），
+                    // 从身体上方 0.3 浮起缓慢上升，金色半透明
+                    float fw = deity[0] != null ? deity[0].rect.width : 128f;
+                    if (fw <= 0f) fw = 128f;
+                    float size = 1.5f / (0.012f * fw);
+                    CombatFxCore.Spawn(deity, pos + new Vector2(0f, 0.3f), 0.012f, 1.6f, FxLayer.Cine, 15)
                         .Color(new Color(1f, 0.9f, 0.5f, 0.85f), new Color(1f, 0.8f, 0.35f, 0f))
-                        .Sized(2.2f, 4.2f)
+                        .Sized(size, size * 0.4f)
                         .Moving(new Vector2(0f, 1.1f), 0f, 0f, 0f);
                 }
             }
