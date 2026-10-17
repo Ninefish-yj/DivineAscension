@@ -38,7 +38,7 @@ namespace Code.Realm.Prototype
             // ---- 晨曦 ----
             new PrototypeDef("li_dawn_01", "晨曦", "攻击治疗强化，护盾减伤", "光明系", "晨曦",
                 PrototypeTag.Soul, PrototypeTag.Shield, 3, 3),
-            new PrototypeDef("li_dawn_02", "破晓", "攻击暴击破甲，附加灼烧", "光明系", "晨曦",
+            new PrototypeDef("li_dawn_02", "破晓", "攻击暴击高伤，附加灼烧", "光明系", "晨曦",
                 PrototypeTag.Crit, PrototypeTag.Burn, 3, 6),
             new PrototypeDef("li_dawn_03", "黎明", "受击免伤强化，攻击回复生命", "光明系", "晨曦",
                 PrototypeTag.Invisibility, PrototypeTag.Heal, 3, 9),
@@ -61,7 +61,7 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Poison, PrototypeTag.Curse, 5, 5),
             new PrototypeDef("dk_corrode_02", "溶解", "攻击附加灼烧持续伤害，溅射波及", "黑暗系", "腐蚀",
                 PrototypeTag.Burn, PrototypeTag.Chain, 5, 7),
-            new PrototypeDef("dk_corrode_03", "蚀甲", "攻击眩晕定身，减速目标", "黑暗系", "腐蚀",
+            new PrototypeDef("dk_corrode_03", "蚀甲", "攻击眩晕定身，破开护甲", "黑暗系", "腐蚀",
                 PrototypeTag.Stun, PrototypeTag.ArmorBreak, 5, 9),
             new PrototypeDef("dk_corrode_04", "酸蚀", "中毒持续伤害，虚弱目标", "黑暗系", "腐蚀",
                 PrototypeTag.Poison, PrototypeTag.Weakness, 5, 2),

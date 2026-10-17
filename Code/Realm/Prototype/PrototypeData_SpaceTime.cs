@@ -42,16 +42,16 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 6, 8),
             new PrototypeDef("st_gravity_04", "失重", "重力压制，减速目标", "时空系", "引力",
                 PrototypeTag.Gravity, PrototypeTag.Slow, 6, 5),
-            new PrototypeDef("st_gravity_05", "引力坍缩", "重力压制，震退眩晕", "时空系", "引力",
+            new PrototypeDef("st_gravity_05", "引力坍缩", "重力压制，震退定身", "时空系", "引力",
                 PrototypeTag.Gravity, PrototypeTag.Knockback, 6, 7),
             new PrototypeDef("st_gravity_06", "黑洞", "重力压制，低血量湮灭", "时空系", "引力",
                 PrototypeTag.Gravity, PrototypeTag.Execute, 6, 9),
             // ---- 速度 ----
             new PrototypeDef("st_speed_01", "极速", "身法闪避，攻击暴击", "时空系", "速度",
                 PrototypeTag.Dodge, PrototypeTag.Crit, 1, 1),
-            new PrototypeDef("st_speed_02", "瞬连", "攻击暴击破甲，减速目标", "时空系", "速度",
+            new PrototypeDef("st_speed_02", "瞬连", "攻击暴击高伤，连击爆发", "时空系", "速度",
                 PrototypeTag.Crit, PrototypeTag.MultiShot, 1, 5),
-            new PrototypeDef("st_speed_03", "音速", "攻击击退眩晕，溅射波及", "时空系", "速度",
+            new PrototypeDef("st_speed_03", "音速", "攻击击退定身，溅射波及", "时空系", "速度",
                 PrototypeTag.Knockback, PrototypeTag.Chain, 1, 9),
         };
     }

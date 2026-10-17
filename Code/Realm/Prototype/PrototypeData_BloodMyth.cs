@@ -15,7 +15,7 @@ namespace Code.Realm.Prototype
             // ---- 血 ----
             new PrototypeDef("bl_blood_01", "血噬", "攻击吸血强化，护盾减伤", "黑暗系", "暗影",
                 PrototypeTag.Blood, PrototypeTag.Shield, 5, 1),
-            new PrototypeDef("bl_blood_02", "嗜血", "攻击吸血，暴击破甲", "黑暗系", "暗影",
+            new PrototypeDef("bl_blood_02", "嗜血", "攻击吸血，暴击高伤", "黑暗系", "暗影",
                 PrototypeTag.Lifesteal, PrototypeTag.Crit, 5, 2),
             new PrototypeDef("bl_blood_03", "血生", "受击自愈回血，受击反击震慑攻击者", "黑暗系", "暗影",
                 PrototypeTag.Regeneration, PrototypeTag.Sound, 5, 3),
@@ -29,7 +29,7 @@ namespace Code.Realm.Prototype
             // ---- 獠牙 ----
             new PrototypeDef("bl_fang_01", "血咒", "攻击吸血强化，附加诅咒", "黑暗系", "诅咒",
                 PrototypeTag.Blood, PrototypeTag.Curse, 0, 1),
-            new PrototypeDef("bl_fang_02", "本能", "攻击暴击破甲，击退眩晕", "强化系", "体魄",
+            new PrototypeDef("bl_fang_02", "本能", "攻击暴击高伤，击退定身", "强化系", "体魄",
                 PrototypeTag.Crit, PrototypeTag.Knockback, 0, 1),
             new PrototypeDef("bl_fang_03", "狂暴", "攻击狂暴当次+25%，吸血", "强化系", "体魄",
                 PrototypeTag.Berserk, PrototypeTag.Lifesteal, 0, 3),

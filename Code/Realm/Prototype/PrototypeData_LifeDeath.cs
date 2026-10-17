@@ -68,7 +68,7 @@ namespace Code.Realm.Prototype
             // ---- 死亡 ----
             new PrototypeDef("de_death_01", "死亡宣告", "攻击念力贯穿高伤，诅咒加深", "死亡系", "死亡",
                 PrototypeTag.Telekinesis, PrototypeTag.Curse, 5, 1),
-            new PrototypeDef("de_death_02", "收割", "攻击暴击破甲，吸血", "死亡系", "死亡",
+            new PrototypeDef("de_death_02", "收割", "攻击暴击高伤，斩杀重伤", "死亡系", "死亡",
                 PrototypeTag.Crit, PrototypeTag.Execute, 5, 5),
             new PrototypeDef("de_death_03", "死域", "攻击减速时缓目标，概率眩晕", "死亡系", "死亡",
                 PrototypeTag.TimeSlow, PrototypeTag.Stun, 5, 9),

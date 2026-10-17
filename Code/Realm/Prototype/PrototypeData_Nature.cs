@@ -15,7 +15,7 @@ namespace Code.Realm.Prototype
             // ---- 植物 ----
             new PrototypeDef("na_plant_01", "草木之心", "治疗自身，攻击减速缠绕目标", "自然系", "植物",
                 PrototypeTag.Heal, PrototypeTag.Slow, 2, 1),
-            new PrototypeDef("na_plant_02", "荆棘", "受击反击麻痹攻击者，护盾减伤", "自然系", "植物",
+            new PrototypeDef("na_plant_02", "荆棘", "受击震晕攻击者，反弹伤害", "自然系", "植物",
                 PrototypeTag.Vibration, PrototypeTag.Thorns, 2, 5),
             new PrototypeDef("na_plant_03", "花愈", "受击自愈回血，攻击附加中毒", "自然系", "植物",
                 PrototypeTag.Regeneration, PrototypeTag.Poison, 2, 9),
@@ -24,7 +24,7 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Dodge, PrototypeTag.Crit, 1, 1),
             new PrototypeDef("na_beast_02", "群狼", "攻击狂暴当次+25%，溅射波及", "自然系", "动物",
                 PrototypeTag.Berserk, PrototypeTag.Chain, 1, 5),
-            new PrototypeDef("na_beast_03", "扑杀", "攻击击退眩晕，减速目标", "自然系", "动物",
+            new PrototypeDef("na_beast_03", "扑杀", "攻击击退定身，减速目标", "自然系", "动物",
                 PrototypeTag.Knockback, PrototypeTag.Slow, 0, 9),
             // ---- 气象 ----
             new PrototypeDef("na_weather_01", "呼风唤雨", "攻击溅射波及，治疗自身", "自然系", "气象",
@@ -48,14 +48,14 @@ namespace Code.Realm.Prototype
             new PrototypeDef("na_heal_03", "回春术", "受击回血强化，闪避免伤", "生命系", "治愈",
                 PrototypeTag.Blessing, PrototypeTag.Dodge, 2, 9),
             // ---- 野兽 ----
-            new PrototypeDef("na_wild_01", "兽血", "攻击吸血，暴击破甲", "自然系", "野兽",
+            new PrototypeDef("na_wild_01", "兽血", "攻击吸血，暴击高伤", "自然系", "野兽",
                 PrototypeTag.Lifesteal, PrototypeTag.Crit, 0, 1),
-            new PrototypeDef("na_wild_02", "熊力", "攻击念力贯穿高伤，击退眩晕", "自然系", "野兽",
+            new PrototypeDef("na_wild_02", "熊力", "攻击念力贯穿高伤，击退定身", "自然系", "野兽",
                 PrototypeTag.Telekinesis, PrototypeTag.Knockback, 0, 5),
             new PrototypeDef("na_wild_03", "豹速", "闪避强化，攻击暴击", "自然系", "野兽",
                 PrototypeTag.Illusion, PrototypeTag.Crit, 1, 9),
             // ---- 藤蔓 ----
-            new PrototypeDef("na_vine_01", "缚藤", "攻击眩晕定身，减速目标", "自然系", "藤蔓",
+            new PrototypeDef("na_vine_01", "缚藤", "攻击眩晕定身，束缚缠绕", "自然系", "藤蔓",
                 PrototypeTag.Stun, PrototypeTag.Entangle, 2, 1),
             new PrototypeDef("na_vine_02", "绞藤", "攻击重力压制，附加持续伤害", "自然系", "藤蔓",
                 PrototypeTag.Gravity, PrototypeTag.Burn, 2, 5),

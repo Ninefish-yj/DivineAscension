@@ -43,7 +43,7 @@ namespace Code.Realm.Prototype
             // ---- 催眠 ----
             new PrototypeDef("ps_hypno_01", "催眠术", "攻击眩晕定身目标，恐惧加深", "精神系", "催眠",
                 PrototypeTag.Stun, PrototypeTag.Fear, 5, 1),
-            new PrototypeDef("ps_hypno_02", "沉睡", "攻击减速时缓目标，概率眩晕", "精神系", "催眠",
+            new PrototypeDef("ps_hypno_02", "沉睡", "攻击时缓目标，概率沉睡", "精神系", "催眠",
                 PrototypeTag.TimeSlow, PrototypeTag.Sleep, 5, 5),
             new PrototypeDef("ps_hypno_03", "梦魇", "攻击附加诅咒持续伤害，眩晕", "精神系", "催眠",
                 PrototypeTag.Curse, PrototypeTag.Stun, 5, 9),
@@ -52,12 +52,12 @@ namespace Code.Realm.Prototype
                 PrototypeTag.Fear, PrototypeTag.Slow, 5, 1),
             new PrototypeDef("ps_control_02", "夺心", "攻击眩晕定身，溅射波及", "精神系", "操控",
                 PrototypeTag.Stun, PrototypeTag.Chain, 5, 5),
-            new PrototypeDef("ps_control_03", "提线", "攻击击退眩晕，吸血回复", "精神系", "操控",
+            new PrototypeDef("ps_control_03", "提线", "攻击击退定身，吸血回复", "精神系", "操控",
                 PrototypeTag.Knockback, PrototypeTag.Lifesteal, 5, 9),
             // ---- 幻象 ----
             new PrototypeDef("ps_illusion_01", "幻术", "闪避强化，受击概率免伤", "精神系", "幻象",
                 PrototypeTag.Illusion, PrototypeTag.Dodge, 4, 3),
-            new PrototypeDef("ps_illusion_02", "影分身", "受击免伤最高，攻击暴击", "精神系", "幻象",
+            new PrototypeDef("ps_illusion_02", "影分身", "受击免伤最高，分身回敬伤害", "精神系", "幻象",
                 PrototypeTag.Invisibility, PrototypeTag.Clone, 4, 6),
             new PrototypeDef("ps_illusion_03", "幻境", "受击反击震慑攻击者，闪避", "精神系", "幻象",
                 PrototypeTag.Sound, PrototypeTag.Illusion, 4, 9),

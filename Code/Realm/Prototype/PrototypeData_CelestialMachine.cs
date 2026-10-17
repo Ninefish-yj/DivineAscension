@@ -34,7 +34,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("ce_meteor_03", "万磁", "护盾减伤，受击反击麻痹攻击者", "元素系", "金属",
                 PrototypeTag.Shield, PrototypeTag.Magnetism, 6, 1),
             // ---- 银河 ----
-            new PrototypeDef("ce_galaxy_01", "落雷", "攻击暴击破甲，溅射波及", "元素系", "雷",
+            new PrototypeDef("ce_galaxy_01", "落雷", "攻击暴击高伤，溅射波及", "元素系", "雷",
                 PrototypeTag.Crit, PrototypeTag.Chain, 4, 1),
             new PrototypeDef("ce_galaxy_02", "星愈", "攻击概率回复生命，受击自愈", "生命系", "治愈",
                 PrototypeTag.Heal, PrototypeTag.Regeneration, 4, 1),
@@ -52,7 +52,7 @@ namespace Code.Realm.Prototype
             // ---- 念力（原机械：本质是念力操控，归精神系）----
             new PrototypeDef("ma_machine_01", "念力弹", "攻击念力贯穿高伤，护盾减伤", "精神系", "念力",
                 PrototypeTag.Telekinesis, PrototypeTag.Shield, 0, 1),
-            new PrototypeDef("ma_machine_02", "念流", "攻击溅射波及，暴击破甲", "精神系", "念力",
+            new PrototypeDef("ma_machine_02", "念流", "攻击溅射波及，暴击高伤", "精神系", "念力",
                 PrototypeTag.Chain, PrototypeTag.Crit, 0, 2),
             new PrototypeDef("ma_machine_03", "念盾", "护盾减伤强化，受击反击眩晕攻击者", "精神系", "念力",
                 PrototypeTag.Shield, PrototypeTag.Vibration, 0, 3),
@@ -71,7 +71,7 @@ namespace Code.Realm.Prototype
             new PrototypeDef("ma_tech_03", "超再生", "受击自愈回血，受击免伤", "强化系", "能量",
                 PrototypeTag.Regeneration, PrototypeTag.Dodge, 4, 9),
             // ---- 体魄（原改造：身体强化/再生，归强化系）----
-            new PrototypeDef("ma_cyber_01", "狂化", "攻击吸血强化，暴击破甲", "强化系", "体魄",
+            new PrototypeDef("ma_cyber_01", "狂化", "攻击吸血强化，暴击高伤", "强化系", "体魄",
                 PrototypeTag.Blood, PrototypeTag.Crit, 0, 5),
             new PrototypeDef("ma_cyber_02", "金刚", "护盾减伤，攻击念力贯穿", "强化系", "体魄",
                 PrototypeTag.Shield, PrototypeTag.Telekinesis, 0, 7),
