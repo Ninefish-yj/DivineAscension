@@ -9,6 +9,7 @@
 //   近距（相机缩放 ≤ 60）才全演出；击停独立冷却；粒子总量预算。
 // ============================================================
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Code.Combat.Fx
@@ -197,6 +198,56 @@ namespace Code.Combat.Fx
             }
         }
 
+        // ----------------------------------------------------- 异能冲刺 --
+
+        /// <summary>
+        /// 异能战斗动作演出（v0.18.66，参考「战斗之神」Choreo 突进/残影/受击反应思路，纯特效模拟不碰 AI）：
+        /// 攻击者→目标 冲刺拖影光点链 + 攻击者原位置残影淡出 + 目标命中环。
+        /// 出镜率由调用方（AbilityFx 50% 门禁）控制，这里只做门禁 + 预算。
+        /// </summary>
+        public static void DashStrike(Actor attacker, Vector2 targetPos)
+        {
+            try
+            {
+                EnsureArt();
+                if (attacker == null) return;
+                Vector2 from = attacker.current_position;
+                if (!CanFull(targetPos) || !CanFull(from)) return;
+                Color c = new Color(1f, 0.95f, 0.75f);
+                // 冲刺拖影：沿直线撒光点（快速掠过感）
+                Vector2 dir = targetPos - from;
+                float dist = dir.magnitude;
+                if (dist < 0.5f) dist = 1f;
+                dir /= dist;
+                int dots = 5 + (int)Mathf.Min(4f, dist * 0.5f);
+                for (int i = 0; i < dots; i++)
+                {
+                    float t = (float)i / dots;
+                    Vector2 p = Vector2.Lerp(from, targetPos, t);
+                    CombatFxCore.Spawn(CombatFxArt.HitStars[0], p, 0.08f, 0.28f, FxLayer.Over, 30)
+                        .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.9f, 0.25f);
+                }
+                // 攻击者残影（身后淡出 ghost ×2）
+                for (int i = 0; i < 2; i++)
+                {
+                    Vector2 gpos = from - dir * (0.4f + i * 0.35f);
+                    CombatFxCore.Spawn(CombatFxArt.Burst, gpos, 0.07f, 0.35f - i * 0.1f, FxLayer.Behind, 4)
+                        .Color(new Color(c.r, c.g, c.b, 0.28f), new Color(c.r, c.g, c.b, 0f))
+                        .Sized(1.4f - i * 0.3f, 0.5f);
+                }
+                // 目标命中环（扩张淡出）
+                CombatFxCore.Spawn(CombatFxArt.Rings[0], targetPos, 0.09f, 0.35f, FxLayer.Top, 30)
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.4f, 1.6f);
+                CombatFxSound.Play(CombatFxSound.Whoosh, targetPos);
+                // 真突进：攻击者本体朝目标前冲（视觉偏移，AI 无感）
+                ActorDash(attacker, targetPos - from, Mathf.Min(0.55f, dist * 0.35f));
+            }
+            catch (Exception e)
+            {
+                Code.Core.DSDebug.Verbose("[CombatFx] DashStrike: " + e.Message);
+            }
+        }
+
         // ----------------------------------------------------- 登神升华 --
 
         /// <summary>
@@ -236,6 +287,16 @@ namespace Code.Combat.Fx
                 }
                 CombatFxSound.Play(CombatFxSound.Inspiration, pos);
                 CombatFxSound.Play(CombatFxSound.ExplosionMeteorite, pos);
+                // 神形显现（v0.18.66 unit_gifs）：登神单位上方浮现巨大半透明虚影动画
+                var deity = AbilityFx.PickUnitAnim();
+                if (deity != null)
+                {
+                    // Cine 层：冻结中也继续播放；放大 3-4 倍、金色着色、缓慢上浮淡出
+                    CombatFxCore.Spawn(deity, pos + new Vector2(0f, 0.8f), 0.012f, 1.6f, FxLayer.Cine, 15)
+                        .Color(new Color(1f, 0.9f, 0.5f, 0.85f), new Color(1f, 0.8f, 0.35f, 0f))
+                        .Sized(2.2f, 4.2f)
+                        .Moving(new Vector2(0f, 1.1f), 0f, 0f, 0f);
+                }
             }
             catch (Exception e)
             {
@@ -243,9 +304,66 @@ namespace Code.Combat.Fx
             }
         }
 
+        // ----------------------------------------------------- 真突进 --
+
+        /// <summary>
+        /// 真突进（v0.18.66，参考「战斗之神」Lunge 思路）：
+        /// 攻击瞬间给攻击者 move_jump_offset.x 一个朝目标的前冲偏移，随后滑回。
+        /// 只动视觉偏移字段（x 分量原版从不写，y 归跳跃悬浮），不碰 AI 移动/寻路，无同步风险。
+        /// </summary>
+        private sealed class DashState
+        {
+            public float OriginX;   // 突进前 move_jump_offset.x
+            public float Peak;      // 峰值偏移（含方向）
+            public float Timer;     // 剩余时间
+            public float Dur;       // 总时长
+        }
+
+        private static readonly Dictionary<Actor, DashState> _dashes = new Dictionary<Actor, DashState>();
+
+        internal static void ActorDash(Actor a, Vector2 dir, float dist, float dur = 0.18f)
+        {
+            if (a == null || dir.sqrMagnitude < 0.0001f) return;
+            if (_dashes.TryGetValue(a, out var cur))
+            {
+                // 连续突进：先还原再重设
+                a.move_jump_offset = new Vector2(cur.OriginX, a.move_jump_offset.y);
+            }
+            Vector2 norm = dir.normalized;
+            _dashes[a] = new DashState
+            {
+                OriginX = a.move_jump_offset.x,
+                Peak = norm.x * dist,
+                Timer = dur,
+                Dur = dur
+            };
+            a.move_jump_offset = new Vector2(_dashes[a].OriginX + _dashes[a].Peak, a.move_jump_offset.y);
+        }
+
+        private static void TickDashes(float dt)
+        {
+            if (_dashes.Count == 0) return;
+            var dead = new List<Actor>();
+            foreach (var kv in _dashes)
+            {
+                Actor a = kv.Key;
+                DashState s = kv.Value;
+                if (a == null || !a.isAlive())
+                {
+                    dead.Add(kv.Key);
+                    continue;
+                }
+                s.Timer -= dt;
+                float t = s.Dur > 0f ? Mathf.Clamp01(s.Timer / s.Dur) : 0f;
+                a.move_jump_offset = new Vector2(s.OriginX + s.Peak * t, a.move_jump_offset.y);
+                if (s.Timer <= 0f) dead.Add(kv.Key);
+            }
+            foreach (var k in dead) _dashes.Remove(k);
+        }
+
         // ---------------------------------------------------------- 驱动 --
 
-        /// <summary>每帧驱动（FramePatch Postfix 调用）：登神暗幕定时恢复。</summary>
+        /// <summary>每帧驱动（FramePatch Postfix 调用）：登神暗幕定时恢复 + 突进滑回衰减。</summary>
         internal static void Tick()
         {
             if (_ascendVeilTimer > 0f)
@@ -256,6 +374,7 @@ namespace Code.Combat.Fx
                     CombatFxCinema.Undim(0.8f);
                 }
             }
+            TickDashes(Time.unscaledDeltaTime);
         }
 
         /// <summary>世界销毁/存档切换：清空全部演出状态。</summary>
@@ -264,6 +383,12 @@ namespace Code.Combat.Fx
             CombatFxCore.Clear();
             CombatFxHitStop.Clear();
             CombatFxCinema.Clear();
+            foreach (var kv in _dashes)
+            {
+                if (kv.Key != null)
+                    kv.Key.move_jump_offset = new Vector2(kv.Value.OriginX, kv.Key.move_jump_offset.y);
+            }
+            _dashes.Clear();
             _ascendVeilTimer = 0f;
         }
     }

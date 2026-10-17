@@ -1,12 +1,13 @@
 // ============================================================
-// 异能特效层（v0.18.28）
-// 标签 → 原版特效映射：异能触发时播放视觉表现（复用原版 EffectsLibrary 粒子）
+// 异能特效层（v0.18.28 → v0.18.66）
+// v0.18.66：接入异能级自定义特效 AbilityFx（GameResources/effects 素材，每异能专属组合）。
+// 优先异能级（标签主体+家族氛围两层）；自定义素材缺失时回退原版 fx_* 粒子。
 // 纯展示层，不写任何业务数据；失败静默降级（try/catch + 出镜率限制防刷屏）。
 // 播放模式 = DisasterManager 已验证：EffectsLibrary.spawn(effectName, tile, ...)
-// 特效 id 清单取自原版反编译 EffectsLibrary.cs（92 个 fx_*）。
 // ============================================================
 
 using UnityEngine;
+using Code.Combat.Fx;
 
 namespace Code.Realm.Prototype
 {
@@ -78,20 +79,35 @@ namespace Code.Realm.Prototype
             }
         }
 
-        /// <summary>攻击触发：目标位置播放特效（35% 出镜率，防每击刷屏）</summary>
+        /// <summary>攻击触发：优先异能级自定义特效（目标位置双层演出），回退原版粒子（35% 出镜率）</summary>
         public static void PlayAttackFx(Actor attacker, Actor target, PrototypeTag tag, bool force = false)
         {
-            if (!Enabled || attacker == null || target == null) return;
+            if (!Enabled || attacker == null) return;
+            if (target == null || !target.isAlive()) return;
+            // v0.18.66 异能级：查单位异能定义，命中即播专属特效（50% 出镜，内部再门禁）+ 冲刺动作感
+            var def = PrototypeRegistry.GetForActor(attacker);
+            if (def != null)
+            {
+                AbilityFx.PlayAbilityFx(attacker, target, def, true, force);
+                CombatFxDirector.DashStrike(attacker, target.current_position);   // 突进拖影+残影+命中环
+                return;
+            }
             string fx = GetAttackFx(tag);
             if (string.IsNullOrEmpty(fx)) return;
             if (!force && UnityEngine.Random.value > 0.35f) return;
             PlayAt(target, fx);
         }
 
-        /// <summary>防守触发：自身位置播放特效（chance 出镜率；常驻减伤类传低值防视觉疲劳）</summary>
+        /// <summary>防守触发：优先异能级自定义特效（自身位置双层演出），回退原版粒子（chance 出镜率）</summary>
         public static void PlayDefendFx(Actor defender, PrototypeTag tag, float chance = 0.6f)
         {
             if (!Enabled || defender == null) return;
+            var def = PrototypeRegistry.GetForActor(defender);
+            if (def != null)
+            {
+                AbilityFx.PlayAbilityFx(defender, defender, def, false, false);
+                return;
+            }
             string fx = GetDefendFx(tag);
             if (string.IsNullOrEmpty(fx)) return;
             if (UnityEngine.Random.value > chance) return;

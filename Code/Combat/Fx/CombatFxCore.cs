@@ -60,6 +60,9 @@ namespace Code.Combat.Fx
         public bool Snap;
         /// <summary>电影冻结世界时仍继续运动（暗幕上演出）。</summary>
         public bool Cine;
+        /// <summary>绑定单位（非空时每帧跟随单位位置，护盾/光环/神形类环绕演出用）。</summary>
+        public Actor FollowActor;
+        public Vector2 FollowOffset;
         public float Px = 0.1f;
         internal bool Alive;
 
@@ -352,6 +355,19 @@ namespace Code.Combat.Fx
                     }
                 }
                 float k = p.K;
+                // 绑定单位跟随（护盾/光环/神形环绕：位置每帧贴合单位，单位死亡即结束）
+                if (p.FollowActor != null)
+                {
+                    if (p.FollowActor.isAlive())
+                    {
+                        p.Pos = p.FollowActor.current_position + p.FollowOffset;
+                    }
+                    else
+                    {
+                        Recycle(p, i);
+                        continue;
+                    }
+                }
                 Vector3 pos = new Vector3(p.Pos.x, p.Pos.y + p.Z, 0f);
                 if (p.Snap)
                 {
@@ -412,6 +428,7 @@ namespace Code.Combat.Fx
             p.Alive = false;
             p.Frames = null;
             p.Grad = null;
+            p.FollowActor = null;
             _free.Push(p);
         }
 
