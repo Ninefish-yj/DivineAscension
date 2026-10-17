@@ -103,7 +103,7 @@ namespace Code.Combat.Fx
             _family["自然系/动物"] = "soul_kong";       _family["自然系/植物"] = "soul_wood";
             _family["自然系/毒"] = "bub_toxic";         _family["自然系/气象"] = "vfx_elecshield";
             _family["自然系/藤蔓"] = "vfx_tentacles";   _family["自然系/野兽"] = "soul_jin";
-            _family["强化系/体魄"] = "vfx_bighit";      _family["强化系/能量"] = "vfx_charged";
+            _family["强化系/体魄"] = "vfx_bighit";      _family["强化系/能量"] = "bub_gold";
         }
 
         // ============================================================
@@ -264,8 +264,9 @@ namespace Code.Combat.Fx
             }
 
             // 家族氛围层（与主特效不同才叠；低透明背景）
+            // 攻击时不叠——避免战斗时每下都有背景光效堆叠成"一片条纹"；仅防守/强效演出叠
             string famFx = PickFamilyFx(def.Category, def.SubCategory);
-            if (!string.IsNullOrEmpty(famFx) && famFx != mainFx)
+            if (!string.IsNullOrEmpty(famFx) && famFx != mainFx && (!attack || force))
             {
                 SpawnFx(famFx, pos, FxLayer.Behind, 5, false, scale * 0.8f, 0f, attack ? null : self);
             }
