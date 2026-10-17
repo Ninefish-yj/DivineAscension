@@ -42,16 +42,32 @@ namespace Code.Realm
                 // 名额约束：世界内该段位已达上限则不召唤（保持世界平衡）
                 if (WorldSlotFull(summoner)) return;
 
-                string godName = TrueGodManager.TrySummonRandomGod();
-                if (godName != null)
+                // v0.18.87 指定神名念诵：随机挑回归池一位神，念诵者念其神名精确召回
+                string invokedGodName = TryPickPoolGodName();
+                if (invokedGodName != null)
                 {
-                    DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名，上代强者「" + godName + "」应召降临！");
+                    TrueGodManager.TrueGodData returned = TrueGodManager.TrySummonGodByName(invokedGodName);
+                    if (returned != null)
+                    {
+                        string divineTitle = !string.IsNullOrEmpty(returned.DivineName)
+                            ? returned.DivineName
+                            : returned.Name;
+                        DSNotificationManager.NotifyInfo(summoner.getName() + " 念诵神名「" + divineTitle + "」，上代强者「" + returned.Name + "」应召降临！");
+                    }
                 }
             }
             catch (System.Exception ex)
             {
                 DSDebug.Warning("[GeneCultivation] 神名念诵年度检查异常: " + ex.Message);
             }
+        }
+
+        /// <summary>从回归池随机挑一位神（返回其单位名，池空返回 null）</summary>
+        private static string TryPickPoolGodName()
+        {
+            var pool = TrueGodManager.GetReincarnations();
+            if (pool == null || pool.Count == 0) return null;
+            return pool[Random.Range(0, pool.Count)].Name;
         }
 
         /// <summary>随机找一位登神级（11阶+）单位作为念诵者，无则返回 null</summary>

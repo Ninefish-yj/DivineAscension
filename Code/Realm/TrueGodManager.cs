@@ -485,6 +485,46 @@ namespace Code.Realm
 			}
 			return null;
 		}
+		/// <summary>
+		/// 指定神名召唤（v0.18.87）：按名称精确匹配回归池单位并召回（回归即出池，席位轮换）。
+		/// 念诵神名语义：优先按 DivineName（神名）匹配，未命中则回退按 Name（单位名）匹配。
+		/// 返回召回的 TrueGodData（失败返回 null）。
+		/// </summary>
+		public static TrueGodData TrySummonGodByName(string divineName)
+		{
+			if (World.world == null || string.IsNullOrEmpty(divineName)) return null;
+			try
+			{
+				lock (_lock)
+				{
+					if (!_initialized) Init();
+					var pool = _globalData.Reincarnations;
+					if (pool.Count == 0) return null;
+
+					// 神名优先（念诵神名语义），回退单位名
+					TrueGodData god = pool.FirstOrDefault(g =>
+						!string.IsNullOrEmpty(g.DivineName) && g.DivineName == divineName)
+						?? pool.FirstOrDefault(g =>
+						!string.IsNullOrEmpty(g.DivineNameWest) && g.DivineNameWest == divineName)
+						?? pool.FirstOrDefault(g => g.Name == divineName);
+					if (god == null) return null;
+
+					Actor spawned = SpawnTrueGod(god);
+					if (spawned != null && spawned.isAlive())
+					{
+						pool.Remove(god);
+						SaveGlobalData();
+						DSDebug.Verbose($"[GeneCultivation] 神名念诵：{god.Name} 应召降临（出池，席位流转）");
+						return god;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				DSDebug.Warning($"[GeneCultivation] 指定神名召唤异常: {e.Message}");
+			}
+			return null;
+		}
 
 		/// <summary>获取回归池全部单位（UI 展示用）</summary>
 		public static List<TrueGodData> GetReincarnations()
