@@ -45,6 +45,7 @@ namespace Code.UI
         {
             try { UnitGeneTab.ForceDefaultTab(__instance); } catch { }
             try { UnitGeneTabPanel.Hide(); } catch { }
+            try { UnitOwnStatsRows.ClearOwnRows(); } catch { } // v0.18.67: 清理模组自建统计行（原版只清 stats_rows）
         }
 
         /// <summary>同帧同单位去重刷新（与天人武道同款防抖）</summary>

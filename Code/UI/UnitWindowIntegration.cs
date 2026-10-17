@@ -277,34 +277,21 @@ namespace Code.UI
             }
         }
         /// <summary>
-        /// showStatRow 反射调用：运行时 Assembly-CSharp 未 publicize，直接调用会抛 MethodAccessException。
+        /// 显示一行模组统计行。
+        /// v0.18.67：不再反射原版 showStatRow（那会追加进 stats_rows，与原版 showRows
+        /// 协程遍历竞态，手机端触发 Collection was modified）。改走 UnitOwnStatsRows
+        /// 自建行——独立于 stats_rows，视觉与原版行一致。
+        /// 多余参数（meta/tooltip）保留仅为兼容原调用点，实际不使用。
         /// </summary>
-        private static System.Reflection.MethodInfo _showStatRowMethod;
         private static void ShowStatRow(UnitWindow window, string label, object value, string value2, MetaType meta, long id, bool hasTooltip, string tipName, string tipDesc, TooltipDataGetter getter, bool showIfDefault)
         {
             try
             {
-                if (_showStatRowMethod == null)
-                {
-                    // 指定精确参数类型避免Ambiguous match
-                    _showStatRowMethod = typeof(UnitWindow).GetMethod("showStatRow",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                        null,
-                        new System.Type[] { typeof(string), typeof(object), typeof(string), typeof(MetaType), typeof(long), typeof(bool), typeof(string), typeof(string), typeof(TooltipDataGetter), typeof(bool) },
-                        null);
-                    if (_showStatRowMethod == null)
-                    {
-                        // fallback: 不指定参数类型
-                        _showStatRowMethod = typeof(UnitWindow).GetMethod("showStatRow",
-                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    }
-                }
-                if (_showStatRowMethod == null) return;
-                _showStatRowMethod.Invoke(window, new object[] { label, value, value2, meta, id, hasTooltip, tipName, tipDesc, getter, showIfDefault });
+                UnitOwnStatsRows.AddRow(window, label, value == null ? "" : value.ToString());
             }
             catch (Exception e)
             {
-                DSDebug.Warning("[GeneCultivation] showStatRow 反射调用失败: " + e.Message);
+                DSDebug.Warning("[GeneCultivation] 自建统计行失败: " + e.Message);
             }
         }
         /// <summary>构建基因图谱显示文本（显示当前境界的基因节点解锁情况）</summary>
