@@ -46,8 +46,8 @@ namespace Code.UI
         private Vector2 _panStart;
         private string _focusNodeId;   // 点击选中的节点（详情卡；默认=当前异能）
         private bool _pathMode = true; // 仅路径模式：只显示当前异能所在链路（异能叶→小类→系→根）
-        // v0.18.93 辐射树：当前展开异能叶的小类 id 集合（全树模式下点击小类展开/收起其异能叶）
-        private readonly HashSet<string> _expandedSubs = new HashSet<string>();
+        // v0.18.94 辐射树：当前展开异能叶的小类 id（单展开——每次只看一个小类，杜绝跨组异能叶重叠）
+        private string _expandedSub;
         // 仅路径模式：链上节点紧凑重排（根在下→叶在上，居中堆叠，连线自然变短）
         private string _chainCacheKey;                               // 缓存对应的 activeId
         private readonly Dictionary<string, Vector2> _chainPos = new Dictionary<string, Vector2>();
@@ -58,9 +58,10 @@ namespace Code.UI
         private Texture2D _cardBgTex;
         private Texture2D _nodeBgTex;
         private Texture2D _nodeActiveBgTex;
-        private Texture2D _nodeRoundedTex;    // 圆角节点底（白色，DrawNodes 染色）
-        private Texture2D _badgeRoundedTex;   // 圆角标签徽章底（白色，染色）
-        private Texture2D _circleTex;         // 圆形系徽章（白色，染色）
+        private Texture2D _nodeRoundedTex;    // 圆角节点底（白色，DrawNodes 染色；v0.18.94 起仅备用）
+        private Texture2D _badgeRoundedTex;   // 圆角标签徽章底（白色，染色；备用）
+        private Texture2D _circleTex;         // 圆形徽章（白色，染色）
+        private Texture2D _nodeCircleTex;     // v0.18.94 圆形节点底（128px 白圆，放大不糊，染色）
         private GUIStyle _titleStyle;
         private GUIStyle _rootStyle;
         private GUIStyle _nodeStyle;
@@ -148,6 +149,8 @@ namespace Code.UI
             if (_nodeRoundedTex == null) _nodeRoundedTex = MakeRoundedRectTexture(96, 40, 0.24f, Color.white);
             if (_badgeRoundedTex == null) _badgeRoundedTex = MakeRoundedRectTexture(48, 24, 0.30f, Color.white);
             if (_circleTex == null) _circleTex = MakeCircleTexture(64, Color.white);
+            // v0.18.94：圆形节点底（128px 白圆，放大到 100px 直径不糊；GUI.color 染色）
+            if (_nodeCircleTex == null) _nodeCircleTex = MakeCircleTexture(128, Color.white);
             // 兼容保留（绘制处以圆角纹理为主）
             if (_nodeBgTex == null) _nodeBgTex = MakeSolidTexture(2, 2, new Color(0.15f, 0.16f, 0.21f, 0.95f));
             if (_nodeActiveBgTex == null) _nodeActiveBgTex = MakeSolidTexture(2, 2, new Color(0.36f, 0.32f, 0.18f, 0.98f));
@@ -577,24 +580,24 @@ namespace Code.UI
             if (node.Level != 2) return true;
             string activeId = GetActiveProtoId();
             if (_pathMode && !string.IsNullOrEmpty(activeId) && IsOnActiveChain(node, activeId)) return true;
-            return _expandedSubs.Contains(node.ParentId);
+            return node.ParentId == _expandedSub;   // v0.18.94 单展开：同一时刻只看一个小类
         }
 
-        /// <summary>节点点击：小类切换异能叶展开/收起（展开 Fit 局部，收起 Fit 可见层）；其余节点仅选中详情</summary>
+        /// <summary>节点点击：小类切换异能叶展开/收起（单展开，展开 Fit 局部、收起 Fit 可见层）；其余节点仅选中详情</summary>
         private void OnNodeTap(ProtoTreeNode hit)
         {
             if (hit == null) return;
             _focusNodeId = hit.Id;
             if (hit.Level == 1)
             {
-                if (_expandedSubs.Contains(hit.Id))
+                if (_expandedSub == hit.Id)
                 {
-                    _expandedSubs.Remove(hit.Id);
+                    _expandedSub = null;
                     FitToRect(ComputeVisibleBounds());
                 }
                 else
                 {
-                    _expandedSubs.Add(hit.Id);
+                    _expandedSub = hit.Id;
                     FitToRect(ComputeSubLocalBounds(hit.Id));
                 }
             }
@@ -667,39 +670,28 @@ namespace Code.UI
                 if (parent == null) continue;
                 Rect pr = NodeScreenRect(parent, activeId);
                 Rect nr = NodeScreenRect(node, activeId);
-                Vector2 from = new Vector2(pr.center.x, pr.yMax);
-                Vector2 to = new Vector2(nr.center.x, nr.yMin);
-                // 贝塞尔曲线（父底 → 子顶平滑下弧），当前异能所在路径高亮发光（双层：晕+实线）
+                // v0.18.94 圆形节点：端点裁剪到圆边缘，沿中心连线方向
+                // （全树模式=径向连线，路径模式=垂直连线，均自然贴合圆形节点）
+                Vector2 fromC = pr.center, toC = nr.center;
+                Vector2 dir = toC - fromC;
+                float len = dir.magnitude;
+                if (len < 0.001f) continue;
+                dir /= len;
+                Vector2 from = fromC + dir * (pr.width * 0.5f);
+                Vector2 to = toC - dir * (nr.width * 0.5f);
+                // 当前异能所在路径高亮发光（双层：晕+实线）
                 bool activeEdge = IsOnActiveChain(node, activeId);
                 Color c = activeEdge ? DSUITheme.AccentGold : DSUITheme.BorderDark;
                 float t = activeEdge ? 3f : LINE_THICK;
                 if (activeEdge)
                 {
-                    DrawCurvedEdge(from, to, new Color(c.r, c.g, c.b, 0.26f), t + 4f);   // 外层发光晕
-                    DrawCurvedEdge(from, to, c, t);                                       // 内层实线
+                    DrawLine(from, to, new Color(c.r, c.g, c.b, 0.26f), t + 4f);   // 外层发光晕
+                    DrawLine(from, to, c, t);                                       // 内层实线
                 }
                 else
                 {
-                    DrawCurvedEdge(from, to, c, t);
+                    DrawLine(from, to, c, t);
                 }
-            }
-        }
-
-        /// <summary>三次贝塞尔曲线（垂直切线控制点：父底中点 → 子顶中点平滑下弧）</summary>
-        private static void DrawCurvedEdge(Vector2 from, Vector2 to, Color color, float thickness)
-        {
-            float dy = Mathf.Max(Mathf.Abs(to.y - from.y), 8f);
-            Vector2 c1 = new Vector2(from.x, from.y + dy * 0.45f);
-            Vector2 c2 = new Vector2(to.x, to.y - dy * 0.45f);
-            const int SEGS = 14;
-            Vector2 prev = from;
-            for (int i = 1; i <= SEGS; i++)
-            {
-                float t = i / (float)SEGS;
-                float u = 1f - t;
-                Vector2 p = u * u * u * from + 3f * u * u * t * c1 + 3f * u * t * t * c2 + t * t * t * to;
-                DrawLine(prev, p, color, thickness);
-                prev = p;
             }
         }
 
@@ -801,66 +793,61 @@ namespace Code.UI
                 bool onActiveChain = !isActive && node.Level != -1 && IsOnActiveChain(node, activeId);
                 Color mainColor = isActive ? DSUITheme.AccentGold : node.Color;
 
-                // 圆角底色（染色）
-                GUI.color = isActive ? new Color(0.36f, 0.32f, 0.18f, 0.98f) : new Color(0.15f, 0.16f, 0.21f, 0.95f);
-                GUI.DrawTexture(r, _nodeRoundedTex);
-                GUI.color = Color.white;
-                // 左侧色条（大类色/金色）
-                GUI.color = mainColor;
-                GUI.DrawTexture(new Rect(r.x, r.y, Mathf.Max(3f, 4f * _zoom), r.height), Texture2D.whiteTexture);
-                // 路径发光边框（当前异能所在链路的中间节点：半透明金外扩框）
+                // ---- v0.18.94 圆形节点：外圈彩环 → 内圆深底 → 居中文字 → (叶)底部标签色点 ----
+                float d = r.width;   // 圆形节点 W=H=直径
+                // 路径发光：当前异能链路的中间节点外扩金晕
                 if (onActiveChain)
-                    DrawBorder(new Rect(r.x - 2f, r.y - 2f, r.width + 4f, r.height + 4f), new Color(0.95f, 0.85f, 0.55f, 0.35f));
-                // 边框
-                DrawBorder(r, isActive ? DSUITheme.AccentGold : node.Color * new Color(0.7f, 0.7f, 0.7f, 1f));
-
-                // 系徽章圆形图标（左上角，系色）
-                float iconSize = Mathf.Max(10f, 20f * _zoom);
-                bool showIcon = node.Level != 2 || _zoom >= 0.28f;
-                float iconPad = 0f;
-                if (showIcon)
                 {
-                    iconPad = iconSize + 7f;
-                    GUI.color = mainColor;
-                    GUI.DrawTexture(new Rect(r.x + 5f, r.y + 5f, iconSize, iconSize), _circleTex);
-                    GUI.color = Color.white;
+                    GUI.color = new Color(0.95f, 0.85f, 0.55f, 0.28f);
+                    GUI.DrawTexture(new Rect(r.x - d * 0.09f, r.y - d * 0.09f, d * 1.18f, d * 1.18f), _nodeCircleTex);
                 }
+                // 外圈（大类色/金色）
+                GUI.color = mainColor;
+                GUI.DrawTexture(r, _nodeCircleTex);
+                // 内圆深底（形成彩环）
+                float inner = d * 0.84f;
+                GUI.color = isActive ? new Color(0.36f, 0.32f, 0.18f, 0.98f) : new Color(0.15f, 0.16f, 0.21f, 0.95f);
+                GUI.DrawTexture(new Rect(r.x + (d - inner) * 0.5f, r.y + (d - inner) * 0.5f, inner, inner), _nodeCircleTex);
+                GUI.color = Color.white;
 
-                // 缩放分级：远处只画色块；根/系/子类 >=0.10 显名；异能叶 >=0.28 显名；>=0.65 异能显标签徽章
-                bool showName = node.Level == 2 ? _zoom >= 0.28f : _zoom >= 0.10f;
+                // 缩放分级：根/系/小类 >=0.10 显名；异能叶 >=0.35 显名；叶标签色点 >=0.45
+                bool showName = node.Level == 2 ? _zoom >= 0.35f : _zoom >= 0.10f;
                 if (showName)
                 {
                     GUIStyle nameStyle = node.Level == 2 ? _leafStyle : (node.Level == 1 ? _subStyle : (node.Level == 0 ? _nodeStyle : _rootStyle));
-                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 12 : node.Level == 1 ? 13 : node.Level == 0 ? 15 : 20) * _zoom), 9, 24);
+                    nameStyle.fontSize = Mathf.Clamp(Mathf.RoundToInt((node.Level == 2 ? 11 : node.Level == 1 ? 12 : node.Level == 0 ? 14 : 18) * _zoom), 8, 22);
                     GUI.color = isActive ? DSUITheme.AccentGold : DSUITheme.BodyText;
-                    Rect nameRect = new Rect(r.x + 6f + iconPad, r.y + 4f, r.width - 12f - iconPad, r.height - 8f);
-                    GUI.Label(nameRect, node.Name, nameStyle);
+                    GUI.Label(r, node.Name, nameStyle);   // 居中（样式 MiddleCenter）
                     GUI.color = Color.white;
 
-                    // 异能叶子：标签徽章
-                    if (node.Level == 2 && node.Def != null && _zoom >= 0.65f)
+                    // 异能叶：圆外正下方两个标签色点（主/副，不占圆内空间）
+                    if (node.Level == 2 && node.Def != null && _zoom >= 0.45f)
                     {
-                        float badgeH = Mathf.Max(12f, 17f * _zoom);
-                        float badgeW = (r.width - 10f) / 2f;
-                        float by = r.yMax - badgeH - 3f;
-                        DrawTagBadge(new Rect(r.x + 5f, by, badgeW, badgeH), node.Def.MainTag, _zoom);
-                        DrawTagBadge(new Rect(r.x + 5f + badgeW + 4f, by, badgeW, badgeH), node.Def.SubTag, _zoom);
+                        float dot = Mathf.Max(6f, d * 0.24f);
+                        float gap = dot + 4f;
+                        float by = r.yMax + 2f;
+                        float startX = r.center.x - gap;
+                        GUI.color = GetTagColor(node.Def.MainTag);
+                        GUI.DrawTexture(new Rect(startX, by, dot, dot), _circleTex);
+                        GUI.color = GetTagColor(node.Def.SubTag);
+                        GUI.DrawTexture(new Rect(startX + gap, by, dot, dot), _circleTex);
+                        GUI.color = Color.white;
                     }
                 }
 
-                // 当前异能：右上角金色角标；非激活化神异能：金色小星角标
+                // 当前异能：右上角金色小圆角标；非激活高品阶异能：右上角金色小星圆点
                 if (isActive)
                 {
                     float dot = Mathf.Max(5f, 7f * _zoom);
                     GUI.color = new Color(1f, 0.85f, 0.35f, 1f);
-                    GUI.DrawTexture(new Rect(r.xMax - dot - 2f, r.y + 3f, dot, dot), Texture2D.whiteTexture);
+                    GUI.DrawTexture(new Rect(r.xMax - dot - 1f, r.y - dot * 0.6f + 1f, dot, dot), _circleTex);
                     GUI.color = Color.white;
                 }
                 else if (node.Level == 2 && node.Def != null && PrototypeEvolution.GetTier(node.Def) >= 5 && _zoom >= 0.28f)
                 {
                     float dot = Mathf.Max(5f, 7f * _zoom);
                     GUI.color = new Color(1f, 0.85f, 0.35f, 0.75f);
-                    GUI.DrawTexture(new Rect(r.xMax - dot - 2f, r.y + 3f, dot, dot), _circleTex);
+                    GUI.DrawTexture(new Rect(r.xMax - dot - 1f, r.y - dot * 0.6f + 1f, dot, dot), _circleTex);
                     GUI.color = Color.white;
                 }
             }
