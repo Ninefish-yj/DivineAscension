@@ -59,7 +59,7 @@ namespace Code.Combat.Fx
                 Color c = TierColor(tier);
                 // 中心光斑（快速收缩）
                 CombatFxCore.Spawn(CombatFxArt.Burst, pos, 0.08f, 0.25f, FxLayer.Over, 30)
-                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(3.2f, 0.6f);
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.6f, 0.35f);
                 // 命中星 2-3 颗（旋转发散）
                 int stars = 2 + Mathf.Min(1, tier / 6);
                 for (int i = 0; i < stars; i++)
@@ -284,7 +284,7 @@ namespace Code.Combat.Fx
                     float t = i / 3f;
                     var arc = CombatFxCore.Spawn(CombatFxArt.Slash, mid, 0.08f, 0.3f - t * 0.1f, FxLayer.Over, 32);
                     if (arc == null) continue;
-                    arc.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(2.6f, 1.1f);
+                    arc.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.62f, 0.26f);
                     arc.Rot = baseAng - 90f + (t - 0.5f) * 70f;     // 弧面朝向目标，从一侧扫向另一侧
                     arc.Spin = (1f - t) * 55f;
                 }
@@ -298,7 +298,7 @@ namespace Code.Combat.Fx
                     if (bDir.magnitude < 0.2f) bDir = dir;
                     var blade = CombatFxCore.Spawn(CombatFxArt.Blade, bFrom, 0.1f, 0.42f, FxLayer.Over, 35);
                     if (blade == null) continue;
-                    blade.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.6f, 0.6f)
+                    blade.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.42f, 0.16f)
                          .Moving(bDir.normalized * (Mathf.Max(0.6f, bDir.magnitude) / 0.4f), 0f, 1.2f, 0f);
                     blade.Rot = Mathf.Atan2(bDir.y, bDir.x) * Mathf.Rad2Deg - 90f;
                 }
@@ -328,10 +328,10 @@ namespace Code.Combat.Fx
                 CombatFxHitStop.Request(targetPos, 0.1f);
                 // 地面裂纹（贴地 Behind 层，淡出）
                 CombatFxCore.Spawn(CombatFxArt.Crack, targetPos, 0.09f, 0.7f, FxLayer.Behind, 2)
-                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.9f, 1.25f);
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.42f, 0.28f);
                 // 粗冲击波环（扩张淡出）
                 CombatFxCore.Spawn(CombatFxArt.Shocks[2], targetPos, 0.09f, 0.55f, FxLayer.Over, 30)
-                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.7f, 2.6f);
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.24f, 0.5f);
                 // 碎石飞溅（4 块，抛物线）
                 for (int i = 0; i < 4; i++)
                 {
@@ -395,7 +395,7 @@ namespace Code.Combat.Fx
             Vector2 dir = d / dist;
             var zap = CombatFxCore.Spawn(CombatFxArt.Zap, (from + to) * 0.5f, 0.09f, 0.22f, FxLayer.Over, 36);
             if (zap == null) return;
-            zap.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(dist * 0.8f, 0.4f);
+            zap.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(dist * 0.17f, dist * 0.34f);
             zap.Rot = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
         }
 
@@ -415,13 +415,13 @@ namespace Code.Combat.Fx
                 // 中心光斑（快速扩散淡出）
                 CombatFxCore.Spawn(CombatFxArt.Burst, pos, 0.08f, 0.5f, FxLayer.Behind, 3)
                     .Color(new Color(c.r, c.g, c.b, 0.4f), new Color(c.r, c.g, c.b, 0f))
-                    .Sized(0.8f, radius * 0.9f);
+                    .Sized(0.4f, radius * 0.45f);
                 // 符文环 2 波（旋转扩散）
                 for (int w = 0; w < 2; w++)
                 {
                     var ring = CombatFxCore.Spawn(CombatFxArt.RuneRing, pos, 0.09f, 0.65f, FxLayer.Over, 26);
                     if (ring == null) continue;
-                    ring.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(radius * 0.45f, radius);
+                    ring.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(radius * 0.2f, radius * 0.45f);
                     ring.Rot = w * 15f;
                     ring.Spin = 30f;
                 }
@@ -467,10 +467,10 @@ namespace Code.Combat.Fx
                 // 金色冲击环 ×2（Cine 层：冻结中仍扩张发光）
                 CombatFxCore.Spawn(CombatFxArt.Shocks[2], pos, 0.12f, 0.9f, FxLayer.Cine, 10)
                     .Color(gold, new Color(gold.r, gold.g, gold.b, 0f))
-                    .Sized(0.5f, 2.6f);
+                    .Sized(0.2f, 0.5f);
                 CombatFxCore.Spawn(CombatFxArt.Rings[2], pos, 0.12f, 1.1f, FxLayer.Cine, 5)
                     .Color(new Color(1f, 0.95f, 0.7f), new Color(1f, 0.8f, 0.3f, 0f))
-                    .Sized(0.3f, 3.2f);
+                    .Sized(0.25f, 0.62f);
                 // 金色星雨
                 for (int i = 0; i < 10; i++)
                 {
