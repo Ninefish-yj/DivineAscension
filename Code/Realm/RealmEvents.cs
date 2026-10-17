@@ -189,8 +189,12 @@ namespace Code.Realm
             }
             else
             {
-                // 普通事件：用突破格式（{2} 用突破名而非阶名，避免"超神级突破至超神级"同级观感）
-                eventDesc = string.Format(UILocalization.Get("event_breakthrough"), actor.getName(), evt.RequiredTier, UILocalization.Get($"Divine_{evt.RequiredTier}_breakthrough"));
+                // 普通事件：用突破格式（{2} 用突破名而非阶名，避免"超神级突破至超神级"同级观感）。
+                // v0.18.68：{0} 传纯本名（剥掉基因称号与境界后缀），配合文案"{0}突破至{1}阶，{2}…"
+                // 避免显示成"Stettetaus-登神级登神圣化"这类重复拗口。
+                eventDesc = string.Format(UILocalization.Get("event_breakthrough"),
+                    TitleSuffixManager.ExtractBaseName(actor.getName()), evt.RequiredTier,
+                    UILocalization.Get($"Divine_{evt.RequiredTier}_breakthrough"));
             }
 
             DSEventManager.RecordEvent(
