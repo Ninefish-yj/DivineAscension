@@ -256,6 +256,194 @@ namespace Code.Combat.Fx
             }
         }
 
+        // ----------------------------------------------------- 御剑剑气斩（v0.18.70）--
+
+        /// <summary>
+        /// 御剑剑气斩：攻击者→目标中点横扫月牙剑弧（旋转扫过，修仙剑光），
+        /// 再向目标飞射 2 道剑气。适配 MultiShot/Execute 等斩系标签，
+        /// 纯特效模拟不碰 AI，与 DashStrike 同级门禁。
+        /// </summary>
+        public static void SlashArc(Actor attacker, Vector2 targetPos)
+        {
+            try
+            {
+                EnsureArt();
+                if (attacker == null) return;
+                Vector2 from = attacker.current_position;
+                if (!CanFull(targetPos) || !CanFull(from)) return;
+                Vector2 dir = targetPos - from;
+                float dist = dir.magnitude;
+                if (dist < 0.5f) dist = 1f;
+                dir /= dist;
+                Vector2 mid = (from + targetPos) * 0.5f;
+                Color c = new Color(0.82f, 0.93f, 1f);              // 剑气寒光
+                float baseAng = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                // 横扫剑弧：3 段叠扫（大→小，旋转扫过 + 淡出）
+                for (int i = 0; i < 3; i++)
+                {
+                    float t = i / 3f;
+                    var arc = CombatFxCore.Spawn(CombatFxArt.Slash, mid, 0.08f, 0.3f - t * 0.1f, FxLayer.Over, 32);
+                    if (arc == null) continue;
+                    arc.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(2.6f, 1.1f);
+                    arc.Rot = baseAng - 90f + (t - 0.5f) * 70f;     // 弧面朝向目标，从一侧扫向另一侧
+                    arc.Spin = (1f - t) * 55f;
+                }
+                // 剑气飞射：2 道 Blade 朝目标（从身体中上部飞出）
+                Vector2 origin = from + new Vector2(0f, 0.3f);
+                for (int i = 0; i < 2; i++)
+                {
+                    Vector2 off = new Vector2(dir.y, -dir.x) * (i == 0 ? -0.35f : 0.35f);
+                    Vector2 bFrom = origin + off;
+                    Vector2 bDir = targetPos - bFrom;
+                    if (bDir.magnitude < 0.2f) bDir = dir;
+                    var blade = CombatFxCore.Spawn(CombatFxArt.Blade, bFrom, 0.1f, 0.42f, FxLayer.Over, 35);
+                    if (blade == null) continue;
+                    blade.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.6f, 0.6f)
+                         .Moving(bDir.normalized * (Mathf.Max(0.6f, bDir.magnitude) / 0.4f), 0f, 1.2f, 0f);
+                    blade.Rot = Mathf.Atan2(bDir.y, bDir.x) * Mathf.Rad2Deg - 90f;
+                }
+                CombatFxSound.Play(CombatFxSound.Whoosh, mid);
+            }
+            catch (Exception e)
+            {
+                Code.Core.DSDebug.Verbose("[CombatFx] SlashArc: " + e.Message);
+            }
+        }
+
+        // ----------------------------------------------------- 震地重击（v0.18.70）--
+
+        /// <summary>
+        /// 震地重击：命中点击停定帧 + 地面放射裂纹 + 粗冲击波环 + 碎石飞溅。
+        /// 适配 Knockback/Gravity/Petrify 等重击系标签。
+        /// </summary>
+        public static void GroundSlam(Actor attacker, Vector2 targetPos)
+        {
+            try
+            {
+                EnsureArt();
+                if (attacker == null) return;
+                if (!CanFull(targetPos)) return;
+                Color c = new Color(0.96f, 0.84f, 0.58f);           // 大地土黄
+                // 击停（重击定帧）
+                CombatFxHitStop.Request(targetPos, 0.1f);
+                // 地面裂纹（贴地 Behind 层，淡出）
+                CombatFxCore.Spawn(CombatFxArt.Crack, targetPos, 0.09f, 0.7f, FxLayer.Behind, 2)
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(1.9f, 1.25f);
+                // 粗冲击波环（扩张淡出）
+                CombatFxCore.Spawn(CombatFxArt.Shocks[2], targetPos, 0.09f, 0.55f, FxLayer.Over, 30)
+                    .Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(0.7f, 2.6f);
+                // 碎石飞溅（4 块，抛物线）
+                for (int i = 0; i < 4; i++)
+                {
+                    float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                    float spd = UnityEngine.Random.Range(3f, 6f);
+                    CombatFxCore.Spawn(CombatFxArt.Debris[UnityEngine.Random.Range(0, CombatFxArt.Debris.Length)],
+                        targetPos, 0.1f, 0.55f, FxLayer.Top, 40)
+                        .Color(c, new Color(c.r, c.g, c.b, 0f))
+                        .Sized(0.9f, 0.35f)
+                        .Moving(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * spd, UnityEngine.Random.Range(2f, 4f), 2f, -4f);
+                }
+                CombatFxSound.Play(CombatFxSound.DropImpact, targetPos);
+            }
+            catch (Exception e)
+            {
+                Code.Core.DSDebug.Verbose("[CombatFx] GroundSlam: " + e.Message);
+            }
+        }
+
+        // ----------------------------------------------------- 雷法电链（v0.18.70）--
+
+        /// <summary>
+        /// 雷法电链：命中处放射 2~3 道锯齿电弧（短闪电，表现溅射连锁）。
+        /// 适配 Chain 标签（引擎已实现 30% 溅射伤害，这里是溅射的视觉呈现）。
+        /// 纯视觉方案，不遍历单位（避免依赖不确定的原版遍历 API）。
+        /// </summary>
+        public static void ChainArc(Actor victim)
+        {
+            try
+            {
+                EnsureArt();
+                if (victim == null || !victim.isAlive()) return;
+                Vector2 pos = victim.current_position;
+                if (!CanFull(pos)) return;
+                Color c = new Color(0.55f, 0.82f, 1f);              // 雷蓝
+                int arcs = 2 + UnityEngine.Random.Range(0, 2);
+                for (int i = 0; i < arcs; i++)
+                {
+                    float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                    float len = UnityEngine.Random.Range(1.5f, 2.6f);
+                    Vector2 dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                    // 每道电弧拆 2 段（中段抖动，贴合 Zap 折线观感）
+                    Vector2 mid = pos + dir * len * 0.5f + new Vector2(
+                        UnityEngine.Random.Range(-0.4f, 0.4f), UnityEngine.Random.Range(-0.4f, 0.4f));
+                    SpawnZap(pos, mid, c);
+                    SpawnZap(mid, pos + dir * len, c);
+                }
+                CombatFxSound.Play(CombatFxSound.HitMetal, pos);
+            }
+            catch (Exception e)
+            {
+                Code.Core.DSDebug.Verbose("[CombatFx] ChainArc: " + e.Message);
+            }
+        }
+
+        /// <summary>单道锯齿电弧：Zap 图元旋转朝向连线（宽=线长，高≈0.35 世界单位）。</summary>
+        private static void SpawnZap(Vector2 from, Vector2 to, Color c)
+        {
+            Vector2 d = to - from;
+            float dist = Mathf.Max(0.3f, d.magnitude);
+            Vector2 dir = d / dist;
+            var zap = CombatFxCore.Spawn(CombatFxArt.Zap, (from + to) * 0.5f, 0.09f, 0.22f, FxLayer.Over, 36);
+            if (zap == null) return;
+            zap.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(dist * 0.8f, 0.4f);
+            zap.Rot = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+        }
+
+        // ----------------------------------------------------- 领域展开（v0.18.70）--
+
+        /// <summary>
+        /// 领域展开：符文法阵环（旋转扩散 2 波）+ 圆周 4 根光柱（Blade 竖条，半透明）
+        /// + 中心光斑。范围技能释放时调用，尺寸=影响范围（半透明不挡视野）。
+        /// </summary>
+        public static void DomainCircle(Vector2 pos, float radius, Color c)
+        {
+            try
+            {
+                EnsureArt();
+                if (!CanFull(pos)) return;
+                if (radius < 0.5f) radius = 0.5f;
+                // 中心光斑（快速扩散淡出）
+                CombatFxCore.Spawn(CombatFxArt.Burst, pos, 0.08f, 0.5f, FxLayer.Behind, 3)
+                    .Color(new Color(c.r, c.g, c.b, 0.4f), new Color(c.r, c.g, c.b, 0f))
+                    .Sized(0.8f, radius * 0.9f);
+                // 符文环 2 波（旋转扩散）
+                for (int w = 0; w < 2; w++)
+                {
+                    var ring = CombatFxCore.Spawn(CombatFxArt.RuneRing, pos, 0.09f, 0.65f, FxLayer.Over, 26);
+                    if (ring == null) continue;
+                    ring.Color(c, new Color(c.r, c.g, c.b, 0f)).Sized(radius * 0.45f, radius);
+                    ring.Rot = w * 15f;
+                    ring.Spin = 30f;
+                }
+                // 圆周 4 根光柱（Blade 竖条，半透明）
+                for (int i = 0; i < 4; i++)
+                {
+                    float a = 45f + i * 90f;
+                    Vector2 bp = pos + new Vector2(Mathf.Cos(a * Mathf.Deg2Rad), Mathf.Sin(a * Mathf.Deg2Rad)) * radius * 0.62f;
+                    var beam = CombatFxCore.Spawn(CombatFxArt.Blade, bp, 0.08f, 0.7f, FxLayer.Behind, 4);
+                    if (beam == null) continue;
+                    beam.Color(new Color(c.r, c.g, c.b, 0.32f), new Color(c.r, c.g, c.b, 0f))
+                             .Sized(radius * 0.42f, 0.1f);
+                    beam.Rot = a;                                    // Blade 横向 → 旋转成竖/斜光柱
+                }
+                CombatFxSound.Play(CombatFxSound.Powerup, pos);
+            }
+            catch (Exception e)
+            {
+                Code.Core.DSDebug.Verbose("[CombatFx] DomainCircle: " + e.Message);
+            }
+        }
+
         // ----------------------------------------------------- 登神升华 --
 
         /// <summary>
