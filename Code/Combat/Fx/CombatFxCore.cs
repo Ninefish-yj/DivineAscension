@@ -54,6 +54,10 @@ namespace Code.Combat.Fx
         public Color[] Grad;
         public float Size0 = 1f, Size1 = 1f;
         public float Rot, Spin;
+        /// <summary>素材宽高比（高/宽，来自 sprite.rect，v0.18.72 竖素材防竖拉）。</summary>
+        public float Aspect = 1f;
+        /// <summary>目标高宽比（Y/X 世界尺寸比），默认=素材原始比；护盾等需压扁时单独调。</summary>
+        public float YRatio = 1f;
         /// <summary>sprite 的 +y 轴朝向运动方向。</summary>
         public bool FaceVel;
         /// <summary>对齐到 texel 网格（像素锐利的贴地美术）。</summary>
@@ -208,6 +212,10 @@ namespace Code.Combat.Fx
             p.Cine = layer == FxLayer.Cine;
             p.Px = px;
             p.Alive = true;
+            // v0.18.72：素材宽高比（取首帧像素 rect，无需 bounds 开销）
+            p.Aspect = (frames != null && frames.Length > 0 && frames[0] != null)
+                ? frames[0].rect.height / Mathf.Max(0.0001f, frames[0].rect.width) : 1f;
+            p.YRatio = p.Aspect;
             if (_normal != null) p.R.sharedMaterial = _normal;
             switch (layer)
             {
@@ -269,6 +277,10 @@ namespace Code.Combat.Fx
             p.Cine = layer == FxLayer.Cine;
             p.Px = px;
             p.Alive = true;
+            // v0.18.72：素材宽高比（取首帧像素 rect，无需 bounds 开销）
+            p.Aspect = (frames != null && frames.Length > 0 && frames[0] != null)
+                ? frames[0].rect.height / Mathf.Max(0.0001f, frames[0].rect.width) : 1f;
+            p.YRatio = p.Aspect;
             if (_normal != null) p.R.sharedMaterial = _normal;
             switch (layer)
             {
@@ -408,8 +420,11 @@ namespace Code.Combat.Fx
                     }
                 }
                 // 尺寸（Px 语义=每像素世界单位；精灵 PPU 固定 100 → 缩放 = px*100）
+                // v0.18.72：Y 按目标高宽比缩放——默认 YRatio=Aspect（=素材原始比，行为不变）；
+                // 护盾等竖素材可单独压扁（96x128 护盾原高=1.33×宽会显大，YRatio=0.75 → 高≈0.32）
                 float size = Mathf.Lerp(p.Size0, p.Size1, k);
-                p.Tr.localScale = new Vector3(p.Px * 100f * size, p.Px * 100f * size, 1f);
+                float sx = p.Px * 100f * size;
+                p.Tr.localScale = new Vector3(sx, sx * (p.YRatio / Mathf.Max(0.0001f, p.Aspect)), 1f);
                 // 旋转
                 if (p.FaceVel && p.Vel.sqrMagnitude > 0.0001f)
                 {
